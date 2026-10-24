@@ -17,32 +17,61 @@ import {
 import AvatarPreview from "./AvatarPreview";
 const nice = (s: string) =>
   s.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
-function Select({
+function VisualChoices({
   label,
   value,
   options,
   onChange,
+  character,
+  property,
 }: {
   label: string;
   value: string;
   options: string[];
   onChange: (v: string) => void;
+  character: Character;
+  property: keyof Character;
 }) {
+  const focus = ["hair", "beard", "glasses"].includes(property)
+    ? "head"
+    : property === "top"
+      ? "torso"
+      : property === "legs"
+        ? "legs"
+        : property === "feet"
+          ? "feet"
+          : "full";
   return (
-    <label className="creator-field">
-      <span>{label}</span>
-      <select
-        aria-label={label}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      >
+    <fieldset className={`visual-field visual-${property}`}>
+      <legend>
+        {label}
+        <span>{nice(value)}</span>
+      </legend>
+      <div className="visual-options">
         {options.map((o) => (
-          <option value={o} key={o}>
-            {nice(o)}
-          </option>
+          <button
+            type="button"
+            key={o}
+            aria-label={`${label}: ${nice(o)}`}
+            aria-pressed={o === value}
+            className={`visual-choice ${o === value ? "selected" : ""}`}
+            onClick={() => onChange(o)}
+          >
+            <AvatarPreview
+              character={{ ...character, [property]: o }}
+              animated={false}
+              focus={focus}
+            />
+            <span>{nice(o)}</span>
+            {o === value && (
+              <b className="choice-check" aria-hidden="true">
+                ✓
+              </b>
+            )}
+          </button>
         ))}
-      </select>
-    </label>
+      </div>
+    </fieldset>
   );
 }
 function Colors({
@@ -118,8 +147,9 @@ export default function CharacterCreator({
       <div className="creator-shell">
         <div className="character-stage">
           <div className="stage-caption">
-            <span className="live-dot" /> VISITOR 01
+            <span className="live-dot" /> YOUR VISITOR PASS
           </div>
+          <span className="stage-edition">CAREER TOWN · EST. 2026</span>
           <div className="avatar-pedestal">
             <AvatarPreview character={c} animated={motion} direction={dir} />
           </div>
@@ -192,6 +222,7 @@ export default function CharacterCreator({
             ))}
           </div>
           <div
+            key={tab}
             className="creator-controls"
             role="tabpanel"
             id={`panel-${tab}`}
@@ -199,7 +230,9 @@ export default function CharacterCreator({
           >
             {tab === "Character" ? (
               <>
-                <Select
+                <VisualChoices
+                  character={c}
+                  property="body"
                   label="Body"
                   value={c.body}
                   options={["male", "female"]}
@@ -211,16 +244,18 @@ export default function CharacterCreator({
                   colors={skinColors}
                   onChange={(v) => change("skin", v)}
                 />
-                <Select
+                <Colors
                   label="Eyes"
                   value={c.eye}
-                  options={["brown", "blue", "green", "gray", "purple"]}
+                  colors={["brown", "blue", "green", "gray", "purple"]}
                   onChange={(v) => change("eye", v)}
                 />
               </>
             ) : tab === "Hair" ? (
               <>
-                <Select
+                <VisualChoices
+                  character={c}
+                  property="hair"
                   label="Hairstyle"
                   value={c.hair}
                   options={["none", ...hairStyles]}
@@ -232,7 +267,9 @@ export default function CharacterCreator({
                   colors={hairColors}
                   onChange={(v) => change("hairColor", v)}
                 />
-                <Select
+                <VisualChoices
+                  character={c}
+                  property="beard"
                   label="Facial hair"
                   value={c.beard}
                   options={[
@@ -247,14 +284,18 @@ export default function CharacterCreator({
               </>
             ) : tab === "Outfit" ? (
               <>
-                <div className="field-pair">
-                  <Select
+                <div className="outfit-fields">
+                  <VisualChoices
+                    character={c}
+                    property="top"
                     label="Top"
                     value={c.top}
                     options={Object.keys(tops)}
                     onChange={(v) => change("top", v)}
                   />
-                  <Select
+                  <VisualChoices
+                    character={c}
+                    property="legs"
                     label="Bottom"
                     value={c.legs}
                     options={Object.keys(legStyles)}
@@ -276,7 +317,9 @@ export default function CharacterCreator({
               </>
             ) : (
               <>
-                <Select
+                <VisualChoices
+                  character={c}
+                  property="feet"
                   label="Footwear"
                   value={c.feet}
                   options={Object.keys(feetStyles)}
@@ -288,7 +331,9 @@ export default function CharacterCreator({
                   colors={clothColors}
                   onChange={(v) => change("feetColor", v)}
                 />
-                <Select
+                <VisualChoices
+                  character={c}
+                  property="glasses"
                   label="Glasses"
                   value={c.glasses}
                   options={["none", "glasses", "round", "nerd", "shades"]}

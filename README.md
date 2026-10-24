@@ -30,6 +30,8 @@ The site is statically exported to `out/`. No backend or secret environment vari
 
 ## Track the work
 
+The [field-notes design pass](docs/DESIGN_PASS.md) documents the visual wardrobe, portfolio storytelling, town animation polish, and reproducible design tests.
+
 Read [STATUS](docs/STATUS.md) for the current checkpoint, [DEVLOG](docs/DEVLOG.md) for changes, and [ARCHITECTURE](docs/ARCHITECTURE.md) for implementation choices. Commit-sized checkpoints distinguish planned work from verified functionality.
 
 ## Rights

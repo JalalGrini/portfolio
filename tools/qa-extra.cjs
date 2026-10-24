@@ -1,3 +1,4 @@
+const base = process.env.QA_BASE_URL || "http://localhost:3000";
 const { chromium } = require("@playwright/test");
 const fs = require("fs");
 const path = require("path");
@@ -16,23 +17,24 @@ fs.mkdirSync(out, { recursive: true });
   const page = await browser.newPage({
     viewport: { width: 1440, height: 1000 },
     reducedMotion: "reduce",
+    colorScheme: "dark",
   });
   page.setDefaultTimeout(12000);
   const results = [];
-  await page.goto("http://localhost:3000/");
+  await page.goto(base + "/");
   await page.getByRole("button", { name: "Switch to light theme" }).click();
   await page.screenshot({ path: path.join(out, "landing-light-desktop.png") });
   if ((await page.locator("html").getAttribute("data-theme")) !== "light")
     throw Error("theme did not switch");
   results.push("Light theme toggles and persists");
-  await page.goto("http://localhost:3000/portfolio/");
+  await page.goto(base + "/portfolio/");
   if ((await page.locator("html").getAttribute("data-theme")) !== "light")
     throw Error("theme not persisted");
   await page.screenshot({
     path: path.join(out, "portfolio-light-desktop.png"),
   });
   await page.getByRole("button", { name: "Switch to dark theme" }).click();
-  await page.goto("http://localhost:3000/play/");
+  await page.goto(base + "/play/");
   await page.getByRole("tab", { name: "Character", exact: true }).focus();
   await page.keyboard.press("ArrowRight");
   if (
@@ -83,9 +85,10 @@ fs.mkdirSync(out, { recursive: true });
   const fallback = await browser.newPage({
     viewport: { width: 390, height: 844 },
     reducedMotion: "reduce",
+    colorScheme: "dark",
   });
   await fallback.route("**/assets/game/town-ground.png", (r) => r.abort());
-  await fallback.goto("http://localhost:3000/play/");
+  await fallback.goto(base + "/play/");
   await fallback.getByRole("button", { name: /Let’s explore/ }).click();
   await fallback
     .locator('.game-loading[role="alert"]')

@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test:e2e": "node tools/qa.cjs",
     "check:assets": "python3 tools/verify_assets.py",
-    "test:extra": "node tools/qa-extra.cjs"
+    "test:extra": "node tools/qa-extra.cjs",
+    "test:design": "node tools/qa-design.cjs"
   },
   "dependencies": {
     "motion": "^12.43.0",

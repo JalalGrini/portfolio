@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 export default function Nav({ game = false }: { game?: boolean }) {
   const [light, setLight] = useState(false);
   useEffect(() => {
-    const v = localStorage.getItem("portfolio-theme") === "light";
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem("portfolio-theme");
+    } catch {}
+    const v = stored
+      ? stored === "light"
+      : matchMedia("(prefers-color-scheme: light)").matches;
     setLight(v);
     document.documentElement.dataset.theme = v ? "light" : "dark";
   }, []);
@@ -24,7 +30,12 @@ export default function Nav({ game = false }: { game?: boolean }) {
           onClick={() => {
             setLight(!light);
             document.documentElement.dataset.theme = !light ? "light" : "dark";
-            localStorage.setItem("portfolio-theme", !light ? "light" : "dark");
+            try {
+              localStorage.setItem(
+                "portfolio-theme",
+                !light ? "light" : "dark",
+              );
+            } catch {}
           }}
         >
           <svg

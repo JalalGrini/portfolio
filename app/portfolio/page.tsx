@@ -2,13 +2,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import Nav from "@/components/Nav";
+import {
+  Reveal,
+  ReadingProgress,
+  ProjectSpotlight,
+  SkillsWorkbench,
+} from "@/components/PortfolioStory";
 import Modal from "@/components/Modal";
 import {
   Contact,
   Education,
   Experience,
   ProjectDetail,
-  SkillGrid,
   Tags,
 } from "@/components/PortfolioContent";
 import { profile, projects, Project } from "@/content/portfolio";
@@ -26,6 +31,7 @@ export default function Portfolio() {
   return (
     <>
       <Nav />
+      <ReadingProgress />
       <a className="skip-link" href="#work">
         Skip to projects
       </a>
@@ -37,11 +43,11 @@ export default function Portfolio() {
               ENGINEERING
             </span>
             <h1>
-              Ideas into
+              Engineering,
               <br />
-              <em>intelligent</em>
+              with a little
               <br />
-              systems.
+              <em>wonder.</em>
             </h1>
             <p>
               I’m Jalal. I build at the intersection of machine learning, data
@@ -60,19 +66,62 @@ export default function Portfolio() {
               <span>Expected graduation · 2027</span>
             </div>
           </div>
-          <figure className="portrait">
+          <div className="portfolio-window">
+            <div className="window-heading">
+              <span>AN ENGINEER’S FIELD NOTES</span>
+              <span>01 — 16</span>
+            </div>
+            <Link
+              href="/play/"
+              className="window-world"
+              aria-label="Explore my interactive career town"
+            >
+              <img
+                src="/assets/game/town-preview.png"
+                alt="A forest village built to explore Jalal’s engineering journey"
+              />
+              <div className="window-world-caption">
+                <span>There’s a world behind the work.</span>
+                <span className="round-arrow">↗</span>
+              </div>
+            </Link>
+            <div className="workbench-label">
+              <span className="live-dot" /> ON THE WORKBENCH
+            </div>
+            {projects.slice(0, 3).map((p, i) => (
+              <button
+                className="workbench-row"
+                key={p.id}
+                onClick={() => setSelected(p)}
+              >
+                <span className="workbench-number">0{i + 1}</span>
+                <span>
+                  <strong>{p.title}</strong>
+                  <small>
+                    {p.id === "sentinel"
+                      ? "Cloud-native MLOps & LLMOps"
+                      : p.id === "orion"
+                        ? "Knowledge graphs & multimodal AI"
+                        : "Data engineering & recommendations"}
+                  </small>
+                </span>
+                <span aria-hidden="true">↗</span>
+              </button>
+            ))}
+          </div>
+        </section>
+        <section className="about-strip">
+          <div className="about-identity">
             <img
               src="/assets/photos/jalal.jpg"
               alt="Jalal Grini at an ENSA Al Hoceima event"
             />
-            <figcaption>
-              <span>Jalal Grini</span>
+            <div>
+              <span className="eyebrow">01 / THE PERSON</span>
+              <h2>Jalal Grini.</h2>
               <span>{profile.location}</span>
-            </figcaption>
-          </figure>
-        </section>
-        <section className="about-strip">
-          <span className="eyebrow">01 / THE APPROACH</span>
+            </div>
+          </div>
           <p>{profile.bio}</p>
           <div className="approach-notes">
             <span>Model with purpose.</span>
@@ -94,6 +143,13 @@ export default function Portfolio() {
               From data pipelines to full-stack platforms. Design-stage research
               is labeled as such.
             </p>
+          </div>
+          <Reveal>
+            <ProjectSpotlight onProject={setSelected} />
+          </Reveal>
+          <div className="catalog-heading">
+            <span className="eyebrow">THE COMPLETE PROJECT INDEX</span>
+            <span>Search, filter, or follow a curiosity.</span>
           </div>
           <div className="project-toolbar">
             <div className="filter-group" aria-label="Filter projects">
@@ -123,7 +179,7 @@ export default function Portfolio() {
           <p className="results-count" aria-live="polite">
             {filtered.length} projects
           </p>
-          <div className="project-grid">
+          <div className="project-grid" key={filter + search}>
             {filtered.map((p, i) => (
               <button
                 className={`project-card ${p.featured ? "featured" : ""}`}
@@ -138,10 +194,16 @@ export default function Portfolio() {
                 </div>
                 {p.featured && (
                   <div className={`project-art art-${p.id}`} aria-hidden="true">
-                    <img
-                      src={`/assets/game/house-${p.category === "Research" ? "lab" : p.id === "finance" ? "office" : "academy"}.png`}
-                      alt=""
-                    />
+                    <span className="project-monogram">
+                      {p.title.split(" ")[0]}
+                    </span>
+                    <span className="project-discipline">
+                      {p.category === "Research"
+                        ? "RESEARCH NOTE"
+                        : p.category === "Software"
+                          ? "SOFTWARE STUDY"
+                          : "DATA EXPLORATION"}
+                    </span>
                   </div>
                 )}
                 <span className="status">{p.status}</span>
@@ -178,7 +240,9 @@ export default function Portfolio() {
               </h2>
             </div>
           </div>
-          <Experience onProject={setSelected} />
+          <Reveal>
+            <Experience onProject={setSelected} />
+          </Reveal>
         </section>
         <section className="section-block">
           <div className="section-heading">
@@ -191,7 +255,9 @@ export default function Portfolio() {
               </h2>
             </div>
           </div>
-          <SkillGrid />
+          <Reveal>
+            <SkillsWorkbench onProject={setSelected} />
+          </Reveal>
         </section>
         <section className="section-block">
           <div className="section-heading">
@@ -200,7 +266,9 @@ export default function Portfolio() {
               <h2>Education.</h2>
             </div>
           </div>
-          <Education />
+          <Reveal>
+            <Education />
+          </Reveal>
         </section>
         <section className="contact-section" id="contact">
           <span className="eyebrow">06 / WHAT’S NEXT?</span>

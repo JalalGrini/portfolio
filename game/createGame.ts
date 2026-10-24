@@ -69,6 +69,7 @@ export function createGame(
       points: Point[];
       index: number;
       offset: number;
+      idleUntil?: number;
     }[] = [];
     private keys!: Record<string, Phaser.Input.Keyboard.Key>;
     private dir = 2;
@@ -82,7 +83,9 @@ export function createGame(
     private off: (() => void)[] = [];
     private widthPx = 0;
     private heightPx = 0;
-    private marker?: Phaser.GameObjects.Text;
+    private marker?: Phaser.GameObjects.Ellipse;
+    private transitioning = false;
+    private lastStep = 0;
     private walkBlocked = 0;
     constructor(key: string, roomMode = false) {
       super(key);
@@ -98,6 +101,8 @@ export function createGame(
       this.sitting = false;
       this.touch = { x: 0, y: 0 };
       this.emoteUntil = 0;
+      this.transitioning = false;
+      this.lastStep = 0;
     }
     create() {
       this.widthPx = this.roomMode ? 704 : townData.width;
@@ -110,8 +115,26 @@ export function createGame(
         ? this.makeRoom()
         : townData.solids.map((s) => ({ ...s }));
       if (!this.roomMode) {
-        for (const o of townData.objects)
-          this.add.image(o.x, o.y, o.key).setOrigin(0).setDepth(o.depth);
+        for (const o of townData.objects) {
+          const image = this.add
+            .image(o.x, o.y, o.key)
+            .setOrigin(0)
+            .setDepth(o.depth);
+          if (!reduced && ["tree", "pine", "bush", "flowers"].includes(o.key)) {
+            image
+              .setOrigin(0.5, 1)
+              .setPosition(o.x + image.width / 2, o.y + image.height);
+            this.tweens.add({
+              targets: image,
+              angle: { from: -0.35, to: 0.35 },
+              duration: 2600 + (o.x % 1300),
+              delay: o.y % 1400,
+              yoyo: true,
+              repeat: -1,
+              ease: "Sine.easeInOut",
+            });
+          }
+        }
         this.buildLabels();
         this.makeNPCs();
       }
@@ -169,7 +192,10 @@ export function createGame(
           this.input.keyboard!.enabled = !v;
           Object.values(this.keys).forEach((key) => key.reset());
           this.touch = { x: 0, y: 0 };
-          if (v) this.path = [];
+          if (v) {
+            this.path = [];
+            this.tweens.pauseAll();
+          } else this.tweens.resumeAll();
         }),
         gameBus.on("reduced", (v) => {
           reduced = v;
@@ -195,7 +221,7 @@ export function createGame(
           if (a.type === "exit" && this.roomMode) this.exitRoom();
           if (a.type === "navigate" && a.id) {
             if (this.roomMode)
-              this.scene.start("Town", {
+              this.travel("Town", {
                 returnPosition: this.entry.returnPosition,
                 goto: a.id,
               });
@@ -367,6 +393,23 @@ export function createGame(
           delay: i * 150,
         });
       }
+      for (const o of townData.objects.filter((o) => o.key === "fountain")) {
+        for (let i = 0; i < 3; i++) {
+          const ripple = this.add
+            .ellipse(o.x + 48, o.y + 66, 12, 5)
+            .setStrokeStyle(1, 0xd8f3e4, 0.5)
+            .setDepth(o.depth + 1);
+          this.tweens.add({
+            targets: ripple,
+            scaleX: 3,
+            scaleY: 2.2,
+            alpha: 0,
+            duration: 1800,
+            delay: i * 600,
+            repeat: -1,
+          });
+        }
+      }
       // Time-aware grading, intentionally subtle so paths and text stay readable.
       const hour = new Date().getHours();
       if (hour >= 19 || hour < 7) {
@@ -489,15 +532,38 @@ export function createGame(
       this.path = path;
       this.walkBlocked = 0;
       this.marker?.destroy();
-      this.marker = this.add
-        .text(goal.x * 32 + 16, goal.y * 32 + 16, "+", {
-          fontFamily: "monospace",
-          fontSize: "24px",
-          color: "#fff2a9",
-        })
-        .setOrigin(0.5)
-        .setDepth(2800);
-      this.time.delayedCall(1500, () => this.marker?.destroy());
+      const marker = this.add
+        .ellipse(goal.x * 32 + 16, goal.y * 32 + 16, 18, 9, 0xf4e8b4, 0.12)
+        .setStrokeStyle(1.5, 0xf4e8b4, 0.9)
+        .setDepth(1);
+      this.marker = marker;
+      if (!reduced)
+        this.tweens.add({
+          targets: marker,
+          scaleX: 1.8,
+          scaleY: 1.8,
+          alpha: 0,
+          duration: 650,
+          repeat: 1,
+          onComplete: () => marker.destroy(),
+        });
+      else this.time.delayedCall(1200, () => marker.destroy());
+    }
+    private travel(scene: string, data: Entry) {
+      if (this.transitioning) return;
+      this.transitioning = true;
+      this.path = [];
+      this.touch = { x: 0, y: 0 };
+      gameBus.emit("near", null);
+      if (reduced) {
+        this.scene.start(scene, data);
+        return;
+      }
+      const camera = this.cameras.main;
+      camera.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () =>
+        this.scene.start(scene, data),
+      );
+      camera.fadeOut(220, 14, 24, 20);
     }
     private updateNear() {
       let n: typeof this.near = null;
@@ -532,12 +598,12 @@ export function createGame(
     }
     private interact() {
       this.updateNear();
-      if (!this.near) return;
+      if (!this.near || this.transitioning) return;
       const n = this.near;
       if (n.kind === "door") {
         const b = townData.buildings.find((b) => b.id === n.id)!;
-        this.scene.start("Interior", {
-          building: b.id,
+        this.travel("Interior", {
+          building: b.id as BuildingId,
           returnPosition: { x: b.doorX, y: b.doorY + 45 },
         });
       }
@@ -559,10 +625,10 @@ export function createGame(
     }
     private exitRoom() {
       gameBus.emit("near", null);
-      this.scene.start("Town", { returnPosition: this.entry.returnPosition });
+      this.travel("Town", { returnPosition: this.entry.returnPosition });
     }
     update(time: number, delta: number) {
-      if (!this.player || !this.keys) return;
+      if (!this.player || !this.keys || this.transitioning) return;
       const dt = Math.min(delta, 250) / 1000;
       if (!this.paused) {
         if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) this.interact();
@@ -634,8 +700,33 @@ export function createGame(
                 : "idle";
         this.player.play(`visitor-${kind}-${this.dir}`, true);
         this.player.setDepth(this.player.y);
+        if (
+          moving &&
+          !reduced &&
+          !this.roomMode &&
+          time - this.lastStep > 170
+        ) {
+          this.lastStep = time;
+          const dust = this.add
+            .ellipse(this.player.x, this.player.y - 2, 6, 3, 0xe2d5a6, 0.28)
+            .setDepth(this.player.y - 1);
+          this.tweens.add({
+            targets: dust,
+            x: dust.x - dx * 8,
+            y: dust.y - 4,
+            alpha: 0,
+            scaleX: 1.8,
+            scaleY: 1.5,
+            duration: 420,
+            onComplete: () => dust.destroy(),
+          });
+        }
         for (const v of this.villagers) {
           if (reduced) {
+            v.sprite.play(`npc${v.offset}-idle-2`, true);
+            continue;
+          }
+          if (time < (v.idleUntil || 0)) {
             v.sprite.play(`npc${v.offset}-idle-2`, true);
             continue;
           }
@@ -643,6 +734,7 @@ export function createGame(
             d = distance(v.sprite, p);
           if (d < 3) {
             v.index = (v.index + 1) % v.points.length;
+            v.idleUntil = time + 1000 + v.offset * 550;
             continue;
           }
           const vx = (p.x - v.sprite.x) / d,

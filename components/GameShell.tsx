@@ -35,6 +35,8 @@ export default function GameShell({
     text: string;
   } | null>(null);
   const [text, setText] = useState("");
+  const [discovery, setDiscovery] = useState<BuildingId | null>(null);
+  const known = useRef<Set<BuildingId>>(new Set());
   const [map, setMap] = useState(false);
   const [help, setHelp] = useState(false);
   const [settings, setSettings] = useState(false);
@@ -53,8 +55,11 @@ export default function GameShell({
       const saved = JSON.parse(
         localStorage.getItem("career-town-discoveries") || "[]",
       );
-      if (Array.isArray(saved))
-        setVisited(saved.filter((v) => buildings.some((b) => b.id === v)));
+      if (Array.isArray(saved)) {
+        const valid = saved.filter((v) => buildings.some((b) => b.id === v));
+        setVisited(valid);
+        known.current = new Set(valid);
+      }
     } catch {}
     const r = matchMedia("(prefers-reduced-motion: reduce)").matches;
     setReduced(r);
@@ -81,6 +86,10 @@ export default function GameShell({
             ? `Discovered ${p.name}. Find the field notes inside.`
             : "Founders’ Square · Every path leads somewhere.",
         );
+        if (p.room && !known.current.has(p.room)) {
+          known.current.add(p.room);
+          setDiscovery(p.room);
+        }
         if (p.room)
           setVisited((v) => {
             const next = v.includes(p.room!) ? v : [...v, p.room!];
@@ -162,6 +171,11 @@ export default function GameShell({
     const t = setTimeout(() => setNotice(""), 6500);
     return () => clearTimeout(t);
   }, [notice]);
+  useEffect(() => {
+    if (!discovery) return;
+    const timer = setTimeout(() => setDiscovery(null), 3600);
+    return () => clearTimeout(timer);
+  }, [discovery]);
   const act = (type: "interact" | "wave" | "sit" | "exit") =>
     gameBus.emit("action", { type });
   return (
@@ -171,6 +185,15 @@ export default function GameShell({
       data-y={pos.y.toFixed(2)}
     >
       <div ref={host} className="game-canvas" />
+      {discovery && !busy && (
+        <div className="discovery-toast" role="status">
+          <img src={`/assets/game/house-${discovery}.png`} alt="" />
+          <div>
+            <small>A new page in your journal</small>
+            <strong>{buildings.find((b) => b.id === discovery)?.name}</strong>
+          </div>
+        </div>
+      )}
       {loading && (
         <div className="game-loading" role="status">
           <img src="/assets/game/house-lab.png" alt="" />
@@ -205,6 +228,14 @@ export default function GameShell({
               <span className="discovery-count">
                 {visited.length} / 7 places discovered
               </span>
+              <div className="discovery-meter" aria-hidden="true">
+                {buildings.map((b) => (
+                  <span
+                    key={b.id}
+                    className={visited.includes(b.id) ? "found" : ""}
+                  />
+                ))}
+              </div>
             </div>
             <div className="hud-actions">
               <button
@@ -230,7 +261,7 @@ export default function GameShell({
               </button>
             </div>
           </div>
-          {notice && (
+          {notice && !discovery && (
             <p className="game-notice" role="status">
               {notice}
             </p>
@@ -266,6 +297,7 @@ export default function GameShell({
             {near && (
               <button
                 className="interact-button"
+                key={near.label}
                 onClick={() => act("interact")}
               >
                 <kbd>E</kbd> {near.label} <span>→</span>
