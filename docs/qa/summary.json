@@ -1,0 +1,20 @@
+{
+  "verified_at_utc": "2026-10-24T18:11:02.605192+00:00",
+  "main_checks_passed": 14,
+  "supplemental_checks_passed": 5,
+  "uncaught_errors_main": 0,
+  "unexpected_http_errors_main": 0,
+  "desktop_viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "mobile_viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "production_build": "passed",
+  "typescript": "passed",
+  "asset_integrity": "passed",
+  "deterministic_world_rebuild": "identical hashes",
+  "limits": "Chromium responsive tests; physical-device and full assistive-technology audits not performed."
+}

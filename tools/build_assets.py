@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageEnhance
 import json, random
 ROOT=Path(__file__).resolve().parents[1]; SRC=ROOT/'tools/source'; OUT=ROOT/'public/assets/game'; OUT.mkdir(parents=True,exist_ok=True)
 R=random.Random(37); T=32; W,H=56,44
-A={n:Image.open(SRC/(n+'.png')).convert('RGBA') for n in ['base','terrain','city','houses','colonial','furniture','interior']}
+A={n:Image.open(SRC/(n+'.png')).convert('RGBA') for n in ['base','terrain','city','houses','colonial','furniture','interior','laptop','mailboxes']}
 def crop(n,x,y,w,h): return A[n].crop((x,y,x+w,y+h))
 def tile(n,x,y,w=1,h=1):return crop(n,x*T,y*T,w*T,h*T)
 def grade(im):
@@ -48,6 +48,7 @@ for key,(x,y,w,h,tint) in house_specs.items():
   im.alpha_composite(window,(24,h-64)); im.alpha_composite(window,(w-56,h-64))
  texture('house-'+key,im)
 # Floor and wall/furniture crops are original LPC pixel art, not primitive stand-ins.
+texture('laptop',tile('laptop',1,0));texture('mailboxes',tile('mailboxes',1,1,1,2))
 texture('bookshelf',tile('furniture',9,1,2,2));texture('desk',tile('furniture',8,7,3,1));texture('chair',tile('interior',7,3,1,2));texture('bed',tile('interior',0,5,2,3));texture('rug',tile('interior',6,1,1,1));texture('cabinet',tile('furniture',0,1,2,2));texture('piano',tile('furniture',6,3,4,3))
 # World ground: grass under a quadrant-autotiled cobble network.
 ground=Image.new('RGBA',(W*T,H*T),(61,91,48,255)); mask=set()
@@ -82,7 +83,12 @@ for yy in range(H):
  for xx in range(W):
   if (xx,yy) not in mask:
    # LPC grass sprig variants over an understated grass base.
-   if R.random()<.33:ground.alpha_composite(tile('terrain',21+R.randrange(3),5),(xx*T,yy*T))
+   if R.random()<.33:
+    sprig=tile('terrain',21+R.randrange(3),5);px=sprig.load();ramp={(47,129,54):(61,91,48),(100,164,44):(85,120,54),(73,146,49):(72,106,50)}
+    for sy in range(32):
+     for sx in range(32):
+      r,g,b,a=px[sx,sy];px[sx,sy]=ramp.get((r,g,b),(r,g,b))+(a,)
+    ground.alpha_composite(sprig,(xx*T,yy*T))
    continue
   for qy in range(2):
    for qx in range(2):
@@ -131,7 +137,7 @@ preview.save(OUT/'town-preview.png');preview.crop((16*32,14*32,42*32,37*32)).sav
 room=Image.new('RGBA',(22*32,16*32),(36,37,31,255))
 for y in range(16):
  for x in range(22):
-  im=tile('furniture',0,3) if y>2 else tile('interior',8 if x%2==0 else 9,9)
+  im=tile('furniture',0,3) if y>2 else tile('interior',2,8+y)
   room.alpha_composite(im,(x*32,y*32))
 room=grade(room);room.save(OUT/'room-ground.png')
 print('Built world:',len(objects),'objects,',len(solids),'solid footprints,',len(textures),'textures')

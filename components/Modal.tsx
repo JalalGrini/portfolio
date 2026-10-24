@@ -1,3 +1,54 @@
-'use client';
-import {useEffect,useRef,useId} from 'react';
-export default function Modal({title,children,onClose,className=''}:{title:string;children:React.ReactNode;onClose:()=>void;className?:string}){const ref=useRef<HTMLDialogElement>(null);const id=useId();useEffect(()=>{const d=ref.current!;d.showModal();const previous=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{d.close();document.body.style.overflow=previous}},[]);return <dialog ref={ref} className={`modal ${className}`} aria-labelledby={id} onCancel={e=>{e.preventDefault();onClose()}} onClick={e=>{if(e.target===ref.current)onClose()}}><div className="modal-top"><span className="eyebrow" id={id}>{title}</span><button className="icon-button" aria-label="Close dialog" onClick={onClose}>✕</button></div>{children}</dialog>}
+"use client";
+import { useEffect, useRef, useId } from "react";
+export default function Modal({
+  title,
+  children,
+  onClose,
+  className = "",
+}: {
+  title: string;
+  children: React.ReactNode;
+  onClose: () => void;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  const id = useId();
+  useEffect(() => {
+    const d = ref.current!;
+    d.showModal();
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      d.close();
+      document.body.style.overflow = previous;
+    };
+  }, []);
+  return (
+    <dialog
+      ref={ref}
+      className={`modal ${className}`}
+      aria-labelledby={id}
+      onCancel={(e) => {
+        e.preventDefault();
+        onClose();
+      }}
+      onClick={(e) => {
+        if (e.target === ref.current) onClose();
+      }}
+    >
+      <div className="modal-top">
+        <span className="eyebrow" id={id}>
+          {title}
+        </span>
+        <button
+          className="icon-button"
+          aria-label="Close dialog"
+          onClick={onClose}
+        >
+          ×
+        </button>
+      </div>
+      {children}
+    </dialog>
+  );
+}

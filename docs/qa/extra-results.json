@@ -1,0 +1,24 @@
+{
+  "checks": [
+    {
+      "label": "Light theme toggles and persists",
+      "passed": true
+    },
+    {
+      "label": "Character tabs support arrow-key navigation",
+      "passed": true
+    },
+    {
+      "label": "Help and settings open and close with Escape",
+      "passed": true
+    },
+    {
+      "label": "All seven field-note panels are accessible from the map",
+      "passed": true
+    },
+    {
+      "label": "Failed game asset provides a classic-portfolio fallback",
+      "passed": true
+    }
+  ]
+}

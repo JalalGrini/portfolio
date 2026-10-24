@@ -1,0 +1,62 @@
+{
+  "checks": [
+    {
+      "label": "Desktop landing renders without horizontal overflow",
+      "passed": true
+    },
+    {
+      "label": "Desktop portfolio renders without horizontal overflow",
+      "passed": true
+    },
+    {
+      "label": "Desktop credits renders without horizontal overflow",
+      "passed": true
+    },
+    {
+      "label": "Desktop creator renders without horizontal overflow",
+      "passed": true
+    },
+    {
+      "label": "Creator customization supports female outfits, glasses and persistence",
+      "passed": true
+    },
+    {
+      "label": "Town loads a real WebGL/canvas scene",
+      "passed": true
+    },
+    {
+      "label": "Keyboard movement and NPC dialogue work",
+      "passed": true
+    },
+    {
+      "label": "Map pathfinding reaches a door; room entry and field notes work",
+      "passed": true
+    },
+    {
+      "label": "All 16 projects, search, filters and project detail are available",
+      "passed": true
+    },
+    {
+      "label": "Mobile landing renders without horizontal overflow",
+      "passed": true
+    },
+    {
+      "label": "Mobile portfolio renders without horizontal overflow",
+      "passed": true
+    },
+    {
+      "label": "Mobile credits renders without horizontal overflow",
+      "passed": true
+    },
+    {
+      "label": "Mobile creator renders without horizontal overflow",
+      "passed": true
+    },
+    {
+      "label": "Mobile town and touch movement work",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "httpErrors": []
+}

@@ -1,5 +1,9 @@
 # Jalal Grini — Portfolio / Career Town
 
+[CI setup template](docs/ci/README.md)
+
+**[Live portfolio & career town](https://portfolio-pinats.vercel.app)** · [Build status](docs/STATUS.md) · [QA screenshots](docs/screenshots/README.md)
+
 A professional AI & software engineering portfolio with an optional, silent, explorable pixel-art town. Built with **Next.js, TypeScript, React and Phaser**. The classic portfolio is always available; no game interaction is required to access any professional information.
 
 ## Development
@@ -31,3 +35,9 @@ Read [STATUS](docs/STATUS.md) for the current checkpoint, [DEVLOG](docs/DEVLOG.m
 ## Rights
 
 Original application code: MIT (see `LICENSE`). Third-party artwork is **not MIT**. See [ASSETS_AND_LICENSES](docs/ASSETS_AND_LICENSES.md) and `public/licenses/`. Photographs, CV and personal portfolio content remain Jalal Grini's; not offered as reusable stock assets. No Stardew Valley assets, code or branding are included.
+
+## Quality gates
+
+`npm run check:assets`, `npm run typecheck`, and `npm run build` validate the source bundle. `npm run test:e2e` checks the production export in Chromium after a local static server is started. See [TESTING](docs/TESTING.md) for reproduction, screenshot coverage and explicit limits. A GitHub Actions template is prepared in `docs/ci/`; it is not activated because the supplied push credential cannot manage workflow files.
+
+Rebuild the town artwork with `pip install -r tools/requirements.txt && python tools/build_assets.py`. Curated character source PNGs and the source-credit alias map are committed alongside the terrain sources; no network access is required to regenerate the town images.
