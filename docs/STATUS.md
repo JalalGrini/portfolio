@@ -1,8 +1,8 @@
 # Build status
 
-## Current checkpoint — implementation in progress
+## Current checkpoint — first playable, QA in progress
 
-The repository started empty. The research and asset-selection stage is complete. This checkpoint records the scope and source material before implementation proceeds.
+The first complete implementation is present. All four routes statically build. The baseline was pushed without rewriting the remote history. Runtime and visual QA are now in progress.
 
 ### Decisions locked
 - Next.js static export + client-only Phaser 3, TypeScript throughout.
@@ -22,3 +22,13 @@ The repository started empty. The research and asset-selection stage is complete
 6. Push tested checkpoint and verify hosting separately.
 
 Do not interpret a code checkpoint as a claim of production readiness. Final test and deployment outcomes will be recorded here.
+
+## Implemented in checkpoint 02
+
+- Shared typed content with all 16 substantive projects.
+- Classic portfolio, search/filter/detail views, contact, CV and credits.
+- Layered character customization and local persistence.
+- Town, interiors, collisions, pathfinding, dialogue, discovery, map and touch controls.
+- Deterministic asset pipeline and retained upstream credits.
+
+**Verified so far:** TypeScript and static production build. Browser behavior, visual QA and hosting are not yet certified.
