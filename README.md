@@ -2,7 +2,7 @@
 
 [CI setup template](docs/ci/README.md)
 
-**[Live portfolio & career town](https://portfolio-pinats.vercel.app)** · [Build status](docs/STATUS.md) · [QA screenshots](docs/screenshots/README.md)
+**[Live portfolio & career town](https://portfolio-chi-nine-fwh6p2oz7b.vercel.app)** · [Build status](docs/STATUS.md) · [QA screenshots](docs/screenshots/README.md)
 
 A professional AI & software engineering portfolio with an optional, silent, explorable pixel-art town. Built with **Next.js, TypeScript, React and Phaser**. The classic portfolio is always available; no game interaction is required to access any professional information.
 

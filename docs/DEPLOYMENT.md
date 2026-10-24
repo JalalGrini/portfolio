@@ -20,3 +20,7 @@ GitHub/Vercel credentials are not committed or bundled. Keep credentials in a pr
 ## Rollback
 
 Use Vercel's existing deployment history to promote a previously verified deployment, or revert the relevant Git commit and let the normal build run. Avoid rewriting `main` history. The local quality gates check source integrity, TypeScript, production export and browser interactions. An equivalent GitHub Actions template is saved in `docs/ci/`, but it is not activated: the provided push credential lacks workflow-management permission.
+
+## Public production URL
+
+Use https://portfolio-chi-nine-fwh6p2oz7b.vercel.app. The owner-scoped and branch aliases require Vercel sign-in under the existing protection configuration. The assigned public production domain serves the expected HTML, town JSON and PDF without authentication. No deployment protection settings were loosened. The response verification is recorded in `docs/qa/deployment.json`.

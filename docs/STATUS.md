@@ -4,7 +4,7 @@
 
 The complete portfolio and first playable career town are implemented and locally validated. This is a usable v1, not a claim of exhaustive device testing or final art-direction approval.
 
-- Production URL: https://portfolio-pinats.vercel.app
+- Production URL: https://portfolio-chi-nine-fwh6p2oz7b.vercel.app
 - Repository: https://github.com/JalalGrini/portfolio
 - Branch: `main`; existing remote history preserved, no force-push.
 - CI: [setup template prepared](ci/README.md); not active because the push credential lacks workflow-management permission.

@@ -36,3 +36,7 @@
 ### GitHub push permission boundary
 
 The first attempt to push checkpoint 03 was rejected because the token cannot create workflow files. The unpublished checkpoint was revised to save the workflow under `docs/ci/` as a non-executing template. No remote history was rewritten, no force-push was used, and no broader credential was requested. Application deployment remains independent of this optional CI activation.
+
+### Public production verification
+
+Vercel marked application checkpoint `a113318` READY. Response-content checks caught that the owner/branch aliases redirect to Vercel sign-in; a superficial final HTTP 200 was the login page, not the portfolio. The assigned production domain was then independently verified to serve the actual four routes, seven-building town JSON and PDF. Documentation now points to that public domain; protection settings were preserved. See `docs/qa/deployment.json`.

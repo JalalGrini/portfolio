@@ -1,0 +1,44 @@
+{
+  "verified_at_utc": "2026-10-24T18:15:11.230825+00:00",
+  "application_checkpoint": "a1133182186ec7df287e743cabe3931fd726e37e",
+  "production_url": "https://portfolio-chi-nine-fwh6p2oz7b.vercel.app",
+  "protection_settings_changed": false,
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "expected_content_verified": true
+    },
+    {
+      "path": "/portfolio/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "expected_content_verified": true
+    },
+    {
+      "path": "/play/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "expected_content_verified": true
+    },
+    {
+      "path": "/credits/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "expected_content_verified": true
+    },
+    {
+      "path": "/assets/game/town.json",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "expected_content_verified": true
+    },
+    {
+      "path": "/files/Jalal-Grini-CV.pdf",
+      "status": 200,
+      "content_type": "application/pdf",
+      "expected_content_verified": true
+    }
+  ]
+}
