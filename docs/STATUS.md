@@ -1,13 +1,13 @@
-# Build status — playable v1
+# Build status — cinematic portfolio / seven-house town
 
 ## Current checkpoint
 
-The complete portfolio and first playable career town are implemented and locally validated. This is a usable v1, not a claim of exhaustive device testing or final art-direction approval.
+The normal portfolio uses an independent cinematic design. Career Town uses a separate parchment/pixel-art interface, with seven unique LPC-derived room surfaces and furniture layouts. Testing scope and remaining device-review limits are listed below.
 
 - Production URL: https://portfolio-chi-nine-fwh6p2oz7b.vercel.app
 - Repository: https://github.com/JalalGrini/portfolio
 - Branch: `main`; existing remote history preserved, no force-push.
-- CI: [setup template prepared](ci/README.md); not active because the push credential lacks workflow-management permission.
+- CI: [setup template prepared](ci/README.md); not activated by this design pass.
 - Main-branch pushes automatically deploy through the existing Vercel project. Readiness is checked independently of Git push success.
 
 ## Implemented
@@ -25,6 +25,10 @@ The complete portfolio and first playable career town are implemented and locall
 - [x] TypeScript, static production export, asset integrity and production-browser checks.
 - [x] Local quality gates and committed test reports/screenshots.
 - [ ] Activate the prepared GitHub Actions template with authorized workflow access.
+
+## Interior follow-up
+
+Room-specific walls/floors, distinct furniture compositions, highlighted reading stations, whole-room desktop framing, sticky popup close controls and themed field-guide paging are implemented. Pathfinding validates swept grid edges to avoid small-prop obstructions. See [DESIGN_PASS](DESIGN_PASS.md) for all seven room themes and [ASSETS_AND_LICENSES](ASSETS_AND_LICENSES.md) for provenance.
 
 ## Validation evidence
 

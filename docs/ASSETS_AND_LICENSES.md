@@ -17,3 +17,14 @@ Generated map images and recolored character compositions are adaptations of the
 Pixelify Sans is locally hosted under SIL OFL 1.1; see `public/licenses/pixelify-sans.txt`. The public CV is a portfolio copy with the personal phone contact removed. Colorized glasses PNGs map to the corresponding uncolored animation source entries in the retained LPC credit CSV; all source variants for the four included glasses styles are retained there.
 
 `public/licenses/lpc-asset-map.csv` maps every bundled character PNG—including all generated glasses colors—to its exact upstream credit entry in `lpc-characters.csv`.
+
+## Independent cinematic portfolio
+
+- `assets-src/studio/*.webp.b64`: original AI-generated conceptual imagery created for this portfolio. The image source files are text-encoded for the available repository writer; `tools/prepare-studio-assets.cjs` decodes the exact WebP bytes before development and production builds. No external image service is used at runtime. They are decorative visual studies, not screenshots of deployed products or real project infrastructure.
+- `public/assets/brands/*.svg`: selected technology logos from https://github.com/simple-icons/simple-icons, under CC0 1.0. The complete license is retained in `public/licenses/simple-icons.md`. Logos are local, static SVG paths; brand trademarks remain their respective owners’ marks.
+- The hero’s lightweight image-displacement shader is independently implemented in `components/FlowArtwork.tsx`. It retains static-art fallbacks for reduced motion, data saving, and unavailable/lost WebGL contexts.
+- Motion (https://github.com/motiondivision/motion) and Phaser (https://github.com/phaserjs/phaser) are existing application dependencies. This pass does not import code, art, text, or the shader from Yassir Hamri’s portfolio.
+
+## Seven-house interior pass
+
+`assets-src/rooms/*.png.b64` contains reproducible PNG adaptations of the retained LPC `interior.png` and `furniture.png` atlases. `tools/build_room_assets.py` records all crop coordinates, palette transformations, floor tiling and rug scaling. These are licensed source-art adaptations, **not original AI imagery**. The same complete contributor credits and CC-BY-SA terms in `public/licenses/interior.txt` and `public/licenses/furniture.txt` apply. `tools/prepare-studio-assets.cjs` decodes them offline before dev/build. Interior-specific texture names prevent these palette/crop changes from replacing outdoor props.

@@ -10,3 +10,8 @@ next-env.d.ts
 *.log
 playwright-report/
 test-results/
+
+# Original artwork is decoded from versioned text sources before dev/build.
+/public/assets/studio/*.webp
+
+/public/assets/rooms/*.png

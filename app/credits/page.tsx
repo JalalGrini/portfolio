@@ -1,9 +1,16 @@
-import Nav from "@/components/Nav";
 import Link from "next/link";
 export default function Credits() {
   return (
-    <>
-      <Nav />
+    <div className="studio-root">
+      <header className="studio-nav">
+        <Link href="/" className="studio-brand">
+          JG
+        </Link>
+        <nav aria-label="Main navigation">
+          <Link href="/portfolio/">PORTFOLIO</Link>
+          <Link href="/play/">CAREER TOWN</Link>
+        </nav>
+      </header>
       <main className="credits-page">
         <span className="eyebrow">MADE POSSIBLE BY OPEN ART</span>
         <h1>
@@ -87,6 +94,30 @@ export default function Credits() {
             </a>
           </article>
           <article>
+            <h2>The cinematic portfolio</h2>
+            <p>
+              Original AI-generated conceptual artwork is used for the
+              atmospheric hero and project visual studies. These are not product
+              screenshots or photographs of deployed project infrastructure. No
+              imagery, source code, or shader from the inspiration portfolio is
+              included.
+            </p>
+            <p>
+              Technology logos are local SVG assets from Simple Icons,
+              distributed under CC0. Brand names and marks remain their
+              respective owners’ trademarks.
+            </p>
+            <a
+              href="https://github.com/simple-icons/simple-icons"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Simple Icons source ↗
+            </a>
+            {" · "}
+            <a href="/licenses/simple-icons.md">CC0 license ↗</a>
+          </article>
+          <article>
             <h2>Type, code & personal content</h2>
             <p>
               Pixelify Sans by Stefie Justprince, under the SIL Open Font
@@ -111,6 +142,6 @@ export default function Credits() {
           </Link>
         </div>
       </main>
-    </>
+    </div>
   );
 }

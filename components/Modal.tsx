@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useId } from "react";
+import { useEffect, useRef, useId, useState } from "react";
 export default function Modal({
   title,
   children,
@@ -7,12 +7,29 @@ export default function Modal({
   className = "",
 }: {
   title: string;
-  children: React.ReactNode;
+  children: React.ReactNode | ((close: () => void) => React.ReactNode);
   onClose: () => void;
   className?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const id = useId();
+  const [closing, setClosing] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const close = () => {
+    if (closing) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      onClose();
+      return;
+    }
+    setClosing(true);
+    timer.current = setTimeout(onClose, 170);
+  };
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
   useEffect(() => {
     const d = ref.current!;
     d.showModal();
@@ -26,14 +43,14 @@ export default function Modal({
   return (
     <dialog
       ref={ref}
-      className={`modal ${className}`}
+      className={`modal ${className} ${closing ? "is-closing" : ""}`}
       aria-labelledby={id}
       onCancel={(e) => {
         e.preventDefault();
-        onClose();
+        close();
       }}
       onClick={(e) => {
-        if (e.target === ref.current) onClose();
+        if (e.target === ref.current) close();
       }}
     >
       <div className="modal-top">
@@ -43,12 +60,14 @@ export default function Modal({
         <button
           className="icon-button"
           aria-label="Close dialog"
-          onClick={onClose}
+          onClick={close}
         >
           ×
         </button>
       </div>
-      {children}
+      <div className="modal-content">
+        {typeof children === "function" ? children(close) : children}
+      </div>
     </dialog>
   );
 }

@@ -40,3 +40,13 @@ The first attempt to push checkpoint 03 was rejected because the token cannot cr
 ### Public production verification
 
 Vercel marked application checkpoint `a113318` READY. Response-content checks caught that the owner/branch aliases redirect to Vercel sign-in; a superficial final HTTP 200 was the login page, not the portfolio. The assigned production domain was then independently verified to serve the actual four routes, seven-building town JSON and PDF. Documentation now points to that public domain; protection settings were preserved. See `docs/qa/deployment.json`.
+
+
+## Cinematic portfolio and seven-house follow-up
+
+- Replaced the conservative normal-portfolio presentation with an independent cinematic black/cream design: original mineral imagery, image-displacement hero, image-led project carousel, technology domains, career timeline and responsive navigation.
+- Deployed commit `09dbfe6ce1b4f106880a3bc2bdf8789528312221` to production via Vercel; verified READY, production aliases and public HTTP 200 responses for the portfolio, town route and hero artwork.
+- Added seven LPC-derived room surfaces and unique furniture layouts, desktop whole-room camera framing and small-screen camera following.
+- Refined native reading dialogs with sticky close controls, house stamps, room-specific accents, previous/next field-guide pages and smoother discovery notices.
+- Fixed a walking-planner defect: free cell centers could hide a small obstruction between them. Neighbor edges now validate the swept walking segment; off-center starts are normalized before following waypoints.
+- Added reproducible room-asset extraction, offline text-backed PNG preparation, furniture/spawn/route audits and a real seven-house browser walking tour. No copied Stardew art, audio or credentials were added.

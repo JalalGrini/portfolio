@@ -4,7 +4,7 @@
 
 **[Live portfolio & career town](https://portfolio-chi-nine-fwh6p2oz7b.vercel.app)** · [Build status](docs/STATUS.md) · [QA screenshots](docs/screenshots/README.md)
 
-A professional AI & software engineering portfolio with an optional, silent, explorable pixel-art town. Built with **Next.js, TypeScript, React and Phaser**. The classic portfolio is always available; no game interaction is required to access any professional information.
+A professional AI & software engineering portfolio with an optional, silent, explorable pixel-art town. Built with **Next.js, TypeScript, React and Phaser**. The default cinematic portfolio (`/` and `/portfolio/`) and the warm pixel-art Career Town (`/play/`) have independent visual systems. No game interaction is required to access professional information.
 
 ## Development
 
@@ -14,6 +14,7 @@ npm run dev
 # in another terminal
 npm run typecheck
 npm run build
+npm run check:rooms
 ```
 
 The site is statically exported to `out/`. No backend or secret environment variables are needed. Assets are served locally, not from a third-party game CDN.
@@ -30,6 +31,8 @@ The site is statically exported to `out/`. No backend or secret environment vari
 
 ## Track the work
 
+The [two-worlds design pass](docs/DESIGN_PASS.md) documents the cinematic portfolio rebuild, independent game design, visual wardrobe, location transitions, asset provenance, and reproducible browser tests. The seven-house follow-up adds distinct interiors and `npm run test:rooms` for a complete door-to-reading-station tour.
+
 Read [STATUS](docs/STATUS.md) for the current checkpoint, [DEVLOG](docs/DEVLOG.md) for changes, and [ARCHITECTURE](docs/ARCHITECTURE.md) for implementation choices. Commit-sized checkpoints distinguish planned work from verified functionality.
 
 ## Rights
@@ -38,6 +41,6 @@ Original application code: MIT (see `LICENSE`). Third-party artwork is **not MIT
 
 ## Quality gates
 
-`npm run check:assets`, `npm run typecheck`, and `npm run build` validate the source bundle. `npm run test:e2e` checks the production export in Chromium after a local static server is started. See [TESTING](docs/TESTING.md) for reproduction, screenshot coverage and explicit limits. A GitHub Actions template is prepared in `docs/ci/`; it is not activated because the supplied push credential cannot manage workflow files.
+`npm run check:assets`, `npm run typecheck`, and `npm run build` validate the source bundle. `npm run test:e2e` checks the production export in Chromium after a local static server is started. See [TESTING](docs/TESTING.md) for reproduction, screenshot coverage and explicit limits. A GitHub Actions template is prepared in `docs/ci/`; it is not activated by this design pass.
 
 Rebuild the town artwork with `pip install -r tools/requirements.txt && python tools/build_assets.py`. Curated character source PNGs and the source-credit alias map are committed alongside the terrain sources; no network access is required to regenerate the town images.

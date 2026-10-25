@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
 import {
   Character,
   composeCharacter,
@@ -8,6 +9,7 @@ import {
   defaultCharacter,
 } from "@/game/character";
 import { gameBus } from "@/game/bus";
+import { rooms } from "@/game/rooms";
 import { buildings, BuildingId, Project } from "@/content/portfolio";
 import Modal from "./Modal";
 import AvatarPreview from "./AvatarPreview";
@@ -21,6 +23,10 @@ export default function GameShell({
 }) {
   const host = useRef<HTMLDivElement>(null);
   const typingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [travel, setTravel] = useState<{
+    label: string;
+    building?: BuildingId;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [near, setNear] = useState<{ label: string; kind: string } | null>(
@@ -35,6 +41,8 @@ export default function GameShell({
     text: string;
   } | null>(null);
   const [text, setText] = useState("");
+  const [discovery, setDiscovery] = useState<BuildingId | null>(null);
+  const known = useRef<Set<BuildingId>>(new Set());
   const [map, setMap] = useState(false);
   const [help, setHelp] = useState(false);
   const [settings, setSettings] = useState(false);
@@ -53,8 +61,11 @@ export default function GameShell({
       const saved = JSON.parse(
         localStorage.getItem("career-town-discoveries") || "[]",
       );
-      if (Array.isArray(saved))
-        setVisited(saved.filter((v) => buildings.some((b) => b.id === v)));
+      if (Array.isArray(saved)) {
+        const valid = saved.filter((v) => buildings.some((b) => b.id === v));
+        setVisited(valid);
+        known.current = new Set(valid);
+      }
     } catch {}
     const r = matchMedia("(prefers-reduced-motion: reduce)").matches;
     setReduced(r);
@@ -62,6 +73,7 @@ export default function GameShell({
     let game: { destroy: (removeCanvas: boolean) => void } | undefined;
     const off = [
       gameBus.on("ready", () => setLoading(false)),
+      gameBus.on("transition", setTravel),
       gameBus.on("error", (v) => {
         setError(v);
         setLoading(false);
@@ -81,6 +93,10 @@ export default function GameShell({
             ? `Discovered ${p.name}. Find the field notes inside.`
             : "Founders’ Square · Every path leads somewhere.",
         );
+        if (p.room && !known.current.has(p.room)) {
+          known.current.add(p.room);
+          setDiscovery(p.room);
+        }
         if (p.room)
           setVisited((v) => {
             const next = v.includes(p.room!) ? v : [...v, p.room!];
@@ -162,15 +178,70 @@ export default function GameShell({
     const t = setTimeout(() => setNotice(""), 6500);
     return () => clearTimeout(t);
   }, [notice]);
+  useEffect(() => {
+    if (!discovery) return;
+    const timer = setTimeout(() => setDiscovery(null), 3600);
+    return () => clearTimeout(timer);
+  }, [discovery]);
+  useEffect(() => {
+    const d = document.querySelector<HTMLDialogElement>(".town-notes-modal");
+    if (d) d.scrollTop = 0;
+  }, [panel, project]);
   const act = (type: "interact" | "wave" | "sit" | "exit") =>
     gameBus.emit("action", { type });
   return (
     <main
-      className="game-shell"
+      className={`game-shell ${loading ? "is-loading" : "is-ready"}`}
+      data-room={room || "town"}
       data-x={pos.x.toFixed(2)}
       data-y={pos.y.toFixed(2)}
     >
       <div ref={host} className="game-canvas" />
+      <AnimatePresence>
+        {travel && (
+          <motion.div
+            className="town-travel"
+            key="travel"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            role="status"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <img
+                src={`/assets/game/${travel.building ? `house-${travel.building}` : "fountain"}.png`}
+                alt=""
+              />
+              <span>NEXT STOP</span>
+              <h2>{travel.label}</h2>
+              <i />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {discovery && !busy && !travel && (
+          <motion.div
+            className="discovery-toast"
+            role="status"
+            key={discovery}
+            initial={{ opacity: 0, y: reduced ? 0 : -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: reduced ? 0 : -8 }}
+            transition={{ duration: reduced ? 0 : 0.28 }}
+          >
+            <img src={`/assets/game/house-${discovery}.png`} alt="" />
+            <div>
+              <small>A new page in your journal</small>
+              <strong>{buildings.find((b) => b.id === discovery)?.name}</strong>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {loading && (
         <div className="game-loading" role="status">
           <img src="/assets/game/house-lab.png" alt="" />
@@ -198,6 +269,11 @@ export default function GameShell({
         <>
           <div className="game-hud-top">
             <div className="location-card">
+              <img
+                className="location-icon"
+                src={`/assets/game/${room ? `house-${room}` : "fountain"}.png`}
+                alt=""
+              />
               <span className="eyebrow">
                 {room ? "INSIDE THE TOWN" : "JALAL GRINI’S CAREER TOWN"}
               </span>
@@ -205,6 +281,14 @@ export default function GameShell({
               <span className="discovery-count">
                 {visited.length} / 7 places discovered
               </span>
+              <div className="discovery-meter" aria-hidden="true">
+                {buildings.map((b) => (
+                  <span
+                    key={b.id}
+                    className={visited.includes(b.id) ? "found" : ""}
+                  />
+                ))}
+              </div>
             </div>
             <div className="hud-actions">
               <button
@@ -230,7 +314,7 @@ export default function GameShell({
               </button>
             </div>
           </div>
-          {notice && (
+          {notice && !discovery && (
             <p className="game-notice" role="status">
               {notice}
             </p>
@@ -266,6 +350,7 @@ export default function GameShell({
             {near && (
               <button
                 className="interact-button"
+                key={near.label}
                 onClick={() => act("interact")}
               >
                 <kbd>E</kbd> {near.label} <span>→</span>
@@ -322,21 +407,74 @@ export default function GameShell({
       {panel && (
         <Modal
           title="CAREER TOWN / FIELD NOTES"
+          className={`town-notes-modal room-notes-${panel}`}
           onClose={() => {
             setPanel(null);
             setProject(null);
           }}
         >
-          {project ? (
-            <>
-              <button className="text-button" onClick={() => setProject(null)}>
-                ← Back to {buildings.find((b) => b.id === panel)!.topic}
-              </button>
-              <ProjectDetail project={project} />
-            </>
-          ) : (
-            <BuildingContent id={panel} onProject={setProject} />
-          )}
+          <motion.div
+            className="town-note-page"
+            key={project?.id || panel}
+            initial={{ opacity: reduced ? 1 : 0, y: reduced ? 0 : 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: reduced ? 0 : 0.3 }}
+          >
+            {project ? (
+              <>
+                <button
+                  className="text-button"
+                  onClick={() => setProject(null)}
+                >
+                  ← Back to {buildings.find((b) => b.id === panel)!.topic}
+                </button>
+                <ProjectDetail project={project} />
+              </>
+            ) : (
+              <>
+                <div className="room-note-stamp">
+                  <img src={`/assets/game/house-${panel}.png`} alt="" />
+                  <div>
+                    <span>
+                      FIELD GUIDE ·{" "}
+                      {buildings.find((b) => b.id === panel)!.number} / 07
+                    </span>
+                    <p>{rooms[panel].subtitle}</p>
+                  </div>
+                </div>
+                <BuildingContent id={panel} onProject={setProject} />
+                <nav className="room-note-pager" aria-label="Field guide pages">
+                  <button
+                    onClick={() =>
+                      setPanel(
+                        buildings[
+                          (buildings.findIndex((b) => b.id === panel) + 6) % 7
+                        ].id,
+                      )
+                    }
+                    aria-label="Previous field note"
+                  >
+                    ← Previous
+                  </button>
+                  <span>
+                    {buildings.find((b) => b.id === panel)!.number} / 07
+                  </span>
+                  <button
+                    onClick={() =>
+                      setPanel(
+                        buildings[
+                          (buildings.findIndex((b) => b.id === panel) + 1) % 7
+                        ].id,
+                      )
+                    }
+                    aria-label="Next field note"
+                  >
+                    Next →
+                  </button>
+                </nav>
+              </>
+            )}
+          </motion.div>
         </Modal>
       )}
       {dialogue && (
@@ -345,41 +483,44 @@ export default function GameShell({
           className="dialogue-modal"
           onClose={() => setDialogue(null)}
         >
-          <div className="dialogue-layout">
-            <div className="dialogue-portrait">
-              <AvatarPreview
-                character={
-                  dialogue.speaker === "Jalal"
-                    ? jalalCharacter
-                    : {
-                        ...defaultCharacter,
-                        body: "female",
-                        skin: "bronze",
-                        hair: "bob",
-                        hairColor: "chestnut",
-                      }
-                }
-                animated={false}
-              />
+          {(requestClose) => (
+            <div className="dialogue-layout">
+              <div className="dialogue-portrait">
+                <AvatarPreview
+                  character={
+                    dialogue.speaker === "Jalal"
+                      ? jalalCharacter
+                      : {
+                          ...defaultCharacter,
+                          body: "female",
+                          skin: "bronze",
+                          hair: "bob",
+                          hairColor: "chestnut",
+                        }
+                  }
+                  animated={false}
+                />
+              </div>
+              <div>
+                <h2>{dialogue.speaker}</h2>
+                <p aria-live="off">{text}</p>
+                <button
+                  className="button primary"
+                  onClick={() => {
+                    if (text !== dialogue.text) {
+                      if (typingTimer.current)
+                        clearInterval(typingTimer.current);
+                      setText(dialogue.text);
+                    } else requestClose();
+                  }}
+                >
+                  {text === dialogue.text
+                    ? "Keep exploring →"
+                    : "Show full message"}
+                </button>
+              </div>
             </div>
-            <div>
-              <h2>{dialogue.speaker}</h2>
-              <p aria-live="off">{text}</p>
-              <button
-                className="button primary"
-                onClick={() => {
-                  if (text !== dialogue.text) {
-                    if (typingTimer.current) clearInterval(typingTimer.current);
-                    setText(dialogue.text);
-                  } else setDialogue(null);
-                }}
-              >
-                {text === dialogue.text
-                  ? "Keep exploring →"
-                  : "Show full message"}
-              </button>
-            </div>
-          </div>
+          )}
         </Modal>
       )}
       {map && (
@@ -413,7 +554,8 @@ export default function GameShell({
                   <span
                     className={`journal-number ${visited.includes(b.id) ? "found" : ""}`}
                   >
-                    {visited.includes(b.id) ? "✓" : b.number}
+                    <img src={`/assets/game/house-${b.id}.png`} alt="" />
+                    <b>{visited.includes(b.id) ? "✓" : b.number}</b>
                   </span>
                   <div>
                     <h3>{b.topic}</h3>

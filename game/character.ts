@@ -212,6 +212,7 @@ function recolor(
 export async function composeCharacter(
   c: Character,
   full = true,
+  staticPreview = false,
 ): Promise<HTMLCanvasElement> {
   const pal = await (palettes ??= fetch("/assets/game/lpc/palettes.json").then(
     (r) => r.json(),
@@ -273,8 +274,8 @@ export async function composeCharacter(
   ];
   const anims = full ? ["walk", "idle", "run", "sit", "emote"] : ["walk"];
   const out = document.createElement("canvas");
-  out.width = 576;
-  out.height = 256 * anims.length;
+  out.width = staticPreview ? 64 : 576;
+  out.height = staticPreview ? 64 : 256 * anims.length;
   const ctx = out.getContext("2d")!;
   ctx.imageSmoothingEnabled = false;
   await Promise.all(
@@ -287,13 +288,16 @@ export async function composeCharacter(
         ),
       );
       const local = document.createElement("canvas");
-      local.width = 576;
-      local.height = 256;
+      local.width = staticPreview ? 64 : 576;
+      local.height = staticPreview ? 64 : 256;
       const lc = local.getContext("2d")!;
       for (let i = 0; i < layers.length; i++) {
-        lc.clearRect(0, 0, 576, 256);
-        lc.drawImage(loaded[i], 0, 0);
-        if (layers[i].maps.length) recolor(lc, 576, 256, pal, layers[i].maps);
+        lc.clearRect(0, 0, local.width, local.height);
+        if (staticPreview)
+          lc.drawImage(loaded[i], 0, 128, 64, 64, 0, 0, 64, 64);
+        else lc.drawImage(loaded[i], 0, 0);
+        if (layers[i].maps.length)
+          recolor(lc, local.width, local.height, pal, layers[i].maps);
         ctx.drawImage(local, 0, ai * 256);
       }
     }),

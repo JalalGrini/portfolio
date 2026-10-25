@@ -1,3 +1,4 @@
+const base = process.env.QA_BASE_URL || "http://localhost:3000";
 /* Run after `npm run build` with a static server on localhost:3000.
    CHROMIUM_PATH can override the system Chromium location. */
 const { chromium } = require("@playwright/test");
@@ -30,7 +31,11 @@ fs.mkdirSync(out, { recursive: true });
     }
   }
   async function setup(viewport, reducedMotion = "reduce") {
-    const context = await browser.newContext({ viewport, reducedMotion });
+    const context = await browser.newContext({
+      viewport,
+      reducedMotion,
+      colorScheme: "dark",
+    });
     const p = await context.newPage();
     p.setDefaultTimeout(8000);
     p.on("pageerror", (e) => results.errors.push(e.message));
@@ -50,7 +55,7 @@ fs.mkdirSync(out, { recursive: true });
     await check(
       `Desktop ${name} renders without horizontal overflow`,
       async () => {
-        await page.goto("http://localhost:3000" + route);
+        await page.goto(base + "" + route);
         await page.waitForTimeout(700);
         await page.screenshot({ path: path.join(out, `${name}-desktop.png`) });
         if (
@@ -65,15 +70,27 @@ fs.mkdirSync(out, { recursive: true });
   await check(
     "Creator customization supports female outfits, glasses and persistence",
     async () => {
-      await page.getByLabel("Body", { exact: true }).selectOption("female");
+      await page
+        .getByRole("button", { name: "Body: Female", exact: true })
+        .click();
       await page.getByRole("tab", { name: "Hair", exact: true }).click();
-      await page.getByLabel("Hairstyle", { exact: true }).selectOption("long");
+      await page
+        .getByRole("button", { name: "Hairstyle: Long", exact: true })
+        .click();
       await page.getByRole("tab", { name: "Outfit", exact: true }).click();
-      await page.getByLabel("Top", { exact: true }).selectOption("cardigan");
-      await page.getByLabel("Bottom", { exact: true }).selectOption("leggings");
+      await page
+        .getByRole("button", { name: "Top: Cardigan", exact: true })
+        .click();
+      await page
+        .getByRole("button", { name: "Bottom: Leggings", exact: true })
+        .click();
       await page.getByRole("tab", { name: "Details", exact: true }).click();
-      await page.getByLabel("Glasses", { exact: true }).selectOption("round");
-      await page.getByLabel("Footwear", { exact: true }).selectOption("boots");
+      await page
+        .getByRole("button", { name: "Glasses: Round", exact: true })
+        .click();
+      await page
+        .getByRole("button", { name: "Footwear: Boots", exact: true })
+        .click();
       await page.waitForTimeout(800);
       await page.screenshot({
         path: path.join(out, "creator-custom-desktop.png"),
@@ -161,7 +178,7 @@ fs.mkdirSync(out, { recursive: true });
         .waitFor();
     },
   );
-  await page.goto("http://localhost:3000/portfolio/");
+  await page.goto(base + "/portfolio/");
   await check(
     "All 16 projects, search, filters and project detail are available",
     async () => {
@@ -206,7 +223,7 @@ fs.mkdirSync(out, { recursive: true });
     await check(
       `Mobile ${name} renders without horizontal overflow`,
       async () => {
-        await mobile.goto("http://localhost:3000" + route);
+        await mobile.goto(base + "" + route);
         await mobile.waitForTimeout(700);
         await mobile.screenshot({ path: path.join(out, `${name}-mobile.png`) });
         if (
