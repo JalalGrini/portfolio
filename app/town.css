@@ -1,0 +1,876 @@
+/* Career Town: a distinct, tactile game UI, not the cinematic portfolio's design. */
+.town-root {
+  --bg: #172c27;
+  --surface: #f2ecd8;
+  --raised: #e0dfc7;
+  --text: #f3eedb;
+  --muted: #c5cdb7;
+  --line: #8d9879;
+  --accent: #e0d59b;
+  --accent-ink: #263d32;
+  --warm: #e5cf96;
+  min-height: 100dvh;
+  background: #172c27;
+  color: #f3eedb;
+  font-family: Arial, Helvetica, sans-serif;
+  color-scheme: dark;
+  background-image:
+    linear-gradient(#172c27ed, #172c27ed), url("/assets/game/town-preview.png");
+  background-size: auto, 800px;
+}
+.town-nav {
+  height: 80px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 32px;
+  background: #10241ff5;
+  border-bottom: 2px solid #788467;
+  color: #f2ecd8;
+  z-index: 10;
+}
+.town-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--pixel);
+  font-size: 32px;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+.town-brand > img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.town-brand small {
+  display: block;
+  font-family: Arial, sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  margin-top: 5px;
+  color: #c6d0b4;
+}
+.town-back {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+}
+.town-back:hover {
+  color: #f2d794;
+}
+.town-experience {
+  width: 100%;
+  min-width: 0;
+}
+.town-playing > .town-experience {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.town-root h1,
+.town-root h2,
+.town-root h3 {
+  font-family: var(--pixel);
+  font-style: normal;
+  letter-spacing: 0;
+}
+.town-root .creator-page {
+  padding: 40px 32px 32px;
+  max-width: 1220px;
+}
+.town-root .creator-heading {
+  gap: 12px 48px;
+  margin-bottom: 28px;
+}
+.town-root .creator-heading .eyebrow {
+  color: #d4d8bf;
+  font-size: 11px;
+  letter-spacing: 0.13em;
+}
+.town-root .creator-heading h1 {
+  font-size: 48px;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  color: #f3edd8;
+}
+.town-root .creator-heading h1 em {
+  font-family: var(--pixel);
+  font-style: normal;
+  color: #e5d69b;
+  letter-spacing: -0.025em;
+}
+.town-root .creator-heading > p {
+  color: #c8d1bc;
+  font-size: 16px;
+  line-height: 1.6;
+}
+.town-root .creator-shell {
+  border: 3px solid #a3ad87;
+  box-shadow:
+    0 10px 0 #0c211b,
+    0 22px 50px #08191155;
+  border-radius: 10px;
+  background: #f2ecd8;
+  grid-template-columns: 0.85fr 1.15fr;
+}
+.town-root .character-stage {
+  background: #223e2e;
+  border-right: 3px solid #a3ad87;
+  min-height: 620px;
+}
+.town-root .character-stage:before {
+  opacity: 0.7;
+  background:
+    linear-gradient(#18322770, #172c2770),
+    url("/assets/game/town-preview.png") 49% 55% / auto 100%;
+}
+.town-root .stage-caption {
+  font-size: 11px;
+  background: #152d24d9;
+  padding: 8px 12px;
+  border: 1px solid #bdca97;
+  top: 24px;
+  left: 24px;
+  border-radius: 4px;
+  color: #f3edd8;
+}
+.town-root .stage-edition {
+  color: #f0e6bc;
+  top: 72px;
+  left: 28px;
+  font-size: 10px;
+}
+.town-root .avatar-pedestal {
+  margin-top: 56px;
+}
+.town-root .avatar-pedestal:after {
+  background: #081a1199;
+}
+.town-root .stage-note {
+  font-size: 14px;
+  color: #f0edcf;
+  background: #173021c9;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+.town-root .random-button {
+  background: #ede4bd;
+  color: #294433;
+  border: 2px solid #788769;
+  box-shadow: 0 3px 0 #10231c;
+  font-size: 14px;
+}
+.town-root .rotate-controls .icon-button {
+  color: #f5e4a9;
+  border: 1px solid #c5c28d;
+  background: #173021c9;
+}
+.town-root .rotate-controls > span {
+  color: #f3e9c4;
+}
+.town-root .creator-options {
+  --bg: #f2ecd8;
+  --surface: #f7f2df;
+  --raised: #d6dec6;
+  --text: #2b4136;
+  --muted: #52644f;
+  --line: #8a9a78;
+  --accent: #355c46;
+  --accent-ink: #fff7da;
+  --warm: #6c4f2f;
+  color: #2b4136;
+  background: #f2ecd8;
+  color-scheme: light;
+}
+.town-root .creator-tabs {
+  padding: 12px 16px 0;
+  background: #e2e1c9;
+  border-bottom: 2px solid #9ca98a;
+}
+.town-root .creator-tabs > button {
+  font-family: var(--pixel);
+  font-size: 22px;
+  line-height: 1.1;
+  color: #596d53;
+  min-height: 52px;
+  padding: 12px;
+}
+.town-root .creator-tabs > button.active {
+  color: #244a35;
+  border-bottom: 3px solid #355c46;
+  background: #f2ecd8;
+  border-radius: 6px 6px 0 0;
+}
+.town-root .creator-controls {
+  padding: 24px;
+  min-height: 400px;
+  max-height: 460px;
+}
+.town-root .visual-field legend,
+.town-root .color-field legend {
+  font-size: 14px;
+  font-weight: 600;
+  color: #304c3c;
+}
+.town-root .visual-field legend > span,
+.town-root .color-field legend > span {
+  font-weight: 400;
+  color: #53674f;
+}
+.town-root .visual-choice {
+  background: #e6e6d0;
+  border: 2px solid #9fae8d;
+  border-radius: 6px;
+  min-height: 120px;
+  box-shadow: 0 2px 0 #a6b091;
+}
+.town-root .visual-choice:hover {
+  background: #d7e0c6;
+  border-color: #5c7b56;
+}
+.town-root .visual-choice.selected {
+  background: #d2dfbe;
+  border: 2px solid #355d42;
+  padding: 6px 4px 8px;
+  box-shadow: 0 2px 0 #456445;
+}
+.town-root .visual-choice > span {
+  color: #2b4635;
+  font-size: 14px;
+}
+.town-root .choice-check {
+  background: #355d42;
+  color: #fff4cf;
+}
+.town-root .swatches > button {
+  border: 2px solid #6c8060;
+  box-shadow: 0 2px 0 #a3ad8d;
+}
+.town-root .swatches > button.selected {
+  outline-color: #355d42;
+}
+.town-root .creator-actions {
+  border-top: 2px solid #a3ad8b;
+  background: #e5e4ca;
+  padding: 20px 24px;
+}
+.town-root .creator-actions .primary {
+  background: #355d42;
+  color: #fff6d6;
+  border: 2px solid #23452e;
+  box-shadow: 0 3px 0 #1d3927;
+  border-radius: 5px;
+  font-family: var(--pixel);
+  font-size: 22px;
+  font-weight: 400;
+}
+.town-root .creator-actions > p,
+.town-root .creator-actions .checkbox-label {
+  color: #52634d;
+  font-size: 14px;
+}
+.town-root .creator-skip {
+  color: #d4dcc5;
+  font-size: 14px;
+}
+/* Warm journal panels float over the licensed pixel-art world. */
+.town-root .game-shell {
+  --bg: #f0e8ce;
+  --surface: #f7f0d9;
+  --raised: #e1e3c9;
+  --text: #2b4136;
+  --muted: #54684f;
+  --line: #8d9d79;
+  --accent: #355d42;
+  --accent-ink: #fff7dc;
+  --warm: #77592f;
+  color: #2b4136;
+  color-scheme: light;
+  background: #142c24;
+}
+.town-root .game-canvas {
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+.town-root .game-shell.is-ready .game-canvas {
+  opacity: 1;
+}
+.town-root .game-loading {
+  background: #173329;
+  color: #f2ecd8;
+}
+.town-root .game-loading h2 {
+  font-size: 36px;
+  color: #eee6c6;
+}
+.town-root .game-loading .eyebrow {
+  color: #d6ddbb;
+}
+.town-root .game-loading > p {
+  color: #c9d7be;
+  font-size: 16px;
+}
+.town-root .game-loading > img {
+  filter: drop-shadow(0 10px 0 #091d1655);
+  animation: town-house-float 2.5s ease-in-out infinite;
+}
+.town-root .loading-track {
+  height: 7px;
+  border: 1px solid #d2d3a5;
+  border-radius: 3px;
+  background: #10241b;
+}
+.town-root .loading-track > span {
+  background: #e4d591;
+}
+.town-root .game-hud-top {
+  top: 20px;
+  left: 24px;
+  right: 24px;
+}
+.town-root .location-card {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 0 14px;
+  align-items: center;
+  padding: 14px 18px;
+  background: #f1e9cfef;
+  border: 2px solid #7b8a65;
+  border-radius: 6px;
+  box-shadow:
+    0 4px 0 #172d2299,
+    inset 0 0 0 2px #fff7dd;
+  color: #2c4737;
+  max-width: 380px;
+}
+.town-root .location-card .location-icon {
+  grid-row: 1/5;
+  grid-column: 1;
+  width: 44px;
+  height: 56px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.town-root .location-card > .eyebrow,
+.town-root .location-card > h1,
+.town-root .location-card > .discovery-count,
+.town-root .location-card > .discovery-meter {
+  grid-column: 2;
+}
+.town-root .location-card .eyebrow {
+  font-size: 9px;
+  color: #56664e;
+}
+.town-root .location-card h1 {
+  font-size: 27px;
+  line-height: 1.1;
+  margin: 4px 0;
+}
+.town-root .discovery-count {
+  color: #53664c;
+  font-size: 11px;
+}
+.town-root .discovery-meter {
+  margin-top: 8px;
+}
+.town-root .discovery-meter > span {
+  border-color: #5c7952;
+  height: 5px;
+  width: 20px;
+}
+.town-root .discovery-meter > span.found {
+  background: #527d48;
+}
+.town-root .hud-button {
+  background: #f0e7cdef;
+  color: #304a37;
+  border: 2px solid #7d8c67;
+  border-radius: 5px;
+  box-shadow:
+    0 3px 0 #173022aa,
+    inset 0 0 0 1px #fff8df;
+  font-size: 14px;
+  min-height: 46px;
+}
+.town-root .hud-button:hover {
+  background: #dfe6c5;
+  transform: translateY(-1px);
+  font-size: 14px;
+}
+.town-root .hud-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #173022aa;
+}
+.town-root .hud-button kbd,
+.town-root .game-controls-hint kbd {
+  background: #dbdfc5;
+  border-color: #758d68;
+  color: #344c34;
+}
+.town-root .game-controls-hint {
+  background: #f0e7cdef;
+  border: 2px solid #7d8c67;
+  color: #40543b;
+  border-radius: 5px;
+  font-size: 12px;
+  box-shadow: 0 3px 0 #17302288;
+}
+.town-root .interact-button {
+  background: #f5e7b9;
+  color: #2a4933;
+  border: 2px solid #71885c;
+  border-radius: 6px;
+  box-shadow:
+    0 4px 0 #18342188,
+    inset 0 0 0 2px #fff5cf;
+  padding: 14px 20px;
+  font-size: 16px;
+}
+.town-root .interact-button kbd {
+  background: #d7dfb9;
+  border-color: #647d4f;
+  color: #2b4931;
+}
+.town-root .interact-button:hover {
+  background: #fff1c4;
+}
+.town-root .game-notice {
+  background: #f0e7cdef;
+  color: #40583d;
+  border: 1px solid #87986f;
+  border-radius: 5px;
+  font-size: 14px;
+  box-shadow: 0 3px 0 #17302266;
+}
+.town-root .minimap {
+  border: 3px solid #d7d8af;
+  box-shadow:
+    0 0 0 2px #576d48,
+    0 5px 0 #152b2088;
+  border-radius: 5px;
+}
+.town-root .minimap-caption {
+  font-family: var(--pixel);
+  font-size: 14px;
+  color: #fff2cb;
+  background: #27432e;
+}
+.town-root .discovery-toast {
+  background: #f7edc9;
+  border: 2px solid #788e5d;
+  box-shadow:
+    0 4px 0 #17302288,
+    inset 0 0 0 2px #fff5dc;
+  border-radius: 6px;
+  color: #31513a;
+}
+.town-root .discovery-toast strong {
+  font-size: 28px;
+}
+.town-root .discovery-toast small {
+  font-size: 10px;
+}
+.town-travel {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  background: #0d221ef2;
+  display: grid;
+  place-items: center;
+  color: #f4eccb;
+  text-align: center;
+  pointer-events: auto;
+}
+.town-travel > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.town-travel img {
+  height: 92px;
+  width: 112px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  margin-bottom: 24px;
+  filter: drop-shadow(0 7px 0 #06171077);
+}
+.town-travel span {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: #d3d9ad;
+}
+.town-travel h2 {
+  font-size: 42px;
+  margin: 10px 0 24px;
+}
+.town-travel i {
+  width: 56px;
+  height: 2px;
+  background: #d9d59c;
+}
+.town-root .modal {
+  --bg: #f1e9cf;
+  --surface: #f6efd9;
+  --raised: #dce4c6;
+  --text: #2b4136;
+  --muted: #53674d;
+  --line: #9da783;
+  --accent: #355d42;
+  --accent-ink: #fff6d7;
+  --warm: #75552c;
+  background: #f1e9cf;
+  color: #2b4136;
+  border: 3px solid #788a61;
+  border-radius: 8px;
+  box-shadow:
+    0 8px 0 #10281d99,
+    inset 0 0 0 2px #fff7e1,
+    0 32px 100px #06191188;
+  color-scheme: light;
+}
+.town-root .modal::backdrop {
+  background: #0b211bc9;
+  backdrop-filter: blur(5px);
+}
+.town-root .modal-top {
+  border-bottom: 2px solid #aab18d;
+}
+.town-root .modal-top .eyebrow {
+  font-size: 11px;
+  color: #566a4e;
+}
+.town-root .modal-top .icon-button {
+  border: 1px solid #879b70;
+  background: #e1e4c7;
+  color: #36533b;
+  min-width: 44px;
+  min-height: 44px;
+}
+.town-root .modal h2 {
+  font-family: var(--pixel);
+  font-size: 46px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.town-root .modal h3 {
+  font-family: var(--pixel);
+  letter-spacing: 0;
+  font-size: 28px;
+}
+.town-root .modal p,
+.town-root .modal li {
+  color: #4a6046;
+}
+.town-root .modal .lead {
+  color: #425b3f;
+}
+.town-root .modal .primary {
+  background: #355d42;
+  color: #fff4d0;
+  border: 1px solid #23472d;
+  border-radius: 5px;
+  box-shadow: 0 3px 0 #284830;
+}
+.town-root .modal .tags > span {
+  color: #47603f;
+  background: #e2e5cc;
+  border: 1px solid #97a67f;
+  font-size: 12px;
+}
+.town-root .modal .room-projects button {
+  background: #e6e7cf;
+  border: 1px solid #9aab81;
+  color: #365438;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #bcc4a2;
+}
+.town-root .modal .room-projects h3 {
+  font-size: 26px;
+}
+.town-root .dialogue-modal {
+  max-width: 800px;
+}
+.town-root .dialogue-layout {
+  align-items: center;
+}
+.town-root .dialogue-portrait {
+  border: 2px solid #92a378;
+  background: #d6dfbe;
+  box-shadow: 0 3px 0 #acb78e;
+  border-radius: 6px;
+}
+.town-root .dialogue-layout > div > p {
+  font-size: 18px;
+  line-height: 1.6;
+  min-height: 120px;
+}
+.town-root .journal-number {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  background: #e0e4c9;
+  border: 1px solid #98a77f;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+.town-root .journal-number img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.town-root .journal-number b {
+  position: absolute;
+  bottom: -4px;
+  right: -5px;
+  background: #355d42;
+  color: #fff3cf;
+  min-width: 22px;
+  height: 22px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: Arial, sans-serif;
+  font-weight: 400;
+}
+.town-root .journal-list h3 {
+  font-size: 24px;
+}
+.town-root .journal-list p {
+  font-size: 12px;
+}
+.town-root .journal-list .text-button {
+  font-size: 12px;
+  min-height: 44px;
+}
+.town-root .large-map {
+  border: 2px solid #8b9b72;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.town-root .setting-row small {
+  color: #52664b;
+}
+.town-root .touch-pad > button {
+  background: #f0e7cdef;
+  color: #314d36;
+  border: 2px solid #7e9069;
+  box-shadow: 0 3px 0 #173022aa;
+}
+@keyframes town-house-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+@media (max-width: 760px) {
+  .town-nav {
+    height: 72px;
+    padding: 0 20px;
+    gap: 16px;
+  }
+  .town-brand {
+    font-size: 25px;
+    gap: 10px;
+  }
+  .town-brand > img {
+    width: 34px;
+    height: 38px;
+  }
+  .town-brand small {
+    font-size: 7px;
+    letter-spacing: 0.05em;
+  }
+  .town-back {
+    font-size: 12px;
+    gap: 8px;
+  }
+  .town-back span {
+    max-width: 70px;
+    line-height: 1.3;
+  }
+  .town-root .creator-page {
+    padding: 28px 20px;
+  }
+  .town-root .creator-heading h1 {
+    font-size: 36px;
+    line-height: 1.05;
+  }
+  .town-root .creator-heading {
+    gap: 16px;
+  }
+  .town-root .creator-heading .eyebrow {
+    font-size: 9px;
+  }
+  .town-root .creator-heading > p {
+    font-size: 16px;
+  }
+  .town-root .creator-shell {
+    grid-template-columns: 1fr;
+    border-width: 2px;
+  }
+  .town-root .character-stage {
+    min-height: 300px;
+    border-right: 0;
+    border-bottom: 2px solid #a3ad87;
+    padding: 52px 16px 16px;
+  }
+  .town-root .stage-caption {
+    top: 16px;
+    left: 16px;
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+  .town-root .stage-edition {
+    top: 23px;
+    right: 12px;
+    left: auto;
+    max-width: 110px;
+    font-size: 8px;
+  }
+  .town-root .avatar-pedestal {
+    margin-top: 12px;
+  }
+  .town-root .stage-note {
+    font-size: 12px;
+    background: #173021df;
+    width: auto;
+  }
+  .town-root .creator-tabs {
+    padding: 8px 8px 0;
+  }
+  .town-root .creator-tabs > button {
+    font-size: 20px;
+    padding: 10px 6px;
+    min-height: 48px;
+  }
+  .town-root .creator-controls {
+    padding: 20px 16px;
+    min-height: 0;
+    max-height: 440px;
+  }
+  .town-root .creator-actions {
+    padding: 20px 16px;
+  }
+  .town-root .creator-actions .primary {
+    font-size: 22px;
+  }
+  .town-root .creator-skip {
+    font-size: 14px;
+  }
+  .town-root .game-hud-top {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    gap: 12px;
+  }
+  .town-root .location-card {
+    grid-template-columns: 28px 1fr;
+    gap: 0 8px;
+    padding: 10px;
+    max-width: calc(100% - 140px);
+  }
+  .town-root .location-card .location-icon {
+    width: 28px;
+    height: 38px;
+  }
+  .town-root .location-card h1 {
+    font-size: 20px;
+  }
+  .town-root .location-card .eyebrow {
+    font-size: 7px;
+    letter-spacing: 0.03em;
+  }
+  .town-root .discovery-count {
+    font-size: 9px;
+  }
+  .town-root .discovery-meter {
+    gap: 3px;
+    margin-top: 6px;
+  }
+  .town-root .discovery-meter > span {
+    width: 12px;
+    height: 4px;
+  }
+  .town-root .hud-actions {
+    gap: 4px;
+  }
+  .town-root .hud-actions .hud-button {
+    padding: 8px;
+    min-width: 40px;
+    font-size: 12px;
+  }
+  .town-root .hud-actions .hud-button:first-child {
+    gap: 6px;
+  }
+  .town-root .game-notice {
+    top: 112px;
+    font-size: 12px;
+    max-width: calc(100% - 48px);
+  }
+  .town-root .discovery-toast {
+    top: 124px;
+    padding: 12px 16px;
+  }
+  .town-root .discovery-toast strong {
+    font-size: 24px;
+  }
+  .town-root .discovery-toast small {
+    font-size: 9px;
+  }
+  .town-root .interact-button {
+    font-size: 14px;
+    padding: 12px 14px;
+  }
+  .town-travel h2 {
+    font-size: 32px;
+  }
+  .town-travel img {
+    height: 80px;
+  }
+  .town-root .modal {
+    padding: 22px;
+    border-width: 2px;
+  }
+  .town-root .modal h2 {
+    font-size: 36px;
+  }
+  .town-root .modal-top .eyebrow {
+    font-size: 10px;
+  }
+  .town-root .dialogue-layout > div > p {
+    font-size: 16px;
+    min-height: 130px;
+  }
+  .town-root .modal .contact-email {
+    font-size: 18px;
+  }
+  .town-root .dialogue-portrait {
+    height: 100px;
+    width: 92px;
+  }
+  .town-root .modal .help-grid h3 {
+    font-size: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .town-root .game-canvas {
+    transition: none;
+  }
+  .town-root .game-loading > img {
+    animation: none;
+  }
+}

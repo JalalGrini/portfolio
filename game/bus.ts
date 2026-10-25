@@ -1,6 +1,7 @@
 import type { BuildingId } from "@/content/portfolio";
 export type GameEvents = {
   ready: undefined;
+  transition: { label: string; building?: BuildingId } | null;
   near: { label: string; kind: string } | null;
   open: BuildingId;
   location: { name: string; room: BuildingId | null };

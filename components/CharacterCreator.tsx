@@ -133,11 +133,11 @@ export default function CharacterCreator({
   return (
     <main className="creator-page">
       <div className="creator-heading">
-        <span className="eyebrow">BEFORE WE BEGIN / MAKE YOURSELF AT HOME</span>
+        <span className="eyebrow">CAREER TOWN / THE CHARACTER STUDIO</span>
         <h1>
-          Your visit.
+          Every journey starts
           <br />
-          <em>Your character.</em>
+          <em>with a little character.</em>
         </h1>
         <p>
           A small world, built around a real journey. Choose your look and come

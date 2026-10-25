@@ -1,46 +1,42 @@
-# Field notes — portfolio design pass
+# Two worlds — cinematic portfolio / Career Town
 
-This pass refines the existing Next.js / Phaser application. It does not replace the working movement, collisions, content model, or locally served artwork.
+This second design pass supersedes the earlier forest-toned field-notes direction. The normal portfolio and the game intentionally have independent navigation, typography, palettes, layouts, and motion treatments. Both retain Jalal's existing content model and research-status labels.
 
-## Direction
+## Cinematic portfolio (`/` and `/portfolio/`)
 
-The supplied portfolio reference, https://yassir-hamri-portfolio.vercel.app/, informed the pacing, confident typography, project storytelling, and interaction depth. Its layouts, source code, text, shader, branding, and media were not copied.
+The supplied reference, https://yassir-hamri-portfolio.vercel.app/, informed the full-screen mineral-art hero, filled/outlined name treatment, black/cream section rhythm, confident editorial typography, image-led project switching, interactive engineering stack, and drawn career timeline. Its source code, branding, text, shader, and media were not copied.
 
-Jalal's interpretation stays forest-toned, quiet, and exploratory:
+- Independently generated mineral strata, fine-fiber and server-corridor visual studies, optimized as local WebP files. These are conceptual artwork, not product or infrastructure screenshots.
+- Lightweight original texture-displacement WebGL hero; reduced-motion, save-data, unavailable-context and lost-context fallbacks retain static artwork.
+- Scroll-responsive manifesto, project transitions, reading progress, interactive technology domains, and oversized contact section.
+- All 16 projects remain available in the searchable, filterable index and accessible case-study dialogs.
+- Mobile navigation exposes Work, About, Stack and Contact without hiding these sections.
+- Persistent theme preference takes priority over the system preference. Hydration and reduced-motion markup were checked against the production export.
 
-- An editorial portfolio opening, with the personal photograph moved to the About identity block.
-- A four-project notebook with animated case-study switching, followed by the complete searchable project index.
-- A four-domain skills workbench with keyboard-accessible tabs and links to related project notes.
-- A reading-progress indicator and restrained scroll reveals.
-- Dark / light themes initialized before hydration to prevent a navigation flash; saved preference takes priority over the system theme.
+## Career Town (`/play/`)
 
-## Character creator
+A separate warm parchment / forest visual system uses pixel headings, tactile bordered controls, a sprite-based character studio, illustrated discovery journal, and warm game HUD. No cinematic portfolio navigation is reused here.
 
-All style dropdowns are replaced with actual composited sprite choices: body, hairstyle, facial hair, tops, bottoms, footwear, and glasses. Eyes and other colors use labeled color swatches. Selection is communicated with both a border and a check mark.
+- All wardrobe choices use real composited sprite previews or labeled color swatches rather than style-name dropdowns. Selection uses both borders and checkmarks.
+- Creator-to-game transitions, coordinated location travel labels and camera fades, first-visit discovery cards, and animated dialog dismissal.
+- Fountain ripples, subtle foliage motion, footsteps, NPC waypoint pauses, and animated path-target rings.
+- Ambient motion pauses under overlays. Reduced-motion settings skip camera and ambient animation.
+- Existing collisions, keyboard/touch movement, pathfinding, seven locations and field-note content remain intact.
+- No audio, Stardew Valley assets, or runtime third-party art downloads.
 
-Static choice previews compose only a single 64 × 64 frame, rather than recoloring a complete animation sheet for every thumbnail. The full animation sheets remain in use for the main preview and Phaser characters. All artwork remains local and retains its existing attribution.
+## Assets and builds
 
-## Town polish
-
-- Camera fades when entering and leaving rooms, with repeat transitions guarded.
-- A first-visit discovery toast and a seven-place progress indicator.
-- Animated water ripples inside the fountain, subtle foliage sway, and small movement dust puffs.
-- Pauses at NPC waypoints rather than constant uninterrupted walking.
-- Animated path-target rings, contextual interaction prompts, and native-dialog opening / closing transitions.
-- Ambient tweens pause while an overlay is open. Reduced-motion settings skip or stop the ambient animation and camera transitions.
-- No audio, borrowed Stardew assets, or third-party runtime art downloads are introduced.
+`predev` and `prebuild` run `tools/prepare-studio-assets.cjs` to decode versioned `assets-src/studio/*.webp.b64` into local public WebP files. This keeps original artwork reproducible through the available text-only repository writer; no image service is called at build or runtime. Technology logos are local Simple Icons SVGs with the complete CC0 license retained. See `ASSETS_AND_LICENSES.md` and the Credits route.
 
 ## Verification
 
-Production export and asset integrity checks pass. The browser suites cover:
+Production export and asset-integrity checks pass. Browser suites exercise:
 
-- 14 baseline checks: desktop/mobile routes, customization/persistence, town rendering, keyboard/touch movement, dialogue, pathfinding, room entry, field notes, project search/filtering, and empty states.
-- 5 extended checks: persistent themes, keyboard character tabs, help/settings dismissal, all seven field-note panels, and failed-asset fallback.
-- 6 design checks: project switching, skills-to-project interaction, animated dialog dismissal, normal-motion room transitions and discovery, and mobile story/wardrobe layouts.
+- 14 baseline checks: desktop/mobile routes, customization persistence, WebGL town rendering, keyboard/touch movement, dialogue, map pathfinding, room entry/notes, all projects, filters and search.
+- 5 extended checks: persistent themes, keyboard wardrobe tabs, help/settings, all seven field-note panels, and failed-asset fallback.
+- 9 design checks: independent visual systems, project transitions and keyboard tabs, modal dismissal, technology domains/logos, visual wardrobe, normal-motion location travel/return, mobile navigation, mobile layouts, and browser/asset error checks.
 
-Desktop review: 1440 × 1000. Mobile review: 390 × 844. Dark and light themes were inspected. The new project, skills, wardrobe, and discovery states were also checked visually.
-
-Reproduce against the static export:
+Desktop review: 1440 × 1000. Mobile review: 390 × 844. Production screenshots cover the main hero, work, stack, career/contact sections, case-study dialog, character studio, HUD, journal and room discovery. This is a Chromium-tested milestone, not a claim that Safari, Firefox or physical touch devices have been validated.
 
 ```sh
 npm ci
@@ -48,14 +44,14 @@ npm run check:assets
 npm run typecheck
 npm run build
 python3 -m http.server 3001 --directory out
-# In another terminal:
+# Another terminal:
 QA_BASE_URL=http://localhost:3001 npm run test:e2e
 QA_BASE_URL=http://localhost:3001 npm run test:extra
 QA_BASE_URL=http://localhost:3001 npm run test:design
 ```
 
-Set `CHROMIUM_PATH` if Chromium is not at the standard sandbox path. All three browser suites honor it. Screenshots go to `test-results` by default; `QA_OUTPUT` overrides this.
+`CHROMIUM_PATH` selects a browser executable; `QA_OUTPUT` overrides the screenshot directory. Run suites sequentially on CPU-only machines: software-rendered WebGL can materially slow animated pathfinding tests.
 
-## Scope and follow-up
+## Delivery scope
 
-This is a tested design milestone, not a claim that every device or browser has been validated. Chromium was exercised locally; Safari, Firefox, and physical touch devices remain to be checked. The photorealistic avatar research remains separate: this pass does not invent a rigged digital double from a single photograph. Existing project descriptions and research-status labels are preserved.
+Changes are on the review branch. A production deployment and a verified Vercel preview depend on the connected account's project/team access. No private tokens are embedded in the application or build. Existing photography, CV, project facts, license files and research labels are preserved. The photorealistic-avatar research remains separate; this work does not invent a rigged digital double from a photograph.

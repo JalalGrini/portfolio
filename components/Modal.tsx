@@ -7,7 +7,7 @@ export default function Modal({
   className = "",
 }: {
   title: string;
-  children: React.ReactNode;
+  children: React.ReactNode | ((close: () => void) => React.ReactNode);
   onClose: () => void;
   className?: string;
 }) {
@@ -65,7 +65,7 @@ export default function Modal({
           ×
         </button>
       </div>
-      {children}
+      {typeof children === "function" ? children(close) : children}
     </dialog>
   );
 }

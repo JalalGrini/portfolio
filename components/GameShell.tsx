@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
 import {
   Character,
   composeCharacter,
@@ -21,6 +22,10 @@ export default function GameShell({
 }) {
   const host = useRef<HTMLDivElement>(null);
   const typingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [travel, setTravel] = useState<{
+    label: string;
+    building?: BuildingId;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [near, setNear] = useState<{ label: string; kind: string } | null>(
@@ -67,6 +72,7 @@ export default function GameShell({
     let game: { destroy: (removeCanvas: boolean) => void } | undefined;
     const off = [
       gameBus.on("ready", () => setLoading(false)),
+      gameBus.on("transition", setTravel),
       gameBus.on("error", (v) => {
         setError(v);
         setLoading(false);
@@ -180,11 +186,37 @@ export default function GameShell({
     gameBus.emit("action", { type });
   return (
     <main
-      className="game-shell"
+      className={`game-shell ${loading ? "is-loading" : "is-ready"}`}
       data-x={pos.x.toFixed(2)}
       data-y={pos.y.toFixed(2)}
     >
       <div ref={host} className="game-canvas" />
+      <AnimatePresence>
+        {travel && (
+          <motion.div
+            className="town-travel"
+            key="travel"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            role="status"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <img
+                src={`/assets/game/${travel.building ? `house-${travel.building}` : "fountain"}.png`}
+                alt=""
+              />
+              <span>NEXT STOP</span>
+              <h2>{travel.label}</h2>
+              <i />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {discovery && !busy && (
         <div className="discovery-toast" role="status">
           <img src={`/assets/game/house-${discovery}.png`} alt="" />
@@ -221,6 +253,11 @@ export default function GameShell({
         <>
           <div className="game-hud-top">
             <div className="location-card">
+              <img
+                className="location-icon"
+                src={`/assets/game/${room ? `house-${room}` : "fountain"}.png`}
+                alt=""
+              />
               <span className="eyebrow">
                 {room ? "INSIDE THE TOWN" : "JALAL GRINI’S CAREER TOWN"}
               </span>
@@ -354,21 +391,32 @@ export default function GameShell({
       {panel && (
         <Modal
           title="CAREER TOWN / FIELD NOTES"
+          className="town-notes-modal"
           onClose={() => {
             setPanel(null);
             setProject(null);
           }}
         >
-          {project ? (
-            <>
-              <button className="text-button" onClick={() => setProject(null)}>
-                ← Back to {buildings.find((b) => b.id === panel)!.topic}
-              </button>
-              <ProjectDetail project={project} />
-            </>
-          ) : (
-            <BuildingContent id={panel} onProject={setProject} />
-          )}
+          <motion.div
+            key={project?.id || panel}
+            initial={{ opacity: reduced ? 1 : 0, y: reduced ? 0 : 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: reduced ? 0 : 0.3 }}
+          >
+            {project ? (
+              <>
+                <button
+                  className="text-button"
+                  onClick={() => setProject(null)}
+                >
+                  ← Back to {buildings.find((b) => b.id === panel)!.topic}
+                </button>
+                <ProjectDetail project={project} />
+              </>
+            ) : (
+              <BuildingContent id={panel} onProject={setProject} />
+            )}
+          </motion.div>
         </Modal>
       )}
       {dialogue && (
@@ -377,41 +425,44 @@ export default function GameShell({
           className="dialogue-modal"
           onClose={() => setDialogue(null)}
         >
-          <div className="dialogue-layout">
-            <div className="dialogue-portrait">
-              <AvatarPreview
-                character={
-                  dialogue.speaker === "Jalal"
-                    ? jalalCharacter
-                    : {
-                        ...defaultCharacter,
-                        body: "female",
-                        skin: "bronze",
-                        hair: "bob",
-                        hairColor: "chestnut",
-                      }
-                }
-                animated={false}
-              />
+          {(requestClose) => (
+            <div className="dialogue-layout">
+              <div className="dialogue-portrait">
+                <AvatarPreview
+                  character={
+                    dialogue.speaker === "Jalal"
+                      ? jalalCharacter
+                      : {
+                          ...defaultCharacter,
+                          body: "female",
+                          skin: "bronze",
+                          hair: "bob",
+                          hairColor: "chestnut",
+                        }
+                  }
+                  animated={false}
+                />
+              </div>
+              <div>
+                <h2>{dialogue.speaker}</h2>
+                <p aria-live="off">{text}</p>
+                <button
+                  className="button primary"
+                  onClick={() => {
+                    if (text !== dialogue.text) {
+                      if (typingTimer.current)
+                        clearInterval(typingTimer.current);
+                      setText(dialogue.text);
+                    } else requestClose();
+                  }}
+                >
+                  {text === dialogue.text
+                    ? "Keep exploring →"
+                    : "Show full message"}
+                </button>
+              </div>
             </div>
-            <div>
-              <h2>{dialogue.speaker}</h2>
-              <p aria-live="off">{text}</p>
-              <button
-                className="button primary"
-                onClick={() => {
-                  if (text !== dialogue.text) {
-                    if (typingTimer.current) clearInterval(typingTimer.current);
-                    setText(dialogue.text);
-                  } else setDialogue(null);
-                }}
-              >
-                {text === dialogue.text
-                  ? "Keep exploring →"
-                  : "Show full message"}
-              </button>
-            </div>
-          </div>
+          )}
         </Modal>
       )}
       {map && (
@@ -445,7 +496,8 @@ export default function GameShell({
                   <span
                     className={`journal-number ${visited.includes(b.id) ? "found" : ""}`}
                   >
-                    {visited.includes(b.id) ? "✓" : b.number}
+                    <img src={`/assets/game/house-${b.id}.png`} alt="" />
+                    <b>{visited.includes(b.id) ? "✓" : b.number}</b>
                   </span>
                   <div>
                     <h3>{b.topic}</h3>

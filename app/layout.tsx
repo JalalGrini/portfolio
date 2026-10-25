@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./refinements.css";
+import "./studio.css";
+import "./town.css";
 export const metadata: Metadata = {
   title: "Jalal Grini — AI & Software Engineer",
   description:

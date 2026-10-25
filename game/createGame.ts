@@ -157,7 +157,14 @@ export function createGame(
         reduced ? 1 : 0.12,
       );
       cam.roundPixels = true;
-      if (!reduced) cam.fadeIn(400, 14, 25, 20);
+      if (!reduced) {
+        this.transitioning = true;
+        cam.fadeIn(500, 14, 25, 20);
+        this.time.delayedCall(500, () => {
+          this.transitioning = false;
+          gameBus.emit("transition", null);
+        });
+      } else gameBus.emit("transition", null);
       this.scale.on("resize", this.onResize, this);
       this.events.once("shutdown", () => {
         this.off.forEach((f) => f());
@@ -555,15 +562,22 @@ export function createGame(
       this.path = [];
       this.touch = { x: 0, y: 0 };
       gameBus.emit("near", null);
+      if (!reduced)
+        gameBus.emit("transition", {
+          label: data.building
+            ? buildings.find((b) => b.id === data.building)!.name
+            : "Founders’ Square",
+          building: data.building,
+        });
       if (reduced) {
         this.scene.start(scene, data);
         return;
       }
       const camera = this.cameras.main;
       camera.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () =>
-        this.scene.start(scene, data),
+        this.time.delayedCall(130, () => this.scene.start(scene, data)),
       );
-      camera.fadeOut(220, 14, 24, 20);
+      camera.fadeOut(320, 14, 24, 20);
     }
     private updateNear() {
       let n: typeof this.near = null;
