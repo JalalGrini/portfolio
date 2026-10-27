@@ -1,0 +1,28 @@
+
+> jalal-grini-portfolio@1.0.0 check:tour
+> node tools/export-catalog.cjs && node tools/audit-tour.cjs
+
+Exported 21 places
+PASS about 576×448 4 reachable isolated exhibits
+PASS academy 768×512 4 reachable isolated exhibits
+PASS office 704×448 4 reachable isolated exhibits
+PASS library 832×576 4 reachable isolated exhibits
+PASS project-sentinel 640×480 5 reachable isolated exhibits
+PASS project-orion 832×576 5 reachable isolated exhibits
+PASS project-dl-report 704×512 5 reachable isolated exhibits
+PASS project-matchwork 576×448 5 reachable isolated exhibits
+PASS project-ocr 768×544 5 reachable isolated exhibits
+PASS project-spam 640×480 5 reachable isolated exhibits
+PASS project-odoo 832×576 5 reachable isolated exhibits
+PASS project-rag 704×512 5 reachable isolated exhibits
+PASS project-finance 576×448 5 reachable isolated exhibits
+PASS project-comptapilot 768×544 5 reachable isolated exhibits
+PASS project-pfe 640×480 5 reachable isolated exhibits
+PASS project-employees 832×576 5 reachable isolated exhibits
+PASS project-todo 704×512 5 reachable isolated exhibits
+PASS project-recipe 576×448 5 reachable isolated exhibits
+PASS project-salle 768×544 5 reachable isolated exhibits
+PASS project-tva 640×480 5 reachable isolated exhibits
+PASS contact 544×416 4 reachable isolated exhibits
+Room sizes 8 ; project rooms 16 ; stations 100
+PASS All town doors connected, all furniture accessible, project coverage exact

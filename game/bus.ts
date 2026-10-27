@@ -1,21 +1,73 @@
-import type { BuildingId } from "@/content/portfolio";
+export type DialogueChoice = { id: string; label: string };
+export type Dialogue = {
+  speaker: string;
+  text: string;
+  portrait?: "portrait" | "happy" | "thinking";
+  title?: string;
+  choices?: DialogueChoice[];
+  link?: string;
+  linkLabel?: string;
+  station?: string;
+};
+export type TourState = {
+  active: boolean;
+  stage: "free" | "leading" | "waiting" | "stop" | "exploring" | "complete";
+  index: number;
+  total: number;
+  target: string;
+  distance: number;
+};
+export type Preferences = {
+  speed: number;
+  zoom: number;
+  time: "day" | "evening";
+  footsteps: boolean;
+  reduced: boolean;
+};
 export type GameEvents = {
   ready: undefined;
-  transition: { label: string; building?: BuildingId } | null;
-  near: { label: string; kind: string } | null;
-  open: BuildingId;
-  location: { name: string; room: BuildingId | null };
-  position: { x: number; y: number; width: number; height: number };
-  dialogue: { speaker: string; text: string };
+  error: string;
+  transition: { label: string; building?: string } | null;
+  near: { label: string; kind: string; id?: string } | null;
+  location: { name: string; room: string | null };
+  position: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    guideX?: number;
+    guideY?: number;
+    guideVisible?: boolean;
+    sitting?: boolean;
+    cameraX?: number;
+    cameraY?: number;
+    zoom?: number;
+  };
+  dialogue: Dialogue;
   pause: boolean;
   reduced: boolean;
+  preferences: Preferences;
+  tour: TourState;
+  inspected: { place: string; station: string };
   action: {
-    type: "interact" | "wave" | "sit" | "exit" | "navigate" | "direction";
-    id?: BuildingId;
+    type:
+      | "interact"
+      | "wave"
+      | "sit"
+      | "exit"
+      | "navigate"
+      | "direction"
+      | "tour-start"
+      | "tour-next"
+      | "tour-leave"
+      | "tour-rejoin"
+      | "choice"
+      | "inspect";
+    id?: string;
+    kind?: string;
     x?: number;
     y?: number;
   };
-  error: string;
 };
 class Bus {
   private listeners = new Map<string, Set<(v: never) => void>>();

@@ -1,0 +1,28 @@
+
+> jalal-grini-portfolio@1.0.0 test:town
+> node tools/export-catalog.cjs && node tools/qa-town-tour.cjs
+
+Exported 21 places
+PASS about real door walking and 4 isolated object dialogues
+PASS academy real door walking and 4 isolated object dialogues
+PASS office real door walking and 4 isolated object dialogues
+PASS library real door walking and 4 isolated object dialogues
+PASS project-sentinel real door walking and 5 isolated object dialogues
+PASS project-orion real door walking and 5 isolated object dialogues
+PASS project-dl-report real door walking and 5 isolated object dialogues
+PASS project-matchwork real door walking and 5 isolated object dialogues
+PASS project-ocr real door walking and 5 isolated object dialogues
+PASS project-spam real door walking and 5 isolated object dialogues
+PASS project-odoo real door walking and 5 isolated object dialogues
+PASS project-rag real door walking and 5 isolated object dialogues
+PASS project-finance real door walking and 5 isolated object dialogues
+PASS project-comptapilot real door walking and 5 isolated object dialogues
+PASS project-pfe real door walking and 5 isolated object dialogues
+PASS project-employees real door walking and 5 isolated object dialogues
+PASS project-todo real door walking and 5 isolated object dialogues
+PASS project-recipe real door walking and 5 isolated object dialogues
+PASS project-salle real door walking and 5 isolated object dialogues
+PASS project-tva real door walking and 5 isolated object dialogues
+PASS contact real door walking and 4 isolated object dialogues
+PASS Tour waiting, guide visibility, rejoin and leave
+PASS No uncaught errors or failed assets

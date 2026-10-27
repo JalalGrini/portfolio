@@ -1,0 +1,24 @@
+PASS Right-click NPC conversation choices and prepared greeting
+PASS Keyboard movement and persistent sitting
+PASS Guided stop 1
+PASS Guided stop 2
+PASS Guided stop 3
+PASS Guided stop 4
+PASS Guided stop 5
+PASS Guided stop 6
+PASS Guided stop 7
+PASS Guided stop 8
+PASS Guided stop 9
+PASS Guided stop 10
+PASS Guided stop 11
+PASS Guided stop 12
+PASS Guided stop 13
+PASS Guided stop 14
+PASS Guided stop 15
+PASS Guided stop 16
+PASS Guided stop 17
+PASS Guided stop 18
+PASS Guided stop 19
+PASS Guided stop 20
+PASS Guided stop 21
+PASS Tour completion, free mode and restart

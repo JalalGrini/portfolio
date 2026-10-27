@@ -1,0 +1,21 @@
+STUDIO { page: 1000, viewport: 1000, button: 793.375 }
+TOUR stop
+PASS Tour enters first building
+PASS Sitting holds until standing
+PASS Atlas lists 21 buildings
+MOBILE { height: 844, width: 390, viewport: 844 }
+MOBILE STUDIO {
+  height: 844,
+  viewport: 844,
+  start: {
+    x: 144,
+    y: 696,
+    width: 222,
+    height: 52,
+    top: 696,
+    right: 366,
+    bottom: 748,
+    left: 144
+  }
+}
+PASS No runtime or asset errors

@@ -1,3 +1,7 @@
+# Testing the guided village
+
+See [GUIDED_TOWN](GUIDED_TOWN.md#local-validation) for the current commands and scope. The current game has 21 buildings, not seven. The historical suites below describe earlier checkpoints and are retained as development history only.
+
 # Testing and quality gates
 
 ## Reproduce locally
