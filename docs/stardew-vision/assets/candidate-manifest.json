@@ -1,0 +1,49 @@
+[
+  {
+    "id": "kenney-tiny-town.zip",
+    "path": "assets/candidates/kenney-tiny-town.zip",
+    "downloadUrl": "https://kenney.nl/media/pages/assets/tiny-town/a415fbeb49-1735736916/kenney_tiny-town.zip",
+    "sourceUrl": "https://kenney.nl/assets/tiny-town",
+    "creators": "Kenney",
+    "license": "CC0-1.0; retain included license",
+    "sha256": "9768692dccff1d706408a5aedd6ca4f6cd1409506cbc84cb2f862919764be977",
+    "bytes": 182243,
+    "parts": [
+      "assets/encoded/kenney-tiny-town.zip.b64.part-001",
+      "assets/encoded/kenney-tiny-town.zip.b64.part-002",
+      "assets/encoded/kenney-tiny-town.zip.b64.part-003",
+      "assets/encoded/kenney-tiny-town.zip.b64.part-004",
+      "assets/encoded/kenney-tiny-town.zip.b64.part-005"
+    ],
+    "runtimeApproved": false
+  },
+  {
+    "id": "lpc-dark-wood.png",
+    "path": "assets/candidates/lpc-dark-wood.png",
+    "downloadUrl": "https://opengameart.org/sites/default/files/dark-wood_4.png",
+    "sourceUrl": "https://opengameart.org/content/lpc-wooden-furniture",
+    "creators": "bluecarrot16, Baŝto, Lanea Zimmerman (Sharm), William Thompson, Tuomo Untinen (Reemax), Janna/Lilius/Jannax",
+    "license": "Alternative/component licenses; see upstream credits ZIP and source page",
+    "sha256": "04c47b995e6c768ef83f26333869de7c5e486cfb951179acd856a39f8115e113",
+    "bytes": 54375,
+    "parts": [
+      "assets/encoded/lpc-dark-wood.png.b64.part-001",
+      "assets/encoded/lpc-dark-wood.png.b64.part-002"
+    ],
+    "runtimeApproved": false
+  },
+  {
+    "id": "lpc-credits.zip",
+    "path": "assets/candidates/lpc-credits.zip",
+    "downloadUrl": "https://opengameart.org/sites/default/files/credits-furniture.txt_.zip",
+    "sourceUrl": "https://opengameart.org/content/lpc-wooden-furniture",
+    "creators": "Upstream contributor credits",
+    "license": "Retain complete notices",
+    "sha256": "793bca5fca20c968019da6367b49589a43e9811a6808d2d8c9c3b427e3dea5fb",
+    "bytes": 1334,
+    "parts": [
+      "assets/encoded/lpc-credits.zip.b64.part-001"
+    ],
+    "runtimeApproved": false
+  }
+]
