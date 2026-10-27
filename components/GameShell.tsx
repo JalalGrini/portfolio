@@ -23,6 +23,7 @@ const savedStop = () => {
 import world from "@/game/tour-world.json";
 import Modal from "./Modal";
 import AvatarPreview from "./AvatarPreview";
+import TourJournal from "./TourJournal";
 const defaults: Preferences = {
   speed: 1,
   zoom: 1,
@@ -113,6 +114,7 @@ export default function GameShell({
     [settings, setSettings] = useState(false),
     [help, setHelp] = useState(false);
   const [hint, setHint] = useState("");
+  const [mapTab, setMapTab] = useState<"map" | "journal">("map");
   const [visited, setVisited] = useState<string[]>([]),
     [inspected, setInspected] = useState<Record<string, string[]>>({}),
     [travel, setTravel] = useState<{ label: string; building?: string } | null>(
@@ -789,79 +791,155 @@ export default function GameShell({
           className="village-map-modal"
           onClose={() => setMap(false)}
         >
-          <div className="village-atlas">
-            <div className="village-map-art">
-              <img
-                src="/assets/tour/map.png"
-                alt="Map of the village, showing 21 project and background buildings connected by paths"
-              />
-              {world.buildings.map((b, i) => (
-                <button
-                  key={b.id}
-                  className={`map-pin ${selected === b.id ? "selected" : ""} ${visited.includes(b.id) ? "visited" : ""}`}
-                  style={{
-                    left: `${(b.doorX / world.width) * 100}%`,
-                    top: `${(b.doorY / world.height) * 100}%`,
-                  }}
-                  onClick={() => setSelected(b.id)}
-                  aria-label={`Select ${placeById(b.id).name}`}
-                  aria-pressed={selected === b.id}
-                >
-                  {i + 1}
-                </button>
-              ))}
-              {!room && (
-                <span
-                  className="atlas-you"
-                  style={{
-                    left: `${(pos.x / world.width) * 100}%`,
-                    top: `${(pos.y / world.height) * 100}%`,
-                  }}
-                  title="You are here"
-                >
-                  ●
-                </span>
-              )}
-            </div>
-            <div className="village-map-detail">
-              <label>
-                Choose a building
-                <select
-                  aria-label="Choose a building"
-                  value={selected}
-                  onChange={(e) => setSelected(e.target.value)}
-                >
-                  {places.map((p, i) => (
-                    <option value={p.id} key={p.id}>
-                      {i + 1}. {p.short}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <img src={`/assets/tour/house-${selected}.png`} alt="" />
-              <small>{chosen.district}</small>
-              <h2>{chosen.name}</h2>
-              <p>{chosen.summary}</p>
-              <span>
-                {chosen.width} × {chosen.height} interior ·{" "}
-                {chosen.exhibits.length} inspectable objects
-              </span>
-              <ul>
-                {chosen.exhibits.map((e) => (
-                  <li key={e.id}>
-                    {inspected[chosen.id]?.includes(e.id) ? "✓" : "◇"} {e.title}
-                  </li>
-                ))}
-              </ul>
-              <button className="v-button" onClick={walk}>
-                {tour?.active ? "Leave tour & walk here" : "Walk here →"}
+          <div
+            className="atlas-tabs"
+            role="tablist"
+            aria-label="Town atlas sections"
+          >
+            {(["map", "journal"] as const).map((tab) => (
+              <button
+                key={tab}
+                id={`atlas-tab-${tab}`}
+                role="tab"
+                aria-selected={mapTab === tab}
+                aria-controls={`atlas-panel-${tab}`}
+                tabIndex={mapTab === tab ? 0 : -1}
+                className="v-button"
+                onClick={() => setMapTab(tab)}
+                onKeyDown={(e) => {
+                  if (
+                    !["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)
+                  )
+                    return;
+                  e.preventDefault();
+                  const next =
+                    e.key === "Home"
+                      ? "map"
+                      : e.key === "End"
+                        ? "journal"
+                        : mapTab === "map"
+                          ? "journal"
+                          : "map";
+                  setMapTab(next);
+                  document.getElementById(`atlas-tab-${next}`)?.focus();
+                }}
+              >
+                {tab === "map" ? "Town map" : "Tour journal"}
               </button>
-              <small>
-                {visited.includes(selected) ? "Visited" : "Not visited yet"} ·
-                Walking only, no teleporting.
-              </small>
-            </div>
+            ))}
           </div>
+          {mapTab === "journal" ? (
+            <div
+              role="tabpanel"
+              id="atlas-panel-journal"
+              aria-labelledby="atlas-tab-journal"
+            >
+              <TourJournal
+                tour={tour}
+                visited={visited}
+                inspected={inspected}
+                checkpoint={savedStop()}
+                onMap={(id) => {
+                  setSelected(id);
+                  setMapTab("map");
+                }}
+                onResume={() => {
+                  const point = savedStop();
+                  setMap(false);
+                  setTimeout(
+                    () =>
+                      tour?.active
+                        ? send("tour-rejoin")
+                        : send(
+                            "tour-start",
+                            point ? `${point.index}:${point.beat}` : undefined,
+                          ),
+                    80,
+                  );
+                }}
+              />
+            </div>
+          ) : (
+            <div
+              role="tabpanel"
+              id="atlas-panel-map"
+              aria-labelledby="atlas-tab-map"
+              className="village-atlas"
+            >
+              <div className="village-map-art">
+                <img
+                  src="/assets/tour/map.png"
+                  alt="Map of the village, showing 21 project and background buildings connected by paths"
+                />
+                {world.buildings.map((b, i) => (
+                  <button
+                    key={b.id}
+                    className={`map-pin ${selected === b.id ? "selected" : ""} ${visited.includes(b.id) ? "visited" : ""}`}
+                    style={{
+                      left: `${(b.doorX / world.width) * 100}%`,
+                      top: `${(b.doorY / world.height) * 100}%`,
+                    }}
+                    onClick={() => setSelected(b.id)}
+                    aria-label={`Select ${placeById(b.id).name}`}
+                    aria-pressed={selected === b.id}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                {!room && (
+                  <span
+                    className="atlas-you"
+                    style={{
+                      left: `${(pos.x / world.width) * 100}%`,
+                      top: `${(pos.y / world.height) * 100}%`,
+                    }}
+                    title="You are here"
+                  >
+                    ●
+                  </span>
+                )}
+              </div>
+              <div className="village-map-detail">
+                <label>
+                  Choose a building
+                  <select
+                    aria-label="Choose a building"
+                    value={selected}
+                    onChange={(e) => setSelected(e.target.value)}
+                  >
+                    {places.map((p, i) => (
+                      <option value={p.id} key={p.id}>
+                        {i + 1}. {p.short}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <img src={`/assets/tour/house-${selected}.png`} alt="" />
+                <small>{chosen.district}</small>
+                <h2>{chosen.name}</h2>
+                <p>{chosen.summary}</p>
+                <span>
+                  {chosen.width} × {chosen.height} interior ·{" "}
+                  {chosen.exhibits.length} inspectable objects
+                </span>
+                <ul>
+                  {chosen.exhibits.map((e) => (
+                    <li key={e.id}>
+                      {inspected[chosen.id]?.includes(e.id) ? "✓" : "◇"}{" "}
+                      {e.title}
+                    </li>
+                  ))}
+                </ul>
+                <button className="v-button" onClick={walk}>
+                  {tour?.active ? "Leave tour & walk here" : "Walk here →"}
+                </button>
+                <small>
+                  {visited.includes(selected) ? "Visited" : "Not visited yet"} ·
+                  Walking only, no teleporting.
+                </small>
+              </div>
+            </div>
+          )}
         </Modal>
       )}
       {settings && (
