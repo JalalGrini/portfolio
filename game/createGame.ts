@@ -146,6 +146,13 @@ export function createGame(
     private player!: Phaser.GameObjects.Sprite;
     private guide!: Phaser.GameObjects.Sprite;
     private guideLabel!: Phaser.GameObjects.Text;
+    /** Non-blocking speech bubble above Jalal (hints never pause the game). */
+    private bubble?: Phaser.GameObjects.Container;
+    private bubbleText?: Phaser.GameObjects.Text;
+    private bubbleBg?: Phaser.GameObjects.Graphics;
+    private bubbleTimer?: Phaser.Time.TimerEvent;
+    private lastHint = "";
+    private lastHintAt = -1e9;
     private guidePath: Point[] = [];
     private path: Point[] = [];
     private stations: Station[] = [];
@@ -291,6 +298,10 @@ export function createGame(
       const guided = !place || (tour.active && place.id === tour.target);
       this.guide.setVisible(guided);
       this.guideLabel.setVisible(guided);
+      this.bubble = undefined;
+      this.lastHint = "";
+      this.events.off(Phaser.Scenes.Events.POST_UPDATE, this.placeBubble, this);
+      this.events.on(Phaser.Scenes.Events.POST_UPDATE, this.placeBubble, this);
       this.weather = this.add
         .rectangle(0, 0, this.widthPx, this.heightPx, 0x142740, 0)
         .setOrigin(0)
@@ -727,11 +738,7 @@ export function createGame(
             distance(this.player, { x: b.doorX, y: b.doorY + 30 }) < 125
           )
             this.enter(b.id);
-          else
-            say({
-              speaker: "Jalal",
-              text: "Come a little closer to the door, then press E to enter.",
-            });
+          else this.hint("Come a little closer to the door, then press E.");
           return;
         }
         const answers: Record<string, string> = {
@@ -804,6 +811,8 @@ export function createGame(
     private leadToStop() {
       if (this.roomMode) return;
       const b = world.buildings.find((b) => b.id === tour.target)!;
+      if (tour.stage === "leading")
+        this.hint(`Follow me → ${placeById(tour.target).short}`, 3200);
       this.guidePath = route(
         this.guide,
         { x: b.doorX, y: b.doorY + 36 },
@@ -812,6 +821,105 @@ export function createGame(
         this.solids,
       );
       this.waitNotified = false;
+    }
+    /** Show a short line in a bubble above Jalal; repeated lines are muted. */
+    private hint(text: string, ms = 3800) {
+      gameBus.emit("hint", text);
+      const now = this.time.now;
+      if (text === this.lastHint && now - this.lastHintAt < 7000) {
+        this.bubbleTimer?.remove();
+        this.bubbleTimer = this.time.delayedCall(ms, () => this.hideBubble());
+        return;
+      }
+      this.lastHint = text;
+      this.lastHintAt = now;
+      if (!this.guide?.visible) return;
+      if (!this.bubble) {
+        this.bubbleBg = this.add.graphics();
+        this.bubbleText = this.add
+          .text(0, -17, "", {
+            fontFamily: "Pixelify Sans",
+            fontSize: "13px",
+            color: "#263e30",
+            align: "center",
+            wordWrap: { width: 196 },
+          })
+          // CanvasRenderer keeps the texture's original resolution. Changing it
+          // after creation doubles the rendered glyphs without the bubble frame.
+          .setOrigin(0.5, 1);
+        this.bubble = this.add
+          .container(this.guide.x, this.guide.y - 76, [
+            this.bubbleBg,
+            this.bubbleText,
+          ])
+          .setDepth(9600);
+      }
+      const t = this.bubbleText!,
+        g = this.bubbleBg!;
+      t.setText(text);
+      const w = Math.ceil(t.width + 20),
+        h = Math.ceil(t.height + 12),
+        top = -h - 10;
+      g.clear();
+      g.fillStyle(0x243e2d, 0.3).fillRoundedRect(-w / 2 + 2, top + 3, w, h, 6);
+      g.fillStyle(0xf4e5ba, 1).fillRoundedRect(-w / 2, top, w, h, 6);
+      g.lineStyle(2, 0x707d55, 1).strokeRoundedRect(-w / 2, top, w, h, 6);
+      g.lineStyle(1, 0xfff3ce, 1).strokeRoundedRect(
+        -w / 2 + 3,
+        top + 3,
+        w - 6,
+        h - 6,
+        4,
+      );
+      g.fillStyle(0xf4e5ba, 1).fillTriangle(-7, -11, 7, -11, 0, -2);
+      g.lineStyle(2, 0x707d55, 1)
+        .lineBetween(-7, -10, 0, -2)
+        .lineBetween(7, -10, 0, -2);
+      t.setY(top + h - 6);
+      const b = this.bubble;
+      this.tweens.killTweensOf(b);
+      b.setVisible(true);
+      this.placeBubble();
+      if (prefs.reduced) b.setAlpha(1).setScale(1);
+      else {
+        b.setAlpha(0).setScale(0.86);
+        this.tweens.add({
+          targets: b,
+          alpha: 1,
+          scale: 1,
+          duration: 190,
+          ease: "Back.Out",
+        });
+      }
+      this.bubbleTimer?.remove();
+      this.bubbleTimer = this.time.delayedCall(ms, () => this.hideBubble());
+    }
+    private hideBubble() {
+      const b = this.bubble;
+      if (!b || !b.visible) return;
+      if (prefs.reduced) {
+        b.setVisible(false);
+        return;
+      }
+      this.tweens.add({
+        targets: b,
+        alpha: 0,
+        y: b.y - 6,
+        duration: 220,
+        ease: "Sine.In",
+        onComplete: () => b.setVisible(false),
+      });
+    }
+    private placeBubble() {
+      const b = this.bubble;
+      if (!b || !b.visible || !this.guide) return;
+      if (!this.guide.visible) {
+        b.setVisible(false);
+        return;
+      }
+      if (!this.tweens.isTweening(b) || b.alpha >= 1)
+        b.setPosition(Math.round(this.guide.x), Math.round(this.guide.y - 76));
+      else b.setX(Math.round(this.guide.x));
     }
     private enter(id: string) {
       const b = world.buildings.find((b) => b.id === id)!;
@@ -1233,15 +1341,7 @@ export function createGame(
         this.guide.play("jalal-idle-2", true);
         if (!this.waitNotified) {
           this.waitNotified = true;
-          say({
-            speaker: "Jalal",
-            portrait: "thinking",
-            text: "Follow Jalal, please! I’ll wait right here so we don’t lose each other. Come closer, or choose free exploration whenever you like.",
-            choices: [
-              { id: "close", label: "I’m coming" },
-              { id: "tour-leave", label: "Explore freely" },
-            ],
-          });
+          this.hint("Over here! I’ll wait for you.");
           emitTour();
         }
         return;
@@ -1264,15 +1364,8 @@ export function createGame(
           if (distance(this.guide, { x: b.doorX, y: b.doorY + 36 }) < 30) {
             dispatch({ type: "arrive-door" });
             const p = placeById(tour.target);
-            say({
-              speaker: "Jalal",
-              title: `Stop ${tour.index + 1} of ${tour.total} · ${p.short}`,
-              text: `Here we are — ${p.name}. Step inside with me and I’ll walk you through the highlights.`,
-              choices: [
-                { id: "enter-stop", label: "Enter this building" },
-                { id: "close", label: "Let me look around" },
-              ],
-            });
+            this.guide.play("jalal-idle-2", true);
+            this.hint(`Here we are — ${p.short}! Step inside with me.`, 5200);
           } else this.leadToStop();
         }
       }
@@ -1398,15 +1491,7 @@ export function createGame(
             this.path = [];
             if (!this.waitNotified && tour.stage === "arrived") {
               this.waitNotified = true;
-              say({
-                speaker: "Jalal",
-                portrait: "thinking",
-                text: "Follow Jalal, please! Let’s stay in sight of each other. You can also leave the tour and explore freely.",
-                choices: [
-                  { id: "close", label: "Stay together" },
-                  { id: "tour-leave", label: "Explore freely" },
-                ],
-              });
+              this.hint("Let’s stay together — the door is right here.");
             }
           }
         }
