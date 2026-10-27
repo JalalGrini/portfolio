@@ -1,3 +1,4 @@
+import { authoredStations } from "./authoredRooms";
 import { projects, profile, experience, skills } from "@/content/portfolio";
 export type Exhibit = {
   id: string;
@@ -35,8 +36,8 @@ const civic: Place[] = [
     district: "The beginning",
     summary: profile.bio,
     theme: "about",
-    width: 576,
-    height: 448,
+    width: 704,
+    height: 576,
     exhibits: [
       e("welcome", "A person behind the systems", profile.bio, "notebook"),
       e(
@@ -292,6 +293,8 @@ export type Station = Exhibit & {
   approach: { x: number; y: number };
 };
 export function stationsFor(place: Place): Station[] {
+  const authored = authoredStations(place);
+  if (authored) return authored;
   const spots = [
     { x: 72, y: 124 },
     { x: place.width - 172, y: 124 },
