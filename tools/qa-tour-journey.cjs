@@ -11,7 +11,12 @@ fs.mkdirSync(out, { recursive: true });
     executablePath: process.env.CHROMIUM_PATH || "/usr/local/bin/chromium",
     args: ["--no-sandbox"],
   });
-  const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+  const p = await b.newPage({
+    viewport: {
+      width: +(process.env.QA_WIDTH || 1440),
+      height: +(process.env.QA_HEIGHT || 900),
+    },
+  });
   const errors = [];
   p.on("pageerror", (e) => errors.push(e.message));
   const pause = (ms) => p.waitForTimeout(ms);
@@ -85,7 +90,8 @@ fs.mkdirSync(out, { recursive: true });
       await pause(400);
       if (await p.locator(".village-dialogue").count())
         throw Error("Arrival opened a blocking dialogue at stop " + (i + 1));
-      if (i === 0) await p.screenshot({ path: `${out}/stop1-arrival-bubble.png` });
+      if (i === 0)
+        await p.screenshot({ path: `${out}/stop1-arrival-bubble.png` });
       await p.getByRole("button", { name: "Enter →", exact: true }).click();
       await p.waitForFunction(
         () => document.querySelector(".game-shell")?.dataset.room !== "town",
@@ -95,6 +101,13 @@ fs.mkdirSync(out, { recursive: true });
       const room = await attr("room");
       await waitStage(["room-intro"]);
       await choose(/Show me|Let’s look/);
+      await pause(250);
+      const dock = await p.locator(".room-controls-dock").boundingBox();
+      const area = await shell().boundingBox();
+      const cameraHeight = +(await attr("camera-height"));
+      if (!dock || Math.abs(cameraHeight - (dock.y - area.y)) > 2)
+        throw Error("Room camera overlaps the control dock in " + room);
+      await p.screenshot({ path: `${out}/stop${i + 1}-${room}-viewport.png` });
       let beats = 0;
       for (let k = 0; k < 6; k++) {
         await waitStage(["to-beat", "room-free"]);
@@ -109,14 +122,30 @@ fs.mkdirSync(out, { recursive: true });
         }
         const gx = +(await attr("guide-x")),
           gy = +(await attr("guide-y"));
-        await p
-          .locator(".game-canvas canvas")
-          .click({ position: await point(gx - 30, gy - 30) });
+        const aim = await point(gx - 30, gy - 30);
+        const canvas = await p.locator(".game-canvas canvas").boundingBox();
+        const clearClick = await p.evaluate(
+          ({ x, y }) => document.elementFromPoint(x, y)?.tagName === "CANVAS",
+          { x: aim.x + canvas.x, y: aim.y + canvas.y },
+        );
+        if (
+          aim.x < 0 ||
+          aim.x > canvas.width ||
+          aim.y < 0 ||
+          aim.y > cameraHeight ||
+          !clearClick
+        ) {
+          await p
+            .getByRole("button", { name: "Follow Jalal", exact: true })
+            .click();
+        } else await p.locator(".game-canvas canvas").click({ position: aim });
         await waitStage(["beat"], 15000);
         const beat = await attr("tour-beat");
         if (!beat) throw Error("Beat without exhibit id in " + room);
         await p.locator(".village-dialogue").waitFor();
-        if (!/highlight/i.test(await p.locator(".village-dialogue").innerText()))
+        if (
+          !/highlight/i.test(await p.locator(".village-dialogue").innerText())
+        )
           throw Error("Beat dialogue missing highlight title");
         await p.screenshot({
           path: `${out}/stop${i + 1}-${room}-beat${k + 1}.png`,
@@ -129,7 +158,8 @@ fs.mkdirSync(out, { recursive: true });
           await waitStage(["to-beat"]);
           await p.getByRole("button", { name: /Outside/ }).click();
           await p.waitForFunction(
-            () => document.querySelector(".game-shell")?.dataset.room === "town",
+            () =>
+              document.querySelector(".game-shell")?.dataset.room === "town",
             {},
             { timeout: 10000 },
           );
@@ -143,7 +173,8 @@ fs.mkdirSync(out, { recursive: true });
           await p.screenshot({ path: `${out}/stop1-early-exit.png` });
           await choose(/Go back inside/);
           await p.waitForFunction(
-            () => document.querySelector(".game-shell")?.dataset.room !== "town",
+            () =>
+              document.querySelector(".game-shell")?.dataset.room !== "town",
             {},
             { timeout: 10000 },
           );
@@ -153,10 +184,14 @@ fs.mkdirSync(out, { recursive: true });
             throw Error("Re-entry intro does not resume at highlight 2");
           await choose(/Continue/);
           await waitStage(["to-beat"]);
-          if (+(await attr("tour-beat-index")) !== expectBeat &&
-              (await attr("tour-beat-index")) !== null)
+          if (
+            +(await attr("tour-beat-index")) !== expectBeat &&
+            (await attr("tour-beat-index")) !== null
+          )
             throw Error("Re-entry did not resume at highlight 2");
-          console.log("PASS early exit pauses at the door; re-entry resumes at highlight 2");
+          console.log(
+            "PASS early exit pauses at the door; re-entry resumes at highlight 2",
+          );
         }
       }
       await waitStage(["room-free"]);
@@ -191,11 +226,16 @@ fs.mkdirSync(out, { recursive: true });
         throw Error("Ribbon does not offer Resume after leaving");
       await p.reload();
       const explore = p.getByRole("button", { name: /Let’s explore/ });
-      await explore.or(p.locator(".village-game.is-ready")).first().waitFor({ timeout: 60000 });
+      await explore
+        .or(p.locator(".village-game.is-ready"))
+        .first()
+        .waitFor({ timeout: 60000 });
       if (await explore.count()) await explore.click();
       await p.locator(".village-game.is-ready").waitFor({ timeout: 60000 });
       await p.locator(".village-dialogue").waitFor({ timeout: 8000 });
-      if (!/welcome back/i.test(await p.locator(".village-dialogue").innerText()))
+      if (
+        !/welcome back/i.test(await p.locator(".village-dialogue").innerText())
+      )
         throw Error("No welcome-back resume offer after reload");
       await p.screenshot({ path: `${out}/resume-offer.png` });
       await choose(/Resume at/);
