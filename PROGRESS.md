@@ -41,7 +41,8 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 | C02a | Ribbon: second line visible in rooms (ellipsis, 430 px), stop progress bar (21 stops) + highlight beads (done / current pulsing), reduced-motion safe, 390 px layout checked | V03/V04 | ✅ |
 | C02b | Non-blocking Jalal hint bubbles + accessible live text; arrival Enter action; desktop/390 px movement and overflow checks | V03/V04 | ✅ |
 | C02e | Owner-priority outdoor palette: source LPC roof/wall ramps, warmer autotiled path shoulders, sunlit grass/foliage, flower colourways, matching atlas, deterministic offline build | V01/V06 | ✅ |
-| C02c | Atlas journal tab: all 21 stops, visited / highlights seen / objects inspected, saved/current checkpoint, exact resume without teleport, map locator, keyboard tabs | V03/V04 | 🟡 local QA passed; deploying |
+| C02c | Atlas journal tab: all 21 stops, visited / highlights seen / objects inspected, saved/current checkpoint, exact resume without teleport, map locator, keyboard tabs | V03/V04 | ✅ |
+| C02d | Measured room control dock + safe-area camera viewport; compact desktop ribbon; indoor Follow Jalal action; portrait/landscape dock layouts | V03/V04 | 🟡 local QA passed; deploying |
 | C02 | Tour UI: redesigned ribbon with stop/beat progress, non-blocking speech bubbles for Jalal hints (no pause spam), resume prompt, tour journal (21 stops, visited/inspected) | V03/V04 | ⬜ |
 | C03 | Full-journey E2E (`tools/qa-tour-journey.cjs`): 21 stops, every room entered, beats completed, exit + resume, no stalls; screenshots per room | V08 | ⬜ |
 
@@ -79,16 +80,17 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 | C20 | Human visual review, production deploy, live verification | V12 | ⬜ |
 
 ## Next up (start here)
-1. **C02c release** — Journal desktop/390 px QA PASS; push and verify production.
-2. **C02d** — Bottom HUD no longer covers rooms (safe-area dock + camera bounds).
-3. **C03** — Full 21-stop journey E2E run + screenshots of every room.
-4. **C04** — R01 portrait dialogue and popups, all buildings (not just the first).
+1. **C02d release** — Complete production verification of the control dock and indoor Follow action.
+2. **C03** — Full 21-stop journey E2E run + screenshots of every room.
+3. **C04** — R01 portrait dialogue and popups, all buildings (not just the first).
 
 ## Deploying (every chunk)
 Push → Vercel builds a preview automatically → once checks pass, create a production deployment of the pushed SHA with the Vercel connector (`create_deployment`, project `prj_N0lCH399sXu6OdzkjzRFANb85mlU`, team `team_AidgC20ca6cfN9tCrVyHymcM`, `target: production`, `gitSource {org JalalGrini, repo portfolio, ref game/stardew-vision, sha}`) → verify <https://portfolio-chi-nine-fwh6p2oz7b.vercel.app/play/> serves the new chunk and run `QA_BASE_URL=<live> QA_STOPS=1 node tools/qa-tour-journey.cjs`. (`request_promote` of a preview returns 422.) Rollback point before the rebuild went live: `dpl_BrENg9LQqzQyG8SAwAuX5yGkNZUw` (`game/jalal-guided-village@43150ca`).
 
 ## Log
 <!-- newest first -->
+- **C02d local QA** — Room camera now reserves the measured lower control dock including safe-area inset; controls no longer paint over the floor/actors. Compact landscape dock; desktop room ribbon moved into the top row. Testing exposed two usability issues: some highlight approaches were behind HUD, and mobile had no indoor follow action. `to-beat` now offers Follow Jalal (not a premature Next stop). Journey test checks dock/camera alignment in each room and uses the visible Follow action when a click target is offscreen or blocked by UI. Desktop 2-stop and 390 px 1-stop tests include early exit/re-entry and reload/resume; screenshots checked. TypeScript/build PASS.
+- **Deploy** — C02c production `dpl_DVVCvnAXB2HzafH7MoQuoxt5fex6` READY (`8b380df`); live 1440/390 px journal checks PASS (all 21 rows, exact counts, keyboard tabs, paused movement, exact resume and map locate).
 - **C02c local QA** — Atlas now has Town map / Tour journal tabs with arrow/Home/End keyboard navigation. Journal lists 21 stops and separates entering/reading highlights/optional objects; Resume returns to the saved stop and highlight with normal walking (not teleporting), Return to Jalal preserves an active tour, Locate selects the right atlas building. `tools/qa-tour-journal.cjs`: 1440/390 px seeded progress, 21 rows, exact 2/21–2/63–3/100 totals, paused movement, precise resume and map locator PASS. Screenshots visually checked; TypeScript/build PASS.
 - **Deploy** — C02e production `dpl_EGGhkXFKpS3nPEB7N1gpfJ4HHwFX` READY (`1746809`); all 29 live art files match deterministic local SHA-256 hashes; live first-stop journey + early exit/re-entry + reload/resume PASS. `check:palette` validates deterministic outputs, facade dimensions and unchanged navigation.
 - **C02e local QA** — Inspected the non-main branch tools/sources after owner feedback that the outdoors were dull. Replaced the double-desaturated runtime pipeline with a deterministic Sharp recipe from the retained LPC originals: seven roof/wall ramps, bright spring grass variants, proper gravel path shoulders, full-colour foliage, three flower colourways and matching map. No geometry/facts/character/interior changes. 1440/390 px screenshots visually checked; TypeScript, build, unit tests and all-door/all-object audit PASS.
@@ -106,7 +108,7 @@ Push → Vercel builds a preview automatically → once checks pass, create a pr
 ## Known issues / hypotheses to check
 - ~~Early room exit advanced the tour; saves lost the highlight~~ → fixed in C01e/C01f.
 - ~~Tour ribbon stage line was hidden inside rooms~~ → fixed in C02a.
-- Bottom HUD (key hints / Wave / Sit / Outside) covers the bottom ~50 px of rooms; Jalal can stand under it at bottom-row exhibits. Fix in C02/C04.
+- ~~Bottom controls covered room floors/actors~~ → measured camera/control dock in C02d (release pending).
 - When the visitor stands next to Jalal at a highlight they can overlap (same depth band). Polish in C15.
 - Dialogue panel covers the lower half of the room; R01 wants a low panel with the scene visible (C04).
 - `qa-tour-loop.cjs` only checks outdoor door stops, not the guided interior journey (C03).

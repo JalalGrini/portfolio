@@ -1568,3 +1568,52 @@ dialog.village-dialogue::backdrop {
     font-size: 20px;
   }
 }
+
+/* C02d — reserve real camera space for room controls, not a world overlay. */
+.village-game {
+  --room-controls-space: 76px;
+}
+.room-controls-dock {
+  position: absolute;
+  inset: auto 0 0;
+  height: calc(var(--room-controls-space) + env(safe-area-inset-bottom, 0px));
+  z-index: 3;
+  pointer-events: none;
+  border-top: 2px solid #9c7a4c;
+  background: linear-gradient(#2d4130, #162e24);
+  box-shadow: inset 0 3px 0 #c3a16d33;
+}
+.village-game:not([data-room="town"]) .village-prompt {
+  bottom: calc(
+    var(--room-controls-space) + env(safe-area-inset-bottom, 0px) + 12px
+  );
+}
+@media (max-width: 700px) {
+  .village-game {
+    --room-controls-space: 168px;
+  }
+}
+@media (max-height: 600px) and (max-width: 700px) {
+  .village-game {
+    --room-controls-space: 112px;
+  }
+  .village-game:not([data-room="town"]) .village-emotes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 148px;
+  }
+  .village-game:not([data-room="town"]) .village-emotes .v-button {
+    min-width: 64px;
+  }
+  .village-game:not([data-room="town"])
+    .village-emotes
+    .v-button:last-child:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 1000px) {
+  .village-game:not([data-room="town"]) .tour-ribbon {
+    top: 16px;
+    left: 240px;
+  }
+}
