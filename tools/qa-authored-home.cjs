@@ -21,6 +21,8 @@ fs.mkdirSync(out, { recursive: true });
     },
   });
   const errors = [];
+  if (process.env.QA_TRACE)
+    p.on("console", (m) => console.log("browser:", m.text()));
   p.on("pageerror", (e) => errors.push(e.message));
   const shell = () => p.locator(".game-shell");
   const state = () =>
@@ -97,6 +99,8 @@ fs.mkdirSync(out, { recursive: true });
         }
       }
       if (!click) throw Error("No uncovered route point");
+      if (process.env.QA_TRACE)
+        console.log("walk", n, JSON.stringify({ target, from: s, click }));
       await p.mouse.click(click.x, click.y);
       for (let t = 0; t < 60; t++) {
         await p.waitForTimeout(100);
@@ -130,16 +134,18 @@ fs.mkdirSync(out, { recursive: true });
     await p.reload();
     await p.getByRole("button", { name: /Let’s explore/ }).click();
     await p.locator(".village-game.is-ready").waitFor({ timeout: 60000 });
+    await p.waitForTimeout(800);
     await p.getByRole("button", { name: "Take a tour", exact: true }).click();
-    for (let n = 0; n < 12; n++) {
-      if ((await state()).tourStage === "arrived") break;
-      const follow = p.getByRole("button", {
-        name: "Follow Jalal",
-        exact: true,
-      });
-      if (await follow.count()) await follow.click();
-      await p.waitForTimeout(800);
-    }
+    await p.getByRole("button", { name: "Follow Jalal", exact: true }).click();
+    await p.waitForFunction(
+      () => {
+        const s = document.querySelector(".game-shell")?.dataset;
+        return s?.tourStage === "arrived" && s?.tourIndex === "0";
+      },
+      {},
+      { timeout: 30000 },
+    );
+    await p.waitForTimeout(400);
     await p.getByRole("button", { name: "Enter →", exact: true }).click();
     await p.waitForFunction(
       () => document.querySelector(".game-shell")?.dataset.room === "about",
@@ -177,7 +183,11 @@ fs.mkdirSync(out, { recursive: true });
       await p.keyboard.press("q");
       await p.waitForTimeout(350);
       const s = await state();
-      if (s.sitting !== "true" || distance(s, seat) > 2)
+      if (
+        s.sitting !== "true" ||
+        distance(s, seat) > 2 ||
+        +s.facing !== seat.facing
+      )
         throw Error(
           "Did not sit on registered seat " + i + " " + JSON.stringify(s),
         );

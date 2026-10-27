@@ -141,3 +141,67 @@ test("chair backs render behind seated actors and occupied side tables are not s
   const bedside = l.furniture.find((f) => f.id === "bedside");
   assert.equal(bedside.seatable, false);
 });
+
+test("home seating faces its furniture and kitchen has an open entry", () => {
+  const l = roomLayouts.about;
+  const f = Object.fromEntries(l.furniture.map((x) => [x.id, x]));
+  const facing = (x) => x.facing ?? roomProps[x.prop].facing ?? 2;
+  assert.equal(facing(f["reading-chair"]), 3);
+  assert.equal(facing(f["reading-chair2"]), 1);
+  assert.ok(f["reading-chair"].x < f.welcome.x);
+  assert.ok(f["reading-chair2"].x > f.welcome.x + f.welcome.w);
+  assert.equal(facing(f["study-chair"]), 0);
+  assert.ok(f["study-chair"].y >= f["computer-desk"].y + f["computer-desk"].h);
+  assert.equal(facing(f["kitchen-stool"]), 1);
+  assert.ok(f["kitchen-stool"].x > f["kitchen-table"].x);
+  const solids = roomSolids(l);
+  assert.ok(isFree({ x: 472, y: 414 }, l.width, l.height, solids));
+  assert.ok(
+    route({ x: 352, y: 522 }, { x: 540, y: 500 }, l.width, l.height, solids)
+      .length,
+  );
+});
+
+test("free clicks beside study chair reach exact point on either side of grid edge", () => {
+  const h = roomLayouts.about,
+    solids = roomSolids(h);
+  for (const x of [655.88, 656, 656.12]) {
+    const target = { x, y: 325.88 };
+    for (const start of [
+      { x: 488, y: 326 },
+      { x: 632, y: 312 },
+    ]) {
+      const path = route(start, target, h.width, h.height, solids);
+      assert.ok(path.length);
+      assert.ok(
+        distance(path.at(-1), target) < 1,
+        JSON.stringify({ start, target, path }),
+      );
+    }
+  }
+});
+
+test("departing a free subcell beside chair never crosses its footprint", () => {
+  const h = roomLayouts.about,
+    solids = roomSolids(h);
+  for (const x of [655.88, 656, 656.12]) {
+    let last = { x, y: 325.88 };
+    const path = route(last, { x: 87, y: 477 }, h.width, h.height, solids);
+    assert.ok(path.length);
+    for (const q of path) {
+      for (let k = 1; k <= 16; k++)
+        assert.ok(
+          isFree(
+            {
+              x: last.x + ((q.x - last.x) * k) / 16,
+              y: last.y + ((q.y - last.y) * k) / 16,
+            },
+            h.width,
+            h.height,
+            solids,
+          ),
+        );
+      last = q;
+    }
+  }
+});

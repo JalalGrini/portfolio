@@ -80,5 +80,36 @@
     "source": "workstation",
     "crop": [0, 0, 112, 48],
     "footprint": null
+  },
+  "chair-up": {
+    "source": "interior",
+    "crop": [256, 108, 32, 40],
+    "footprint": [4, 23, 24, 15],
+    "seat": [16, 30],
+    "facing": 0
+  },
+  "chair-east": {
+    "source": "interior",
+    "crop": [288, 108, 32, 40],
+    "footprint": [4, 23, 24, 15],
+    "seat": [20, 28],
+    "facing": 3
+  },
+  "chair-west": {
+    "source": "interior",
+    "crop": [320, 108, 32, 40],
+    "footprint": [4, 23, 24, 15],
+    "seat": [12, 28],
+    "facing": 1
+  },
+  "floor-plant": {
+    "source": "interior",
+    "crop": [224, 224, 32, 48],
+    "footprint": [4, 36, 24, 10]
+  },
+  "cabinet-wall": {
+    "source": "furniture",
+    "crop": [0, 32, 64, 64],
+    "footprint": null
   }
 }

@@ -50,8 +50,49 @@ export function route(
           if (free(p.x + x, p.y + y)) return { x: p.x + x, y: p.y + y };
     return p;
   }
-  start = nearest(start);
-  goal = nearest(goal);
+  // A free click can lie in a grid cell whose center is inside furniture.
+  // Resolve both departure and arrival with a clear connecting segment, not the
+  // first free cell in a top-left-biased scan (which can stop short forever).
+  const clearSegment = (a: Point, b: Point) => {
+    const steps = Math.max(1, Math.ceil(distance(a, b) / 4));
+    for (let i = 1; i <= steps; i++)
+      if (
+        !isFree(
+          {
+            x: a.x + ((b.x - a.x) * i) / steps,
+            y: a.y + ((b.y - a.y) * i) / steps,
+          },
+          width,
+          height,
+          solids,
+        )
+      )
+        return false;
+    return true;
+  };
+  const resolveCell = (point: Point, grid: Point): Point => {
+    if (!isFree(point, width, height, solids)) return nearest(grid);
+    const candidates: { x: number; y: number }[] = [];
+    for (let dy = -2; dy <= 2; dy++)
+      for (let dx = -2; dx <= 2; dx++) {
+        const q = { x: grid.x + dx, y: grid.y + dy };
+        const center = { x: q.x * cell + 8, y: q.y * cell + 8 };
+        if (
+          free(q.x, q.y) &&
+          distance(center, point) < 22 &&
+          clearSegment(center, point)
+        )
+          candidates.push(q);
+      }
+    candidates.sort(
+      (a, b) =>
+        distance({ x: a.x * cell + 8, y: a.y * cell + 8 }, point) -
+        distance({ x: b.x * cell + 8, y: b.y * cell + 8 }, point),
+    );
+    return candidates[0] ?? nearest(grid);
+  };
+  start = resolveCell(from, start);
+  goal = resolveCell(to, goal);
   const key = (p: Point) => p.y * cols + p.x;
   const costs = new Map<number, number>([[key(start), 0]]),
     came = new Map<number, Point>();
@@ -160,7 +201,8 @@ export function route(
   if (!directClear && distance(from, center) > 1) points.unshift(center);
   if (
     isFree(to, width, height, solids) &&
-    distance(points.at(-1) ?? center, to) < 22
+    distance(points.at(-1) ?? center, to) < 22 &&
+    clearSegment(points.at(-1) ?? center, to)
   )
     points.push(to);
   return points;

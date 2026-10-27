@@ -34,16 +34,25 @@
   ],
   "walls": [
     {
-      "x": 250,
+      "x": 258,
       "y": 102,
       "w": 16,
-      "h": 126
+      "h": 180,
+      "style": "wood"
     },
     {
       "x": 18,
       "y": 322,
-      "w": 202,
-      "h": 12
+      "w": 162,
+      "h": 16,
+      "style": "wood"
+    },
+    {
+      "x": 512,
+      "y": 366,
+      "w": 174,
+      "h": 64,
+      "style": "panel"
     }
   ],
   "decor": [
@@ -74,6 +83,20 @@
       "y": 476,
       "w": 112,
       "h": 64
+    },
+    {
+      "prop": "rug",
+      "x": 390,
+      "y": 216,
+      "w": 272,
+      "h": 112
+    },
+    {
+      "prop": "rug",
+      "x": 36,
+      "y": 214,
+      "w": 96,
+      "h": 88
     }
   ],
   "furniture": [
@@ -148,7 +171,7 @@
       "id": "study-desk",
       "prop": "counter",
       "x": 422,
-      "y": 256,
+      "y": 230,
       "w": 160,
       "h": 55
     },
@@ -156,7 +179,7 @@
       "id": "study-lamp",
       "prop": "lamp",
       "x": 426,
-      "y": 235,
+      "y": 209,
       "w": 32,
       "h": 32,
       "depth": 312
@@ -164,7 +187,7 @@
     {
       "id": "direction",
       "x": 476,
-      "y": 250,
+      "y": 224,
       "w": 42,
       "h": 25,
       "depth": 312,
@@ -173,7 +196,7 @@
     {
       "id": "github",
       "x": 584,
-      "y": 250,
+      "y": 224,
       "w": 68,
       "h": 29,
       "depth": 313,
@@ -183,24 +206,24 @@
       "id": "computer-desk",
       "prop": "counter",
       "x": 578,
-      "y": 278,
+      "y": 252,
       "w": 80,
       "h": 28,
       "depth": 306
     },
     {
       "id": "reading-chair",
-      "prop": "chair",
-      "x": 48,
-      "y": 374,
+      "prop": "chair-east",
+      "x": 62,
+      "y": 408,
       "w": 40,
       "h": 50
     },
     {
       "id": "reading-chair2",
-      "prop": "chair",
-      "x": 190,
-      "y": 374,
+      "prop": "chair-west",
+      "x": 196,
+      "y": 408,
       "w": 40,
       "h": 50
     },
@@ -224,26 +247,27 @@
     {
       "id": "kitchen",
       "prop": "kitchen",
-      "x": 492,
-      "y": 394,
-      "w": 160,
-      "h": 55
+      "x": 548,
+      "y": 430,
+      "w": 128,
+      "h": 44
     },
     {
       "id": "kitchen-table",
       "prop": "table",
-      "x": 488,
-      "y": 470,
+      "x": 436,
+      "y": 476,
       "w": 48,
       "h": 60
     },
     {
       "id": "kitchen-stool",
       "prop": "stool",
-      "x": 562,
-      "y": 486,
+      "x": 506,
+      "y": 502,
       "w": 32,
-      "h": 24
+      "h": 24,
+      "facing": 1
     },
     {
       "id": "reading-journal",
@@ -256,11 +280,43 @@
     },
     {
       "id": "study-chair",
-      "prop": "chair",
-      "x": 370,
-      "y": 286,
+      "prop": "chair-up",
+      "x": 606,
+      "y": 292,
       "w": 40,
       "h": 50
+    },
+    {
+      "id": "wall-cabinet-left",
+      "prop": "cabinet-wall",
+      "x": 548,
+      "y": 374,
+      "w": 64,
+      "h": 48
+    },
+    {
+      "id": "wall-cabinet-right",
+      "prop": "cabinet-wall",
+      "x": 612,
+      "y": 374,
+      "w": 64,
+      "h": 48
+    },
+    {
+      "id": "study-plant",
+      "prop": "floor-plant",
+      "x": 290,
+      "y": 112,
+      "w": 32,
+      "h": 48
+    },
+    {
+      "id": "kitchen-plant",
+      "prop": "floor-plant",
+      "x": 650,
+      "y": 494,
+      "w": 32,
+      "h": 48
     }
   ],
   "exhibits": [
@@ -285,15 +341,15 @@
       "furniture": "direction",
       "approach": {
         "x": 488,
-        "y": 352
+        "y": 326
       }
     },
     {
       "id": "github",
       "furniture": "github",
       "approach": {
-        "x": 616,
-        "y": 352
+        "x": 656,
+        "y": 326
       }
     }
   ]

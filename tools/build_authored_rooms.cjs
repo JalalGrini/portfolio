@@ -107,7 +107,12 @@ async function resize(im, w, h) {
     paste(room, side, home.width - 16, y);
   }
   for (const w of home.walls) {
-    const src = w.h > w.w ? side : trim;
+    const src =
+      w.style === "panel"
+        ? crop(wall, [0, 24, 128, 64])
+        : w.h > w.w
+          ? side
+          : trim;
     for (let y = 0; y < w.h; y += src.height)
       for (let x = 0; x < w.w; x += src.width) {
         const piece = crop(src, [
@@ -126,7 +131,7 @@ async function resize(im, w, h) {
   hashes["room-about"] = crypto.createHash("sha256").update(b).digest("hex");
   fs.writeFileSync(
     path.join(out, "authored-rooms.json"),
-    JSON.stringify({ version: "C08-home-1", hashes }, null, 2) + "\n",
+    JSON.stringify({ version: "C08b-home-logic-1", hashes }, null, 2) + "\n",
   );
   // Native-scale overview for visual inspection; runtime keeps props separate for depth.
   const preview = { ...room, data: Buffer.from(room.data) };

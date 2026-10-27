@@ -16,6 +16,28 @@ export function renderAuthoredRoom(
 ) {
   const l = roomLayouts[p.id];
   if (!l) return null;
+  // Steady soft light pools are decorative effects, never replacement furniture art.
+  if (!scene.textures.exists("home-lamp-glow")) {
+    const tex = scene.textures.createCanvas("home-lamp-glow", 128, 128);
+    if (tex) {
+      const ctx = tex.getContext(),
+        g = ctx.createRadialGradient(64, 64, 4, 64, 64, 64);
+      g.addColorStop(0, "rgba(255,215,138,.8)");
+      g.addColorStop(0.45, "rgba(255,185,92,.3)");
+      g.addColorStop(1, "rgba(255,170,75,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 128, 128);
+      tex.refresh();
+    }
+  }
+  for (const f of l.furniture)
+    if (f.prop === "lamp")
+      scene.add
+        .image(f.x + f.w / 2, f.y + f.h, "home-lamp-glow")
+        .setDepth(-40)
+        .setAlpha(0.22)
+        .setBlendMode(Phaser.BlendModes.ADD);
+
   for (const f of l.furniture as Furniture[]) {
     const im = scene.add
       .image(f.x, f.y, f.texture || "authored-" + f.prop)
