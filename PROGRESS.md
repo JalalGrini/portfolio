@@ -38,6 +38,7 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 | C01d | Browser check of the first stops end-to-end with screenshots (`npm run test:journey`, `QA_STOPS=21` for all) | V03 | ✅ (3 stops) |
 | C01e | **Safe progression**: walking out mid-room pauses the stop at the door (no skip) and Jalal offers *Go back inside / Next stop / Look around*; re-entry resumes at the same highlight; stale/double *Next* clicks ignored (`next.from`, `tour-next-<i>`); `exit-room` checks the building id | V03 | ✅ |
 | C01f | **Precise save/resume**: save v3 `{v:3,index,beat,complete}` (v2 migrates); welcome-back names the highlight; finished room resumes at the next stop | V03 | ✅ |
+| C02a | Ribbon: second line visible in rooms (ellipsis, 430 px), stop progress bar (21 stops) + highlight beads (done / current pulsing), reduced-motion safe, 390 px layout checked | V03/V04 | ✅ |
 | C02 | Tour UI: redesigned ribbon with stop/beat progress, non-blocking speech bubbles for Jalal hints (no pause spam), resume prompt, tour journal (21 stops, visited/inspected) | V03/V04 | ⬜ |
 | C03 | Full-journey E2E (`tools/qa-tour-journey.cjs`): 21 stops, every room entered, beats completed, exit + resume, no stalls; screenshots per room | V08 | ⬜ |
 
@@ -75,14 +76,18 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 | C20 | Human visual review, production deploy, live verification | V12 | ⬜ |
 
 ## Next up (start here)
-1. **C02a** — Ribbon: fix hidden second line at 1440 px, show `Stop N/21 · Highlight b/3` progress dots, keep it out of the room's top-left content.
-2. **C02b** — Non-blocking hint bubble channel (`gameBus "hint"`): "Follow me", "Here's the door", waiting nudges shown above Jalal without pausing the game. Keep blocking dialogue only for choices.
-3. **C02c** — Tour journal (M → tab): 21 stops, visited / highlights seen / inspected count, jump-to-resume.
-4. **C02d** — Bottom HUD no longer covers rooms (safe-area padding + camera bounds).
-5. **C03** — Full 21-stop journey E2E run + screenshots of every room.
+1. **C02b** — Non-blocking hint bubble channel (`gameBus "hint"`): "Follow me", "Here's the door", waiting nudges shown above Jalal without pausing the game. Keep blocking dialogue only for choices.
+2. **C02c** — Tour journal (M → tab): 21 stops, visited / highlights seen / inspected count, jump-to-resume.
+3. **C02d** — Bottom HUD no longer covers rooms (safe-area padding + camera bounds).
+4. **C03** — Full 21-stop journey E2E run + screenshots of every room.
+
+## Deploying (every chunk)
+Push → Vercel builds a preview automatically → once checks pass, create a production deployment of the pushed SHA with the Vercel connector (`create_deployment`, project `prj_N0lCH399sXu6OdzkjzRFANb85mlU`, team `team_AidgC20ca6cfN9tCrVyHymcM`, `target: production`, `gitSource {org JalalGrini, repo portfolio, ref game/stardew-vision, sha}`) → verify <https://portfolio-chi-nine-fwh6p2oz7b.vercel.app/play/> serves the new chunk and run `QA_BASE_URL=<live> QA_STOPS=1 node tools/qa-tour-journey.cjs`. (`request_promote` of a preview returns 422.) Rollback point before the rebuild went live: `dpl_BrENg9LQqzQyG8SAwAuX5yGkNZUw` (`game/jalal-guided-village@43150ca`).
 
 ## Log
 <!-- newest first -->
+- **C02a** — Ribbon shows the stage line inside rooms too (was `display:none`), a 21-stop progress bar and highlight beads. Journey (1 stop + early exit + resume) PASS, 390 px screenshot checked, `tsc` + build clean.
+- **Deploy** — C01e/f went live in production (`dpl_AJAJfqikLgumKadqP87WWD3mHwhn`, sha `dd29343`); live journey smoke test PASS.
 - **C01e + C01f** — Tour can no longer be skipped by accident: `exit-room` from intro/beat stages → `arrived` at the door with the current highlight kept; only free-look exit or an explicit *Next stop / Skip this stop* advances. `next` carries the stop index so duplicate events (double click, stale dialogue choice) are no-ops. Saves are v3 with the highlight index; v2 saves still resume. Room intro on re-entry: "Welcome back… highlight 2 of 3", *Continue →*. Unit tests 9 → 12 (all pass). Journey test now walks out after highlight 1, checks the door prompt, goes back in and resumes at highlight 2 (PASS, screenshot `stop1-early-exit.png`); 2 stops + reload-resume PASS; `check:tour` PASS; `tsc` + `next build` clean.
 - **C01c** — Tour progress saved on every stage change (versioned `{v:2,index,complete}`; junk/old/complete saves ignored). Returning visitors get a *Welcome back* dialogue (*Resume at X →* / *Start from the beginning* / *Explore freely*); after leaving, the ribbon offers *Resume tour · N/21* and *Start over*. Journey test now also checks leave → reload → resume at the right stop (PASS).
 - **C01b + C01d** — Tour machine wired into the game. Inside the target room Jalal now: introduces the room (`Stop N of 21 · name`, choices *Show me →* / *I’ll explore on my own*) → walks to each of up to 3 highlights and stands beside it (never on it) → explains it when the visitor joins him (*Highlight 1 of 3 · title*, *Next highlight →* / *Skip to free exploring*) → walks to the exit and offers *Next stop → X*. Walking out the door also advances. Leaving any other building does not. Inspecting the highlight yourself counts. Ribbon copy per stage. New `tools/qa-tour-journey.cjs` (`npm run test:journey`) passed 3 stops × (intro + 3 highlights + wrap-up) with no page errors; screenshots in `test-results/tour-journey/`. Old `qa-tour-loop.cjs` used removed stages (`stop`/`exploring`) — `test:tour-loop` now points to the journey test.
