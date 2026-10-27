@@ -36,10 +36,13 @@ export type GameEvents = {
     cameraX?: number;
     cameraY?: number;
     zoom?: number;
+    viewportHeight?: number;
   };
   dialogue: Dialogue;
   /** Short non-blocking line from Jalal (speech bubble + screen-reader text). */
   hint: string;
+  /** Measured room control dock, including the device's safe-area inset. */
+  "controls-area": number;
   pause: boolean;
   reduced: boolean;
   preferences: Preferences;

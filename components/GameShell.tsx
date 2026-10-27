@@ -95,6 +95,7 @@ export default function GameShell({
 }) {
   const typing = useRef<ReturnType<typeof setInterval> | null>(null);
   const host = useRef<HTMLDivElement>(null),
+    controlsDock = useRef<HTMLDivElement>(null),
     offered = useRef(false),
     ready = useRef(false),
     prefsRef = useRef(defaults),
@@ -132,6 +133,7 @@ export default function GameShell({
       cameraX: number;
       cameraY: number;
       zoom: number;
+      viewportHeight: number;
     }>({
       x: 320,
       y: 464,
@@ -142,6 +144,7 @@ export default function GameShell({
       cameraX: 0,
       cameraY: 0,
       zoom: 1.8,
+      viewportHeight: 0,
     }),
     [tour, setTour] = useState<TourState | null>(null),
     [prefs, setPrefs] = useState<Preferences>(defaults),
@@ -163,6 +166,18 @@ export default function GameShell({
     return () => window.removeEventListener("keydown", key);
   }, []);
   const busy = !!(dialogue || map || settings || help);
+  useEffect(() => {
+    const dock = controlsDock.current;
+    const measure = () =>
+      gameBus.emit(
+        "controls-area",
+        room && dock ? Math.ceil(dock.getBoundingClientRect().height) : 0,
+      );
+    const observer = new ResizeObserver(measure);
+    if (dock) observer.observe(dock);
+    measure();
+    return () => observer.disconnect();
+  }, [room]);
   const totalObjects = places.reduce((n, p) => n + p.exhibits.length, 0),
     seenObjects = Object.values(inspected).reduce((n, x) => n + x.length, 0);
   dialogueRef.current = dialogue;
@@ -288,6 +303,7 @@ export default function GameShell({
           cameraX: p.cameraX ?? 0,
           cameraY: p.cameraY ?? 0,
           zoom: p.zoom ?? 1.8,
+          viewportHeight: p.viewportHeight ?? 0,
         }),
       ),
       gameBus.on("location", (p) => {
@@ -425,6 +441,7 @@ export default function GameShell({
       className={`game-shell village-game ${loading ? "is-loading" : "is-ready"} accent-${accent} ${prefs.reduced ? "reduce-motion" : ""}`}
       data-room={room ?? "town"}
       data-x={pos.x.toFixed(1)}
+      data-y={pos.y.toFixed(1)}
       data-guide-visible={pos.guideVisible}
       data-guide-x={pos.guideX?.toFixed(1)}
       data-guide-y={pos.guideY?.toFixed(1)}
@@ -433,6 +450,7 @@ export default function GameShell({
       data-tour-beat-index={tour?.beat ?? 0}
       data-camera-x={pos.cameraX}
       data-camera-y={pos.cameraY}
+      data-camera-height={pos.viewportHeight}
       data-zoom={pos.zoom}
       data-sitting={pos.sitting}
       data-tour-stage={tour?.stage ?? "free"}
@@ -442,6 +460,13 @@ export default function GameShell({
         className="game-canvas"
         aria-label="Career Town. Use WASD or arrow keys to walk; E to interact."
       />
+      {room && (
+        <div
+          ref={controlsDock}
+          className="room-controls-dock"
+          aria-hidden="true"
+        />
+      )}
       {loading && (
         <div className="village-loading" role="status">
           <img src="/assets/tour/jalal-portrait.png" alt="Jalal" />
@@ -539,13 +564,9 @@ export default function GameShell({
                     Enter →
                   </button>
                 )}
-                {[
-                  "arrived",
-                  "room-intro",
-                  "to-beat",
-                  "beat",
-                  "room-free",
-                ].includes(tour.stage) ? (
+                {["arrived", "room-intro", "beat", "room-free"].includes(
+                  tour.stage,
+                ) ? (
                   <button
                     className={
                       tour.stage === "arrived" ? "v-quiet" : "v-button"
