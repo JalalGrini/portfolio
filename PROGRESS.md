@@ -67,7 +67,7 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 | # | Chunk | Plan ref | Status |
 |---|---|---|---|
 | C13a | Structural river-town slice: irregular 21-door layout, 3 crossings, connected street loops, street-aware guide routing, distributed outdoor residents | V06 | ✅ pushed + production verified |
-| C13b | Layered yard/riverbank planting, produce plots, denser groves/blossom trees and proper park benches | V06 | 🟡 local QA passed; deploying |
+| C13b | Layered yard/riverbank planting, produce plots, denser groves/blossom trees and proper park benches | V06 | ✅ pushed + production verified |
 | C13 | Remaining town detail: district courtyards, activity/schedules, water animation and art polish | V06 | ⬜ |
 | C14 | 21 unique facades per R02 (roof forms, stone/timber, porches, ivy, lanterns, gardens) | V06 | ⬜ |
 | C15 | Sitting everywhere: seat anchors with facing per chair/bench/sofa/stool in every room and outdoors, correct depth, sit/stand animations, NPCs can sit | V09 | ⬜ |
@@ -93,6 +93,7 @@ Push → Vercel builds a preview automatically → once checks pass, create a pr
 
 ## Log
 <!-- newest first -->
+- **Deploy** — C13b production `dpl_FA1NG83cikjG3VBVBd317RpP5V7f` READY (`a8c01c6`); all 38 actual production landscape PNGs match local hashes. Live first-stop journey, early exit/re-entry, reload/resume, desktop/390 px non-blocking hints/movement/layout PASS. Vercel connection refreshed as `Vercel (3)` after the previous connection expired.
 - **Owner density/logic correction** — Latest references emphasize lush layered landscaping, populated gathering areas and coherent furnished rooms—not more scattered props. Prioritize C13b landscape pass, then C08b home furniture logic (chairs face tables/desks, usable kitchen boundary, coherent groups and warm lamps). Full remaining-room/life work remains open.
 - **C13b local implementation** — Deterministic yard, meadow and river-margin groups; 13 planted produce gardens and 54 riverbank groups; denser mixed groves including foliage-only blossom colourway. Proper source-atlas park benches replace the outdoor dining-chair stand-in. Safety gates avoid roads, thresholds, buildings and resident clearances. 38 source-derived textures, including subtle river ripples (static with reduced motion). Visual review caught source water-edge blocks and soil depth masking crops; fixed and map rechecked. Full local 21-stop/63-highlight tour PASS; final split-bundle first-stop + early exit/re-entry/resume PASS; 1440/390 px non-blocking hint/movement/layout PASS. 27 unit tests, deterministic texture/geometry audits and production build PASS. Scenery bundle split into `town-details.json` without changing any rendered object or solid (exact comparison verified). Final map and desktop/mobile screenshots inspected.
 - **Deploy** — C08 production `dpl_6fLGhkySzTfwaC7CgYuBi8MSKAG6` READY (`082357e`); actual 17 live home PNGs match local hashes. Live desktop + 390 px tour, early exit/re-entry and exact reload/resume PASS. Live optional-interaction QA opened all four exhibits and sat/stood on all four registered seats; no page errors. Home is the first converted room, not completion of every interior.
