@@ -19,7 +19,8 @@
     "check:tour": "node tools/export-catalog.cjs && node tools/audit-tour.cjs",
     "test:tour": "node tools/qa-tour.cjs",
     "test:town": "node tools/export-catalog.cjs && node tools/qa-town-tour.cjs",
-    "test:tour-loop": "node tools/qa-tour-loop.cjs"
+    "test:tour-loop": "node tools/qa-tour-loop.cjs",
+    "test:unit": "node --test tools/test-tour.mjs"
   },
   "dependencies": {
     "motion": "^12.43.0",

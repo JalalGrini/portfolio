@@ -15,7 +15,7 @@
 | Jalal identity art | `assets-src/tour/jalal-*.png.b64` (decoded by `npm run predev` / `prebuild`) |
 
 ### Pushing from an agent sandbox
-Command-line `git push` has no credentials. Push through the GitHub connector (`push_files`) in commits of ≤ ~60 KB of JSON each; binary art is stored as base64 text (`*.b64`) and decoded at build time by `tools/prepare-studio-assets.cjs`. Never commit decoded PNG/WebP outputs under `public/assets/{tour,rooms,studio}`.
+Command-line `git push` has no credentials. Push through the GitHub connector (`push_files`). **Hard limit: one connector request must be < 64 KB**, so split large changes into several commits (helper used by the agent: package changed files into ≤ 60 KB JSON payloads and pass each as `arguments_file_path`). After pushing, `git fetch` + `git reset origin/game/stardew-vision` keeps the local index in sync. Verify with a fresh `git clone`. binary art is stored as base64 text (`*.b64`) and decoded at build time by `tools/prepare-studio-assets.cjs`. Never commit decoded PNG/WebP outputs under `public/assets/{tour,rooms,studio}`.
 
 ## Non-negotiables (from the plan)
 - The cinematic homepage `/` and classic `/portfolio/` stay independent of the game.
@@ -31,7 +31,11 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 | # | Chunk | Plan ref | Status |
 |---|---|---|---|
 | C00 | Planning package + this tracker pushed; baseline confirmed identical to live release | V00 | ✅ |
-| C01 | **Tour engine**: pure, tested tour state machine (`game/tour.ts`) with stages door → enter → room intro → guided interior beats → free look → exit → next stop; Jalal *leads* inside rooms (instead of following); save + resume; restart/leave idempotent | V03 | ⬜ |
+| C01 | **Tour engine** — split into mini tasks below | V03 | 🟡 |
+| C01a | Pure tour state machine `game/tour.ts` (door → enter → room intro → up to 3 highlight beats → free look → exit → next stop → complete), idempotent events, versioned save/resume helpers; 9 unit tests `npm run test:unit` | V03 | ✅ |
+| C01b | Wire the machine into `createGame.ts`: Jalal walks to each highlight inside the room, explains it, then waits at the exit; leaving the room advances to the next stop | V03 | ⬜ |
+| C01c | Save/resume: persist stop index, "Resume tour at stop N" on return; old `stage` strings migrated in UI | V03 | ⬜ |
+| C01d | Browser check of the first 2 stops end-to-end with screenshots | V03 | ⬜ |
 | C02 | Tour UI: redesigned ribbon with stop/beat progress, non-blocking speech bubbles for Jalal hints (no pause spam), resume prompt, tour journal (21 stops, visited/inspected) | V03/V04 | ⬜ |
 | C03 | Full-journey E2E (`tools/qa-tour-journey.cjs`): 21 stops, every room entered, beats completed, exit + resume, no stalls; screenshots per room | V08 | ⬜ |
 
@@ -70,7 +74,8 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 
 ## Log
 <!-- newest first -->
-- **C00** — Confirmed local tree is byte-identical to `game/jalal-guided-village@43150ca` (only generated `public/assets/*` differ). Completed publishing the `docs/stardew-vision/` package (references archive, previews, candidate assets, briefs, plan). Added this tracker. Created branch `game/stardew-vision`.
+- **C01a** — Added `game/tour.ts` (pure reducer, no Phaser) + `tools/test-tour.mjs` (9 passing tests: full journey, no-op/duplicate events, waiting, skip, leave/resume, clamping, save validation). `tsc --noEmit` clean. Not wired into the game yet (C01b).
+- **C00** — Confirmed local tree is byte-identical to `game/jalal-guided-village@43150ca` (only generated `public/assets/*` differ). Completed publishing the `docs/stardew-vision/` package (35 commits, last `d08d8ff`; fresh clone restores all 7 originals + candidates with matching hashes) (references archive, previews, candidate assets, briefs, plan). Added this tracker. Created branch `game/stardew-vision`.
 
 ## Known issues / hypotheses to check
 - Tour inside rooms: Jalal only follows the visitor; there is no narrated interior route (fixing in C01).
