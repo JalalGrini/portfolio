@@ -10,7 +10,10 @@ import {
 } from "../game/tour.ts";
 
 const plan = makePlan([
-  { id: "home", exhibits: [{ id: "a" }, { id: "b" }, { id: "c" }, { id: "d" }] },
+  {
+    id: "home",
+    exhibits: [{ id: "a" }, { id: "b" }, { id: "c" }, { id: "d" }],
+  },
   { id: "lab", exhibits: [{ id: "x" }] },
   { id: "post", exhibits: [] },
 ]);
@@ -50,11 +53,12 @@ test("full journey through every stop and every beat", () => {
     s,
   );
   assert.equal(s.target, "post");
-  s = run(
-    [{ type: "enter-room", id: "post" }, { type: "intro-done" }],
-    s,
+  s = run([{ type: "enter-room", id: "post" }, { type: "intro-done" }], s);
+  assert.equal(
+    s.stage,
+    "room-free",
+    "room without beats goes straight to free look",
   );
-  assert.equal(s.stage, "room-free", "room without beats goes straight to free look");
   s = run([{ type: "exit-room" }], s);
   assert.equal(s.stage, "complete");
   assert.equal(s.active, false);
@@ -75,7 +79,10 @@ test("irrelevant or duplicate events are no-ops (same object)", () => {
   ])
     assert.equal(tourReduce(plan, s, e), s, e.type);
   const inRoom = run([{ type: "enter-room", id: "home" }], s);
-  assert.equal(tourReduce(plan, inRoom, { type: "enter-room", id: "home" }), inRoom);
+  assert.equal(
+    tourReduce(plan, inRoom, { type: "enter-room", id: "home" }),
+    inRoom,
+  );
   assert.equal(tourReduce(plan, inRoom, { type: "arrive-door" }), inRoom);
 });
 
@@ -89,12 +96,20 @@ test("waiting only toggles while leading outdoors", () => {
 });
 
 test("can enter the target room straight from waiting", () => {
-  const s = run([{ type: "start" }, { type: "visitor-far" }, { type: "enter-room", id: "home" }]);
+  const s = run([
+    { type: "start" },
+    { type: "visitor-far" },
+    { type: "enter-room", id: "home" },
+  ]);
   assert.equal(s.stage, "room-intro");
 });
 
 test("skip-room jumps to free look; exit mid-beat still advances", () => {
-  let s = run([{ type: "start" }, { type: "enter-room", id: "home" }, { type: "intro-done" }]);
+  let s = run([
+    { type: "start" },
+    { type: "enter-room", id: "home" },
+    { type: "intro-done" },
+  ]);
   assert.equal(run([{ type: "skip-room" }], s).stage, "room-free");
   s = run([{ type: "reach-beat" }, { type: "exit-room" }], s);
   assert.equal(s.target, "lab");
@@ -122,6 +137,15 @@ test("restart from complete and clamped start index", () => {
 });
 
 test("resumeIndex rejects junk, old versions, completed and first-stop saves", () => {
-  for (const raw of [null, "x", {}, { v: 1, index: 1 }, { v: 2, index: 1, complete: true }, { v: 2, index: 0 }, { v: 2, index: 9 }, { v: 2, index: 1.5 }])
+  for (const raw of [
+    null,
+    "x",
+    {},
+    { v: 1, index: 1 },
+    { v: 2, index: 1, complete: true },
+    { v: 2, index: 0 },
+    { v: 2, index: 9 },
+    { v: 2, index: 1.5 },
+  ])
     assert.equal(resumeIndex(raw, plan), null, JSON.stringify(raw));
 });
