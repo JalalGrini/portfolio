@@ -43,3 +43,12 @@ Pixelify Sans is locally hosted under SIL OFL 1.1; see `public/licenses/pixelify
 Source files: `tools/source/{houses,base,city,terrain}.png`. The complete `public/licenses/{roofs,atlas,city}.txt` notices and applicable CC-BY-SA terms continue to cover these art adaptations. Independently written builder code remains under the repository code license. No new external pack or purchase is required.
 
 Generated PNGs and `public/assets/tour/town-style.json` are build outputs, not new source assets. The latter records dimensions, reproducible SHA-256 hashes and the unchanged navigation-data hash. Run `npm run check:palette` to verify deterministic output, all 29 textures and the 21 existing facade footprints. This is a colour/terrain-edge pass only: the inherited facade stretching and grid topology remain scheduled for C13/C14. Cinematic art, character palettes, room surfaces, project facts, collision solids and door coordinates are unchanged.
+
+
+## Structural river town (C13a)
+
+`game/town-layout.json` is the authored game-only layout; `tools/build_town_layout.cjs` derives the world geometry and matching street/river masks before the palette builder runs. The 21 doors, irregular neighbourhood links, three crossings and collision envelopes are independently authored; the R03 screenshot is a visual reference only and is never shipped as terrain.
+
+The daylight recipe now renders the river from retained `terrain.png` bank/water tiles (columns 9–11, rows 11–13), sparse water ripples (21,17) and the timber crossings from the same source (deck 14,16, rail strips 20,19–20). Pixel-colour ramps for the brighter grass and orange paths are recorded in `tools/build_town_palette.cjs`. Existing LPC attribution and share-alike terms above remain applicable. No new external artwork was added.
+
+`check:town-layout` validates deterministic geometry, every threshold, connected painted streets, bridge-only river crossings, facade separation and distributed residents. Unit navigation tests validate every canonical tour leg and that automatic walking prefers painted streets; manual exploration may still leave them. C13a supersedes the C02e grid topology, not the remaining unique-facade/interior work.

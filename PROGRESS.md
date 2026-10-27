@@ -49,7 +49,7 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 ### Phase B — Dialogue, popups & UI art
 | # | Chunk | Plan ref | Status |
 |---|---|---|---|
-| C04 | Dialogue box per R01: low wood/parchment panel over the scene, text left, portrait + name plate right, typewriter + skip, choice list with keyboard focus, 390 px layout | V04 | 🟡 local QA passed; deploying |
+| C04 | Dialogue box per R01: low wood/parchment panel over the scene, text left, portrait + name plate right, typewriter + skip, choice list with keyboard focus, 390 px layout | V04 | ✅ shared panel live; desktop/390 px QA passed |
 | C05 | Evidence/exhibit cards, map, settings & help restyled in the same original wood/paper kit (9-slice CSS, no copied textures) | V04/V09 | ⬜ |
 
 ### Phase C — Interiors & furniture (unique, well-spaced, like R06)
@@ -66,7 +66,8 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 ### Phase D — Town, facades, life
 | # | Chunk | Plan ref | Status |
 |---|---|---|---|
-| C13 | Outdoor re-layout per R03/R04: river spine, bridges, neighbourhood loops, courtyards (no 5-column grid) | V06 | ⬜ |
+| C13a | Structural river-town slice: irregular 21-door layout, 3 crossings, connected street loops, street-aware guide routing, distributed outdoor residents | V06 | 🟡 local QA passed; deploying |
+| C13 | Remaining town detail: district courtyards, richer gardens/activity areas, water animation and art polish | V06 | ⬜ |
 | C14 | 21 unique facades per R02 (roof forms, stone/timber, porches, ivy, lanterns, gardens) | V06 | ⬜ |
 | C15 | Sitting everywhere: seat anchors with facing per chair/bench/sofa/stool in every room and outdoors, correct depth, sit/stand animations, NPCs can sit | V09 | ⬜ |
 | C16 | Animations & transitions: door-open + iris/fade transitions, Jalal emotes, ambient life (smoke, water shimmer, leaves, birds, lamp glow at evening) with reduced-motion | V09/V11 | ⬜ |
@@ -80,8 +81,8 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 | C20 | Human visual review, production deploy, live verification | V12 | ⬜ |
 
 ## Next up (start here)
-1. **C04 release** — Shared R01-style dialogue local QA PASS; push and verify production.
-2. **C13a — NEW OWNER PRIORITY**: replace the five-column grid with an authored irregular river town (three crossings, neighbourhood loops, plazas, logical door approaches). Match R03’s grass/orange-path palette/density using the retained licensed terrain atlas; not another global tint. Move outdoor residents to separate neighbourhoods. Validate all 21 doors and paths; deploy this slice.
+1. **C13a release** — Structural river town implemented; finish full 21-stop QA, push and verify production.
+2. Confirm the deployed river-town textures match all 29 local hashes and the live tour still enters/exits correctly.
 3. **C07/C08 — NEXT OWNER PRIORITY**: use the actual `tools/source/{interior,furniture}.png` / restored cleared furniture assets to build connected furnished rooms, not isolated exhibit props. Preserve all 100 exhibit facts.
 4. **Town-life follow-up**: residents inside buildings with context-specific prepared questions/answers grounded in that room’s exhibits; Jalal changes only his outfit for the building (face/identity unchanged).
 5. Resume C05–C20 after the structural map/furnished-room slices.
@@ -91,6 +92,8 @@ Push → Vercel builds a preview automatically → once checks pass, create a pr
 
 ## Log
 <!-- newest first -->
+- **C13a implementation** — Replaced the row grid with a deterministic authored 84×74-tile river town: 21 irregularly positioned buildings, 3 timber crossings, connected neighbourhood street loops and true threshold aprons. Road mask drives painting and navigation; full building envelopes + river banks collide; guided walking prefers streets, not lawn shortcuts. Six residents have separated neighbourhood homes. Grass/orange road ramps use retained LPC pixels; R03 remains reference-only. Geometry validator checks all doors, crossings, street connectivity, facade overlap and resident spacing; 20 unit tests PASS. Full 21-stop/63-highlight browser regression PASS; first-stop 390 px + early exit/re-entry/resume PASS; 1440/390 px non-blocking hint QA PASS; deterministic 29-texture audit, TypeScript and production build PASS. Map and in-world desktop/mobile screenshots inspected. Facade silhouettes and interior furniture are not claimed complete.
+- **Deploy** — C04 production `dpl_2kbHamwKna4hxEdVq7CirBJnkW2e` READY (`f09ecc0`); live first-stop journey, early exit/re-entry, Escape/reopen, reload/resume and 1440/390 px normal-motion dialogue keyboard/typewriter/preference checks PASS.
 - **Owner correction / direction lock** — A recoloured grid is NOT the requested town. Owner reiterated R03 (river-town image, uploaded again): irregular building placement, genuinely connected paths, reference-like grass/orange-path look, residents distributed across town and inside buildings, questions relevant to each building, and building-specific Jalal outfits without changing his face. Existing isolated room props are unacceptable; use the retained PNG furniture atlases. Bring C13a and furnished-room slices forward immediately after the pending C04 release.
 - **C04 local QA** — Common `GameDialogue` now frames every building/exhibit/NPC/welcome/tour message with an original low wood/paper panel and right-hand Jalal portrait/nameplate. Lossless, sentence-aware pages; elapsed-time typewriter, reveal, arrow/Tab choice focus and held-key guard; separate saved Instant dialogue text setting. Only explicit index/beat-guarded choices acknowledge intro/highlight; Escape does not advance, and Read message reopens it. Tests: all 100 texts preserved; 18 unit tests; 1440/390 px journeys + early exit/resume + close/reopen PASS; normal-motion keyboard/typewriter/preference tests PASS. Screenshots inspected.
 - **C03 baseline complete** — Full 21-stop journey on `b904ea4` PASS: all 21 actual rooms, 63 guided highlights, per-room viewport + beat screenshots, early exit/re-entry, camera/control-dock alignment, explicit final completion, no page errors. Evidence `/tmp/c03-full/` in the agent workspace. This is behavioral QA, NOT approval of sparse interiors or grid art. Rerun after structural map changes.
@@ -116,7 +119,7 @@ Push → Vercel builds a preview automatically → once checks pass, create a pr
 - ~~Tour ribbon stage line was hidden inside rooms~~ → fixed in C02a.
 - ~~Bottom controls covered room floors/actors~~ → fixed and live in C02d.
 - When the visitor stands next to Jalal at a highlight they can overlap (same depth band). Polish in C15.
-- ~~Generic high dialogue panel~~ → shared low R01-inspired panel in C04 (release pending).
+- ~~Generic high dialogue panel~~ → shared low R01-inspired panel live in C04.
 - `qa-tour-loop.cjs` only checks outdoor door stops, not the guided interior journey (C03).
 - ~~Jalal reminders paused the game~~ → fixed and live in C02b.
 - Interiors use a shared five-position layout (`stationsFor`) and stretched/tinted facades (C07–C14).
