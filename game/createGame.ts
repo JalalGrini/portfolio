@@ -102,6 +102,15 @@ export function createGame(
       ])
         this.load.image(name, `/assets/game/${name}.png`);
       for (const name of [
+        "tree",
+        "pine",
+        "plant",
+        "flowers-0",
+        "flowers-1",
+        "flowers-2",
+      ])
+        this.load.image("outdoor-" + name, `/assets/tour/outdoor-${name}.png`);
+      for (const name of [
         "bookshelf",
         "desk",
         "blue-vase",
@@ -229,8 +238,14 @@ export function createGame(
       else {
         this.solids = world.solids.map((s) => ({ ...s }));
         for (const o of world.objects) {
+          const texture =
+            o.key === "flowers"
+              ? "outdoor-flowers-" + (Math.floor(Math.abs(o.x + o.y) / 32) % 3)
+              : ["tree", "pine", "plant"].includes(o.key)
+                ? "outdoor-" + o.key
+                : o.key;
           const im = this.add
-            .image(o.x, o.y, o.key)
+            .image(o.x, o.y, texture)
             .setOrigin(0)
             .setDepth(o.depth);
           if (!prefs.reduced && ["tree", "pine"].includes(o.key)) {
