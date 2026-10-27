@@ -17,6 +17,7 @@ export type Preferences = {
   time: "day" | "evening";
   footsteps: boolean;
   reduced: boolean;
+  instantText: boolean;
 };
 export type GameEvents = {
   ready: undefined;
@@ -45,6 +46,7 @@ export type GameEvents = {
   "controls-area": number;
   pause: boolean;
   reduced: boolean;
+  instantText: boolean;
   preferences: Preferences;
   tour: TourState;
   inspected: { place: string; station: string };

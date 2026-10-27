@@ -22,7 +22,7 @@ const savedStop = () => {
 };
 import world from "@/game/tour-world.json";
 import Modal from "./Modal";
-import AvatarPreview from "./AvatarPreview";
+import GameDialogue from "./GameDialogue";
 import TourJournal from "./TourJournal";
 const defaults: Preferences = {
   speed: 1,
@@ -30,6 +30,7 @@ const defaults: Preferences = {
   time: "day",
   footsteps: true,
   reduced: false,
+  instantText: false,
 };
 /** One-line ribbon copy for each tour stage. */
 function tourLine(t: TourState) {
@@ -93,7 +94,6 @@ export default function GameShell({
   character: Character;
   onCustomize: () => void;
 }) {
-  const typing = useRef<ReturnType<typeof setInterval> | null>(null);
   const host = useRef<HTMLDivElement>(null),
     controlsDock = useRef<HTMLDivElement>(null),
     offered = useRef(false),
@@ -109,7 +109,6 @@ export default function GameShell({
       id?: string;
     } | null>(null);
   const [dialogue, setDialogue] = useState<Dialogue | null>(null),
-    [text, setText] = useState(""),
     [map, setMap] = useState(false),
     [selected, setSelected] = useState(places[0].id),
     [settings, setSettings] = useState(false),
@@ -385,26 +384,6 @@ export default function GameShell({
       game?.destroy(true);
     };
   }, [character]);
-  useEffect(() => {
-    if (!dialogue) {
-      setText("");
-      return;
-    }
-    if (prefs.reduced) {
-      setText(dialogue.text);
-      return;
-    }
-    setText("");
-    const started = performance.now();
-    let n = 0;
-    const id = setInterval(() => {
-      n = Math.floor((performance.now() - started) / 10);
-      setText(dialogue.text.slice(0, n));
-      if (n >= dialogue.text.length) clearInterval(id);
-    }, 16);
-    typing.current = id;
-    return () => clearInterval(id);
-  }, [dialogue, prefs.reduced]);
   const send = (
     type:
       | "interact"
@@ -564,9 +543,19 @@ export default function GameShell({
                     Enter →
                   </button>
                 )}
-                {["arrived", "room-intro", "beat", "room-free"].includes(
-                  tour.stage,
-                ) ? (
+                {["room-intro", "beat"].includes(tour.stage) ? (
+                  <button
+                    className="v-button"
+                    onClick={() =>
+                      gameBus.emit("action", {
+                        type: "choice",
+                        id: "tour-read",
+                      })
+                    }
+                  >
+                    Read message
+                  </button>
+                ) : ["arrived", "room-free"].includes(tour.stage) ? (
                   <button
                     className={
                       tour.stage === "arrived" ? "v-quiet" : "v-button"
@@ -707,104 +696,13 @@ export default function GameShell({
         </div>
       )}
       {dialogue && (
-        <Modal
-          title={dialogue.title ?? `A conversation with ${dialogue.speaker}`}
-          className="village-dialogue"
+        <GameDialogue
+          key={`${dialogue.title ?? ""}:${dialogue.text}`}
+          dialogue={dialogue}
+          instant={prefs.reduced || prefs.instantText}
+          onChoice={choose}
           onClose={() => setDialogue(null)}
-        >
-          <div className="village-dialogue-layout">
-            <figure>
-              {dialogue.speaker === "Jalal" ? (
-                <img
-                  src={`/assets/tour/jalal-${dialogue.portrait ?? "portrait"}.png`}
-                  alt="Jalal’s pixel-art portrait"
-                />
-              ) : (
-                <AvatarPreview
-                  character={{
-                    ...defaultCharacter,
-                    ...(["Sami", "Lina", "Rayan"].includes(dialogue.speaker)
-                      ? {
-                          skin: "brown",
-                          hair: "flat_top_fade",
-                          topColor: "tan",
-                          glasses: "round",
-                        }
-                      : {
-                          body: "female" as const,
-                          skin: "bronze",
-                          hair: "bob",
-                          hairColor: "chestnut",
-                          top: "cardigan",
-                          topColor: "maroon",
-                          legs: "formal",
-                          legsColor: "navy",
-                        }),
-                  }}
-                  animated={false}
-                  focus="head"
-                />
-              )}
-              <figcaption>{dialogue.speaker}</figcaption>
-            </figure>
-            <div className="village-dialogue-body">
-              <div
-                className="village-spoken"
-                tabIndex={0}
-                aria-label={dialogue.text}
-              >
-                <p aria-hidden="true">{text}</p>
-              </div>
-              <div className="village-choices">
-                {text !== dialogue.text ? (
-                  <button
-                    className="v-button"
-                    onClick={() => {
-                      if (typing.current) clearInterval(typing.current);
-                      setText(dialogue.text);
-                    }}
-                  >
-                    Show full message ↓
-                  </button>
-                ) : (
-                  <>
-                    {dialogue.choices?.map((c) => (
-                      <button
-                        key={c.id}
-                        className="v-button"
-                        onClick={() => choose(c.id)}
-                      >
-                        {c.label}
-                      </button>
-                    ))}
-                    {dialogue.link && (
-                      <a
-                        className="v-button"
-                        href={dialogue.link}
-                        target={
-                          dialogue.link.startsWith("http")
-                            ? "_blank"
-                            : undefined
-                        }
-                        rel="noreferrer"
-                      >
-                        {dialogue.linkLabel ?? "Open source"} ↗
-                      </a>
-                    )}
-                    {!dialogue.choices && (
-                      <button
-                        className="v-button"
-                        onClick={() => setDialogue(null)}
-                      >
-                        Continue →
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </Modal>
+        />
       )}
       {map && (
         <Modal
@@ -1033,6 +931,14 @@ export default function GameShell({
                 <option value="clay">Terracotta</option>
                 <option value="blue">Midnight blue</option>
               </select>
+            </label>
+            <label className="v-check">
+              <input
+                type="checkbox"
+                checked={prefs.instantText}
+                onChange={(e) => update("instantText", e.target.checked)}
+              />
+              Instant dialogue text
             </label>
             <label className="v-check">
               <input
