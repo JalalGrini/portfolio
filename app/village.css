@@ -1617,3 +1617,221 @@ dialog.village-dialogue::backdrop {
     left: 240px;
   }
 }
+
+/* C04 — original R01-inspired wood/paper conversation frame, shared by every
+   building, exhibit, welcome, NPC and tour message. No reference pixels. */
+dialog.modal.village-dialogue {
+  width: min(1120px, calc(100vw - 48px));
+  inset: auto 0 max(16px, env(safe-area-inset-bottom));
+  margin: 0 auto;
+  border: 8px solid #a56c3d;
+  border-radius: 2px;
+  outline: 2px solid #4d3025;
+  color: #4b2d20;
+  background: #edc58c;
+  box-shadow:
+    inset 0 0 0 2px #ffdfa0,
+    0 0 0 5px #d49a58,
+    0 7px 0 3px #4d3025,
+    0 12px 26px #12211640;
+  max-height: calc(100dvh - 36px);
+}
+.town-root dialog.modal.village-dialogue::backdrop {
+  background: #11281b0d;
+  backdrop-filter: none;
+}
+.village-dialogue .modal-top {
+  background: #edc58c;
+  border: 0;
+  padding: 0 12px;
+  min-height: 44px;
+  color: #69432c;
+}
+.village-dialogue .modal-top .eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.035em;
+  max-width: calc(100% - 52px);
+}
+.village-dialogue .icon-button {
+  background: #f7d99d;
+  border: 2px solid #9c663b;
+  color: #533021;
+  width: 44px;
+  height: 44px;
+  box-shadow: inset 0 0 0 1px #ffebbd;
+}
+.village-dialogue .modal-content {
+  padding: 4px 16px 16px;
+  max-height: calc(100dvh - 100px);
+  overflow: auto;
+}
+.village-dialogue-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 176px;
+  gap: 20px;
+  align-items: start;
+}
+.village-dialogue-layout figure {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+  padding: 7px 7px 0;
+  border: 6px double #8c512f;
+  border-radius: 0;
+  background: #d9a66a;
+  box-shadow:
+    0 0 0 1px #ffe6ac,
+    inset 0 0 0 1px #f5cc88;
+}
+.village-dialogue-layout figure img {
+  width: 100%;
+  height: 144px;
+  object-fit: contain;
+  object-position: center top;
+  background: #f4d6a0;
+}
+.village-dialogue-layout figcaption {
+  padding: 6px 0;
+  margin: 5px -7px 0;
+  font:
+    22px/1.1 "Pixelify Sans",
+    monospace;
+  background: #e8bd7e;
+  color: #4e3023;
+  border-top: 2px solid #a36c3e;
+}
+.village-dialogue-layout figure .avatar-preview {
+  height: 144px;
+  background: #f4d6a0;
+}
+.village-dialogue-body {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+.village-spoken {
+  max-height: none;
+  overflow: visible;
+}
+.village-spoken p {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #4b2d20;
+  min-height: 6em;
+  white-space: pre-line;
+}
+.dialogue-cursor {
+  color: #815233;
+}
+.dialogue-reading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 18px;
+  color: #6b4b30;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.village-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.village-choices .v-button {
+  min-height: 44px;
+  font-size: 15px;
+  line-height: 1.35;
+  padding: 8px 12px;
+  color: #4b2d20;
+  border: 2px solid #9a643a;
+  border-radius: 1px;
+  background: #ffe1a5;
+  box-shadow:
+    inset 0 0 0 1px #fff0c8,
+    0 2px 0 #a66b3e;
+}
+.village-choices .v-button:hover,
+.village-choices .v-button:focus-visible {
+  background: #ffedc0;
+  outline-color: #573422;
+}
+.choice-arrow {
+  font-size: 18px;
+  line-height: 1;
+  color: #825032;
+}
+@media (max-width: 700px) {
+  dialog.modal.village-dialogue {
+    width: calc(100vw - 28px);
+    inset: auto 0 max(10px, env(safe-area-inset-bottom));
+    border-width: 6px;
+    max-height: calc(100dvh - 28px);
+  }
+  .village-dialogue .modal-top {
+    padding: 0 8px;
+    min-height: 44px;
+  }
+  .village-dialogue .modal-top .eyebrow {
+    font-size: 11px;
+  }
+  .village-dialogue .modal-content {
+    padding: 4px 10px 12px;
+    max-height: calc(100dvh - 100px);
+  }
+  .village-dialogue-layout {
+    display: block;
+  }
+  .village-dialogue-layout figure {
+    float: right;
+    width: 82px;
+    padding: 4px 4px 0;
+    margin: 0 0 8px 12px;
+    border-width: 4px;
+  }
+  .village-dialogue-layout figure img,
+  .village-dialogue-layout figure .avatar-preview {
+    height: 70px;
+  }
+  .village-dialogue-layout figcaption {
+    font-size: 16px;
+    padding: 4px 0;
+    margin: 4px -4px 0;
+  }
+  .village-dialogue-body {
+    display: block;
+    padding: 0;
+  }
+  .village-spoken {
+    max-height: none;
+    overflow: visible;
+  }
+  .village-spoken p {
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 96px;
+  }
+  .dialogue-reading {
+    clear: both;
+    padding: 8px 0;
+    font-size: 10px;
+  }
+  .village-choices {
+    clear: both;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 7px;
+  }
+  .village-choices .v-button {
+    font-size: 14px;
+    padding: 8px 10px;
+    justify-content: flex-start;
+  }
+}
+.village-dialogue .village-spoken p {
+  color: #4b2d20;
+}
