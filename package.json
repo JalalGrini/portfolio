@@ -21,7 +21,8 @@
     "test:town": "node tools/export-catalog.cjs && node tools/qa-town-tour.cjs",
     "test:tour-loop": "node tools/qa-tour-journey.cjs",
     "test:unit": "node --test tools/test-tour.mjs",
-    "test:journey": "node tools/qa-tour-journey.cjs"
+    "test:journey": "node tools/qa-tour-journey.cjs",
+    "check:palette": "node tools/test-town-palette.cjs"
   },
   "dependencies": {
     "motion": "^12.43.0",
@@ -38,6 +39,7 @@
     "@types/react-dom": "^19.3.0",
     "postcss": "^8.5.31",
     "prettier": "^3.9.10",
+    "sharp": "0.35.5",
     "tailwindcss": "^4.3.3",
     "typescript": "5.9"
   }
