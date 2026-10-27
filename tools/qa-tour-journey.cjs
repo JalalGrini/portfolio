@@ -118,6 +118,41 @@ fs.mkdirSync(out, { recursive: true });
         });
         await choose(/Next highlight|Got it/);
         beats++;
+        // Early exit on the first stop: must pause at the door, not skip the stop.
+        if (i === 0 && k === 0 && process.env.QA_EARLY_EXIT !== "0") {
+          const expectBeat = 1;
+          await waitStage(["to-beat"]);
+          await p.getByRole("button", { name: /Outside/ }).click();
+          await p.waitForFunction(
+            () => document.querySelector(".game-shell")?.dataset.room === "town",
+            {},
+            { timeout: 10000 },
+          );
+          await waitStage(["arrived"], 8000);
+          if (+(await attr("tour-index")) !== 0)
+            throw Error("Early exit advanced the tour");
+          await p.locator(".village-dialogue").waitFor({ timeout: 8000 });
+          const t = await p.locator(".village-dialogue").innerText();
+          if (!/highlight/i.test(t) || !/Go back inside/.test(t))
+            throw Error("No go-back-inside offer after early exit: " + t);
+          await p.screenshot({ path: `${out}/stop1-early-exit.png` });
+          await choose(/Go back inside/);
+          await p.waitForFunction(
+            () => document.querySelector(".game-shell")?.dataset.room !== "town",
+            {},
+            { timeout: 10000 },
+          );
+          await waitStage(["room-intro"]);
+          const intro = await p.locator(".village-dialogue").innerText();
+          if (!/highlight 2 of/i.test(intro))
+            throw Error("Re-entry intro does not resume at highlight 2");
+          await choose(/Continue/);
+          await waitStage(["to-beat"]);
+          if (+(await attr("tour-beat-index")) !== expectBeat &&
+              (await attr("tour-beat-index")) !== null)
+            throw Error("Re-entry did not resume at highlight 2");
+          console.log("PASS early exit pauses at the door; re-entry resumes at highlight 2");
+        }
       }
       await waitStage(["room-free"]);
       await p.locator(".village-dialogue").waitFor();
