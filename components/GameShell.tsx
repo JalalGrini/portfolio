@@ -8,11 +8,11 @@ import {
 } from "@/game/character";
 import { gameBus, Dialogue, TourState, Preferences } from "@/game/bus";
 import { places, placeById } from "@/game/catalog";
-import { makePlan, resumeIndex, TOUR_SAVE_KEY } from "@/game/tour";
+import { makePlan, resumePoint, TOUR_SAVE_KEY } from "@/game/tour";
 const tourPlan = makePlan(places);
 const savedStop = () => {
   try {
-    return resumeIndex(
+    return resumePoint(
       JSON.parse(localStorage.getItem(TOUR_SAVE_KEY) || "null"),
       tourPlan,
     );
@@ -191,15 +191,16 @@ export default function GameShell({
           if (resume !== null)
             welcomeTimer = setTimeout(() => {
               if (disposed) return;
-              const p = placeById(tourPlan[resume].id);
+              const p = placeById(tourPlan[resume.index].id);
+              const beats = tourPlan[resume.index].beats.length;
               setDialogue({
                 speaker: "Jalal",
                 portrait: "happy",
                 title: "Welcome back",
-                text: `Good to see you again! Last time we got as far as stop ${resume + 1} of ${tourPlan.length}: ${p.name}. Shall we pick up where we left off?`,
+                text: `Good to see you again! Last time we got as far as stop ${resume.index + 1} of ${tourPlan.length}: ${p.name}${resume.beat > 0 && resume.beat < beats ? ` (highlight ${resume.beat + 1} of ${beats})` : ""}. Shall we pick up where we left off?`,
                 choices: [
                   {
-                    id: `tour-resume-${resume}`,
+                    id: `tour-resume-${resume.index}:${resume.beat}`,
                     label: `Resume at ${p.short} →`,
                   },
                   { id: "tour-start", label: "Start from the beginning" },
@@ -391,6 +392,7 @@ export default function GameShell({
       data-guide-y={pos.guideY?.toFixed(1)}
       data-tour-beat={tour?.beatId ?? ""}
       data-tour-index={tour?.index ?? 0}
+      data-tour-beat-index={tour?.beat ?? 0}
       data-camera-x={pos.cameraX}
       data-camera-y={pos.cameraY}
       data-zoom={pos.zoom}
@@ -491,7 +493,7 @@ export default function GameShell({
                 ].includes(tour.stage) ? (
                   <button
                     className="v-button"
-                    onClick={() => send("tour-next")}
+                    onClick={() => send("tour-next", String(tour.index))}
                   >
                     {tour.index === tour.total - 1
                       ? "Finish tour"
@@ -511,11 +513,13 @@ export default function GameShell({
                   Leave tour
                 </button>
               </div>
-            ) : tour?.stage === "free" && tour.index > 0 ? (
+            ) : tour?.stage === "free" && (tour.index > 0 || tour.beat > 0) ? (
               <div className="tour-actions">
                 <button
                   className="v-button"
-                  onClick={() => send("tour-start", String(tour.index))}
+                  onClick={() =>
+                    send("tour-start", `${tour.index}:${tour.beat}`)
+                  }
                 >
                   Resume tour · {tour.index + 1}/{tour.total}
                 </button>
