@@ -71,3 +71,9 @@ require("child_process").execFileSync(
   [path.join(__dirname, "build_town_palette.cjs")],
   { stdio: "inherit" },
 );
+// Authored rooms override only their own legacy surfaces after the town build.
+require("child_process").execFileSync(
+  process.execPath,
+  [path.join(__dirname, "build_authored_rooms.cjs")],
+  { stdio: "inherit" },
+);

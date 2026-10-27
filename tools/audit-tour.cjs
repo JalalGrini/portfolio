@@ -1,23 +1,7 @@
 const fs = require("fs"),
   ts = require("typescript"),
   path = require("path");
-function load(p) {
-  p = path.resolve(p);
-  const m = { exports: {} };
-  const code = ts.transpileModule(fs.readFileSync(p, "utf8"), {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2022,
-    },
-  }).outputText;
-  new Function("require", "module", "exports", code)(
-    (s) =>
-      s === "@/content/portfolio" ? load("content/portfolio.ts") : require(s),
-    m,
-    m.exports,
-  );
-  return m.exports;
-}
+const { load } = require("./load-game.cjs");
 const { places, stationsFor } = load("game/catalog.ts"),
   { route, isFree, distance } = load("game/navigation.ts"),
   { projects } = load("content/portfolio.ts"),
@@ -28,7 +12,7 @@ for (const project of projects) {
   if (matches.length !== 1) problems.push("Project coverage " + project.id);
 }
 for (const p of places) {
-  const solids = [
+  let solids = [
     { x: 0, y: 0, w: p.width, h: 102 },
     { x: 0, y: 0, w: 18, h: p.height },
     { x: p.width - 18, y: 0, w: 18, h: p.height },
@@ -39,6 +23,8 @@ for (const p of places) {
   for (const s of stations)
     solids.push({ x: s.x + 4, y: s.y + s.h - 22, w: s.w - 8, h: 20 });
   solids.push({ x: p.width / 2 + 8 - 18, y: p.height - 130 - 8, w: 36, h: 16 });
+  const { roomLayouts, roomSolids } = load("game/authoredRooms.ts");
+  if (roomLayouts[p.id]) solids = roomSolids(roomLayouts[p.id]);
   const spawn = { x: p.width / 2, y: p.height - 54 };
   for (const s of stations) {
     if (!isFree(s.approach, p.width, p.height, solids))
