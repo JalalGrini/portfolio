@@ -112,6 +112,7 @@ export default function GameShell({
     [selected, setSelected] = useState(places[0].id),
     [settings, setSettings] = useState(false),
     [help, setHelp] = useState(false);
+  const [hint, setHint] = useState("");
   const [visited, setVisited] = useState<string[]>([]),
     [inspected, setInspected] = useState<Record<string, string[]>>({}),
     [travel, setTravel] = useState<{ label: string; building?: string } | null>(
@@ -268,6 +269,7 @@ export default function GameShell({
       }),
       gameBus.on("near", setNear),
       gameBus.on("dialogue", setDialogue),
+      gameBus.on("hint", setHint),
       gameBus.on("transition", setTravel),
       gameBus.on("tour", (t) => {
         setTour(t);
@@ -502,6 +504,9 @@ export default function GameShell({
               </button>
             </div>
           </div>
+          <p className="sr-only" aria-live="polite">
+            {hint}
+          </p>
           <div className="tour-ribbon v-panel" aria-live="polite">
             <img src="/assets/tour/jalal-happy.png" alt="" />
             <div>
@@ -519,6 +524,19 @@ export default function GameShell({
             </div>
             {tour?.active ? (
               <div className="tour-actions">
+                {tour.stage === "arrived" && room === null && (
+                  <button
+                    className="v-button tour-enter"
+                    onClick={() =>
+                      gameBus.emit("action", {
+                        type: "choice",
+                        id: "enter-stop",
+                      })
+                    }
+                  >
+                    Enter →
+                  </button>
+                )}
                 {[
                   "arrived",
                   "room-intro",
@@ -527,13 +545,15 @@ export default function GameShell({
                   "room-free",
                 ].includes(tour.stage) ? (
                   <button
-                    className="v-button"
+                    className={
+                      tour.stage === "arrived" ? "v-quiet" : "v-button"
+                    }
                     onClick={() => send("tour-next", String(tour.index))}
                   >
                     {tour.index === tour.total - 1
                       ? "Finish tour"
                       : tour.stage === "arrived"
-                        ? "Skip this stop →"
+                        ? "Skip stop"
                         : "Next stop →"}
                   </button>
                 ) : (

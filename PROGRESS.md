@@ -7,7 +7,7 @@
 | Thing | Location |
 |---|---|
 | Working branch (all rebuild work) | `game/stardew-vision` (created from `docs/stardew-vision-handoff`, which itself starts from the live release `game/jalal-guided-village` @ `43150ca`) |
-| Live release (do not break) | `game/jalal-guided-village` → deployed to <https://portfolio-chi-nine-fwh6p2oz7b.vercel.app/play/> |
+| Live release (do not break) | `game/stardew-vision` → deployed to <https://portfolio-chi-nine-fwh6p2oz7b.vercel.app/play/> |
 | `main` | Older cinematic release (`8a0930c`). **Does not** contain the guided town. Do not assume it is current. |
 | Vision/plan package | [`docs/stardew-vision/`](docs/stardew-vision/README.md) — reference analysis, implementation plan, 21 room briefs, tour spec, UI spec, asset rights, work packages (V00–V12) |
 | The 7 user reference images (lossless) | `docs/stardew-vision/references/` — run `python3 docs/stardew-vision/restore_references.py` to decode + hash-verify the originals into `references/originals/` (git-ignored) |
@@ -39,6 +39,7 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 | C01e | **Safe progression**: walking out mid-room pauses the stop at the door (no skip) and Jalal offers *Go back inside / Next stop / Look around*; re-entry resumes at the same highlight; stale/double *Next* clicks ignored (`next.from`, `tour-next-<i>`); `exit-room` checks the building id | V03 | ✅ |
 | C01f | **Precise save/resume**: save v3 `{v:3,index,beat,complete}` (v2 migrates); welcome-back names the highlight; finished room resumes at the next stop | V03 | ✅ |
 | C02a | Ribbon: second line visible in rooms (ellipsis, 430 px), stop progress bar (21 stops) + highlight beads (done / current pulsing), reduced-motion safe, 390 px layout checked | V03/V04 | ✅ |
+| C02b | Non-blocking Jalal hint bubbles + accessible live text; arrival Enter action; desktop/390 px movement and overflow checks | V03/V04 | 🟡 local QA passed; deploying |
 | C02 | Tour UI: redesigned ribbon with stop/beat progress, non-blocking speech bubbles for Jalal hints (no pause spam), resume prompt, tour journal (21 stops, visited/inspected) | V03/V04 | ⬜ |
 | C03 | Full-journey E2E (`tools/qa-tour-journey.cjs`): 21 stops, every room entered, beats completed, exit + resume, no stalls; screenshots per room | V08 | ⬜ |
 
@@ -76,16 +77,19 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 | C20 | Human visual review, production deploy, live verification | V12 | ⬜ |
 
 ## Next up (start here)
-1. **C02b** — Non-blocking hint bubble channel (`gameBus "hint"`): "Follow me", "Here's the door", waiting nudges shown above Jalal without pausing the game. Keep blocking dialogue only for choices.
-2. **C02c** — Tour journal (M → tab): 21 stops, visited / highlights seen / inspected count, jump-to-resume.
-3. **C02d** — Bottom HUD no longer covers rooms (safe-area padding + camera bounds).
-4. **C03** — Full 21-stop journey E2E run + screenshots of every room.
+1. **C02b release** — Local QA passed (2-stop journey, exit/re-entry, reload/resume, 1440/390 px hints); push and verify production.
+2. **C02e (owner priority)** — Outdoor colour pass using working-branch `tools/` and retained LPC sources: remove the muddy desaturation, warm paths, stronger roof/garden colours; preserve navigation. Then resume C02c/C02d.
+3. **C02c** — Tour journal (M → tab): 21 stops, visited / highlights seen / inspected count, jump-to-resume.
+4. **C02d** — Bottom HUD no longer covers rooms (safe-area padding + camera bounds).
+5. **C03** — Full 21-stop journey E2E run + screenshots of every room.
 
 ## Deploying (every chunk)
 Push → Vercel builds a preview automatically → once checks pass, create a production deployment of the pushed SHA with the Vercel connector (`create_deployment`, project `prj_N0lCH399sXu6OdzkjzRFANb85mlU`, team `team_AidgC20ca6cfN9tCrVyHymcM`, `target: production`, `gitSource {org JalalGrini, repo portfolio, ref game/stardew-vision, sha}`) → verify <https://portfolio-chi-nine-fwh6p2oz7b.vercel.app/play/> serves the new chunk and run `QA_BASE_URL=<live> QA_STOPS=1 node tools/qa-tour-journey.cjs`. (`request_promote` of a preview returns 422.) Rollback point before the rebuild went live: `dpl_BrENg9LQqzQyG8SAwAuX5yGkNZUw` (`game/jalal-guided-village@43150ca`).
 
 ## Log
 <!-- newest first -->
+- **C02b local QA** — Non-blocking follow/arrival/wait reminders. Fixed a CanvasRenderer text-resolution mismatch caught in screenshots. Two stops + early exit/re-entry + reload/resume PASS; 1440/390 px hint screenshots checked; player moves while hints show; ribbon actions fit; 12 unit tests, 21-door/100-object audit, TypeScript and production build PASS.
+- **Deploy** — C02a production `dpl_7A4gBUezARtmWQxBe8kiEH2scTTe` READY (`4fd484a`); live 1-stop journey + early exit + reload/resume PASS.
 - **C02a** — Ribbon shows the stage line inside rooms too (was `display:none`), a 21-stop progress bar and highlight beads. Journey (1 stop + early exit + resume) PASS, 390 px screenshot checked, `tsc` + build clean.
 - **Deploy** — C01e/f went live in production (`dpl_AJAJfqikLgumKadqP87WWD3mHwhn`, sha `dd29343`); live journey smoke test PASS.
 - **C01e + C01f** — Tour can no longer be skipped by accident: `exit-room` from intro/beat stages → `arrived` at the door with the current highlight kept; only free-look exit or an explicit *Next stop / Skip this stop* advances. `next` carries the stop index so duplicate events (double click, stale dialogue choice) are no-ops. Saves are v3 with the highlight index; v2 saves still resume. Room intro on re-entry: "Welcome back… highlight 2 of 3", *Continue →*. Unit tests 9 → 12 (all pass). Journey test now walks out after highlight 1, checks the door prompt, goes back in and resumes at highlight 2 (PASS, screenshot `stop1-early-exit.png`); 2 stops + reload-resume PASS; `check:tour` PASS; `tsc` + `next build` clean.
@@ -96,10 +100,10 @@ Push → Vercel builds a preview automatically → once checks pass, create a pr
 
 ## Known issues / hypotheses to check
 - ~~Early room exit advanced the tour; saves lost the highlight~~ → fixed in C01e/C01f.
-- Tour ribbon's second line (`<strong>`) is not visible at 1440 px — the stage text (e.g. "Highlight 1/3") is hidden. Fix in C02.
+- ~~Tour ribbon stage line was hidden inside rooms~~ → fixed in C02a.
 - Bottom HUD (key hints / Wave / Sit / Outside) covers the bottom ~50 px of rooms; Jalal can stand under it at bottom-row exhibits. Fix in C02/C04.
 - When the visitor stands next to Jalal at a highlight they can overlap (same depth band). Polish in C15.
 - Dialogue panel covers the lower half of the room; R01 wants a low panel with the scene visible (C04).
 - `qa-tour-loop.cjs` only checks outdoor door stops, not the guided interior journey (C03).
-- `GameShell` pauses the game for every dialogue; hints need a non-blocking channel (C02).
+- ~~Jalal reminders paused the game~~ → non-blocking bubble channel in C02b (release pending).
 - Interiors use a shared five-position layout (`stationsFor`) and stretched/tinted facades (C07–C14).

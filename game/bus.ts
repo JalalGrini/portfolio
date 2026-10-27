@@ -38,6 +38,8 @@ export type GameEvents = {
     zoom?: number;
   };
   dialogue: Dialogue;
+  /** Short non-blocking line from Jalal (speech bubble + screen-reader text). */
+  hint: string;
   pause: boolean;
   reduced: boolean;
   preferences: Preferences;
