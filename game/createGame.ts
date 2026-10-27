@@ -14,6 +14,9 @@ import {
   makePlan,
   inRoomStage,
   TourEvent,
+  toSave,
+  resumeIndex,
+  TOUR_SAVE_KEY,
 } from "./tour";
 import { Point, Rect, distance, route, isFree } from "./navigation";
 type Entry = { building?: string; returnPosition?: Point; goto?: string };
@@ -32,6 +35,20 @@ export function createGame(
   };
   const plan = makePlan(places);
   let tour: TourState = initialTour(plan);
+  try {
+    // Restore where the visitor stopped so the ribbon can offer "Resume".
+    const at = resumeIndex(
+      JSON.parse(localStorage.getItem(TOUR_SAVE_KEY) || "null"),
+      plan,
+    );
+    if (at !== null)
+      tour = {
+        ...tour,
+        index: at,
+        target: plan[at].id,
+        beats: plan[at].beats.length,
+      };
+  } catch {}
   let completedPending = false;
   let guidePosition: Point = { x: world.spawn.x + 38, y: world.spawn.y - 18 };
   const emitTour = () => gameBus.emit("tour", { ...tour });
@@ -40,6 +57,9 @@ export function createGame(
     const prev = tour;
     tour = tourReduce(plan, tour, e);
     if (tour === prev) return false;
+    try {
+      localStorage.setItem(TOUR_SAVE_KEY, JSON.stringify(toSave(tour)));
+    } catch {}
     emitTour();
     return true;
   };
@@ -658,6 +678,10 @@ export function createGame(
       }
       if (a.type === "choice") {
         const id = a.id ?? "";
+        if (id.startsWith("tour-resume-")) {
+          this.action({ type: "tour-start", id: id.slice(12) });
+          return;
+        }
         if (id === "tour-start") {
           this.action({ type: "tour-start" });
           return;

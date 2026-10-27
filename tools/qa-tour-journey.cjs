@@ -144,6 +144,26 @@ fs.mkdirSync(out, { recursive: true });
         "stage",
         await attr("tour-stage"),
       );
+    if (stops < 21 && process.env.QA_RESUME !== "0") {
+      await p.getByRole("button", { name: "Leave tour", exact: true }).click();
+      await pause(300);
+      if (!(await p.getByRole("button", { name: /Resume tour/ }).count()))
+        throw Error("Ribbon does not offer Resume after leaving");
+      await p.reload();
+      const explore = p.getByRole("button", { name: /Let’s explore/ });
+      await explore.or(p.locator(".village-game.is-ready")).first().waitFor({ timeout: 60000 });
+      if (await explore.count()) await explore.click();
+      await p.locator(".village-game.is-ready").waitFor({ timeout: 60000 });
+      await p.locator(".village-dialogue").waitFor({ timeout: 8000 });
+      if (!/welcome back/i.test(await p.locator(".village-dialogue").innerText()))
+        throw Error("No welcome-back resume offer after reload");
+      await p.screenshot({ path: `${out}/resume-offer.png` });
+      await choose(/Resume at/);
+      await waitStage(["leading", "waiting", "arrived"]);
+      if (+(await attr("tour-index")) !== stops)
+        throw Error("Resumed at wrong stop " + (await attr("tour-index")));
+      console.log("PASS leave → reload → resume at stop", stops + 1);
+    }
     if (errors.length) throw Error(errors.join("\n"));
   } catch (e) {
     console.error(e);
