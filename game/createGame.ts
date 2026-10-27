@@ -1,3 +1,5 @@
+import { roomProps } from "./authoredRooms";
+import { renderAuthoredRoom } from "./renderRoom";
 import * as Phaser from "phaser";
 import world from "./tour-world.json";
 import townMap from "./town-map.json";
@@ -128,6 +130,11 @@ export function createGame(
         "piano",
       ])
         this.load.image("interior-" + name, `/assets/rooms/${name}.png`);
+      for (const name of Object.keys(roomProps))
+        this.load.image(
+          "authored-" + name,
+          `/assets/rooms/authored-${name}.png`,
+        );
       for (const [key, url] of Object.entries(sheets))
         this.load.spritesheet(key, url, { frameWidth: 64, frameHeight: 64 });
       this.load.spritesheet("jalal", "/assets/tour/jalal-sheet.png", {
@@ -508,6 +515,17 @@ export function createGame(
         { x: p.width / 2 + 52, y: p.height - 24, w: p.width / 2 - 52, h: 24 },
       ];
       this.stations = stationsFor(p);
+      const authored = renderAuthoredRoom(
+        this,
+        p,
+        this.stations,
+        prefs.reduced,
+      );
+      if (authored) {
+        this.solids = authored.solids;
+        this.seats = authored.seats;
+        return;
+      }
       for (const s of this.stations) {
         const key = domainProps.includes(s.prop)
           ? "domain-" + s.prop
