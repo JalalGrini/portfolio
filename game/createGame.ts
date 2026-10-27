@@ -7,8 +7,14 @@ import {
   stationsFor,
   domainProps,
   Station,
-  tourOrder,
 } from "./catalog";
+import {
+  tourReduce,
+  initialTour,
+  makePlan,
+  inRoomStage,
+  TourEvent,
+} from "./tour";
 import { Point, Rect, distance, route, isFree } from "./navigation";
 type Entry = { building?: string; returnPosition?: Point; goto?: string };
 export function createGame(
@@ -24,16 +30,19 @@ export function createGame(
     footsteps: true,
     reduced: initialReduced,
   };
-  let tour: TourState = {
-    active: false,
-    stage: "free",
-    index: 0,
-    total: tourOrder.length,
-    target: tourOrder[0],
-    distance: 0,
-  };
+  const plan = makePlan(places);
+  let tour: TourState = initialTour(plan);
+  let completedPending = false;
   let guidePosition: Point = { x: world.spawn.x + 38, y: world.spawn.y - 18 };
   const emitTour = () => gameBus.emit("tour", { ...tour });
+  /** Apply a tour event; returns true when the state actually changed. */
+  const dispatch = (e: TourEvent) => {
+    const prev = tour;
+    tour = tourReduce(plan, tour, e);
+    if (tour === prev) return false;
+    emitTour();
+    return true;
+  };
   const say = (d: Dialogue) => gameBus.emit("dialogue", d);
   class Boot extends Phaser.Scene {
     constructor() {
@@ -149,6 +158,9 @@ export function createGame(
     private speaker = "Jalal";
     private pendingKeys = new Set<string>();
     private shadow!: Phaser.GameObjects.Ellipse;
+    /** Dialogue whose closing should advance the tour ("intro" or "beat"). */
+    private tourAwait: "intro" | "beat" | null = null;
+    private tourAwaitOpen = false;
     constructor(key: string, roomMode = false) {
       super(key);
       this.roomMode = roomMode;
@@ -171,6 +183,8 @@ export function createGame(
       this.targetObject = null;
       this.waitNotified = false;
       this.autoFollow = false;
+      this.tourAwait = null;
+      this.tourAwaitOpen = false;
       this.pendingKeys.clear();
     }
     create() {
@@ -251,8 +265,9 @@ export function createGame(
         })
         .setOrigin(0.5)
         .setDepth(9000);
-      this.guide.setVisible(!place || tour.active);
-      this.guideLabel.setVisible(!place || tour.active);
+      const guided = !place || (tour.active && place.id === tour.target);
+      this.guide.setVisible(guided);
+      this.guideLabel.setVisible(guided);
       this.weather = this.add
         .rectangle(0, 0, this.widthPx, this.heightPx, 0x142740, 0)
         .setOrigin(0)
@@ -344,6 +359,13 @@ export function createGame(
           Object.values(this.keys).forEach((k) => k.reset());
           this.touch = { x: 0, y: 0 };
           this.velocity = { x: 0, y: 0 };
+          if (v && this.tourAwait) this.tourAwaitOpen = true;
+          if (!v && this.tourAwait && this.tourAwaitOpen) {
+            const kind = this.tourAwait;
+            this.tourAwait = null;
+            this.tourAwaitOpen = false;
+            this.time.delayedCall(140, () => this.tourAck(kind));
+          }
           if (v) {
             this.player.anims.pause();
             this.guide.anims.pause();
@@ -379,10 +401,17 @@ export function createGame(
       emitTour();
       if (tour.active) {
         if (place) {
-          tour.stage = "exploring";
-          emitTour();
+          if (dispatch({ type: "enter-room", id: place.id }))
+            this.time.delayedCall(prefs.reduced ? 60 : 650, () =>
+              this.roomIntro(),
+            );
         } else if (tour.stage === "leading" || tour.stage === "waiting")
           this.leadToStop();
+      } else if (!place && completedPending) {
+        completedPending = false;
+        this.time.delayedCall(prefs.reduced ? 60 : 600, () =>
+          this.sayComplete(),
+        );
       }
       if (this.entry.goto && !place) this.navigate(this.entry.goto);
     }
@@ -582,62 +611,49 @@ export function createGame(
       }
       if (a.type === "tour-start") {
         this.stand();
-        tour = {
-          active: true,
-          stage: "leading",
-          index: 0,
-          total: tourOrder.length,
-          target: tourOrder[0],
-          distance: 0,
-        };
+        this.tourAwait = null;
+        const from = a.id ? Number(a.id) : 0;
+        dispatch({ type: "start", from: Number.isFinite(from) ? from : 0 });
         if (this.roomMode) {
-          this.exitRoom();
+          this.travel("Town", { returnPosition: this.entry.returnPosition });
         } else {
           this.guide.setPosition(this.player.x + 28, this.player.y - 14);
           this.leadToStop();
         }
-        emitTour();
         return;
       }
       if (a.type === "tour-leave") {
-        tour.active = false;
-        tour.stage = "free";
+        dispatch({ type: "leave" });
+        this.tourAwait = null;
         this.autoFollow = false;
         this.guidePath = [];
-        emitTour();
         return;
       }
       if (a.type === "tour-rejoin") {
-        if (tour.active && !this.roomMode) {
-          this.autoFollow = true;
-          this.moveTo(this.guide);
-          tour.stage = "leading";
-          this.waitNotified = false;
-          emitTour();
+        if (!tour.active) return;
+        if (this.roomMode) {
+          if (this.guide.visible) this.moveTo(this.guide);
+          return;
         }
+        this.autoFollow = true;
+        this.moveTo(this.guide);
+        dispatch({ type: "visitor-near" });
+        this.waitNotified = false;
         return;
       }
       if (a.type === "tour-next") {
         if (!tour.active) return;
         this.path = [];
-        if (tour.index >= tourOrder.length - 1) {
-          tour.active = false;
-          tour.stage = "complete";
-          this.guidePath = [];
-          emitTour();
-          say({
-            speaker: "Jalal",
-            portrait: "happy",
-            text: "That’s the whole town! Thank you for exploring my work. You can now wander freely, revisit a project or start another tour whenever you like.",
-          });
+        this.tourAwait = null;
+        if (this.roomMode) {
+          this.exitRoom(true);
           return;
         }
-        tour.index++;
-        tour.target = tourOrder[tour.index];
-        tour.stage = "leading";
-        emitTour();
-        if (this.roomMode) this.exitRoom();
-        else this.leadToStop();
+        dispatch({ type: "next" });
+        if (tour.stage === "complete") {
+          this.guidePath = [];
+          this.sayComplete();
+        } else this.leadToStop();
         return;
       }
       if (a.type === "choice") {
@@ -648,6 +664,15 @@ export function createGame(
         }
         if (id === "tour-leave") {
           this.action({ type: "tour-leave" });
+          return;
+        }
+        if (id === "tour-next") {
+          this.action({ type: "tour-next" });
+          return;
+        }
+        if (id === "skip-room") {
+          this.tourAwait = null;
+          if (dispatch({ type: "skip-room" })) this.tourRoomStep();
           return;
         }
         if (id === "enter-stop") {
@@ -696,10 +721,8 @@ export function createGame(
       if (a.type === "exit" && this.roomMode) this.exitRoom();
       if (a.type === "navigate" && a.id) {
         if (tour.active) {
-          tour.active = false;
-          tour.stage = "free";
+          dispatch({ type: "leave" });
           this.guidePath = [];
-          emitTour();
         }
         if (this.roomMode)
           this.travel("Town", {
@@ -743,9 +766,7 @@ export function createGame(
         this.heightPx,
         this.solids,
       );
-      tour.stage = "leading";
       this.waitNotified = false;
-      emitTour();
     }
     private enter(id: string) {
       const b = world.buildings.find((b) => b.id === id)!;
@@ -754,9 +775,109 @@ export function createGame(
         returnPosition: { x: b.doorX, y: b.doorY + 50 },
       });
     }
-    private exitRoom() {
-      if (tour.active && tour.stage === "exploring") tour.stage = "stop";
+    /** Leaving the tour's room moves the tour on to the next stop. */
+    private exitRoom(viaNext = false) {
+      if (this.transitioning) return;
+      if (tour.active && inRoomStage(tour.stage)) {
+        dispatch({ type: viaNext ? "next" : "exit-room" });
+        if (tour.stage === "complete") completedPending = true;
+      }
       this.travel("Town", { returnPosition: this.entry.returnPosition });
+    }
+    private sayComplete() {
+      say({
+        speaker: "Jalal",
+        portrait: "happy",
+        title: "Tour complete",
+        text: "That’s the whole town! Thank you for walking through my work with me. Wander freely, revisit any project from the map, or start the tour again whenever you like.",
+      });
+    }
+    private beatStation() {
+      return this.stations.find((s) => s.id === tour.beatId);
+    }
+    /** A free spot beside an exhibit where Jalal can stand without blocking it. */
+    private besideStation(s: Station): Point {
+      for (const [dx, dy] of [
+        [58, 8],
+        [-58, 8],
+        [0, 42],
+        [70, 30],
+        [-70, 30],
+        [34, 40],
+      ]) {
+        const q = { x: s.approach.x + dx, y: s.approach.y + dy };
+        if (isFree(q, this.widthPx, this.heightPx, this.solids)) return q;
+      }
+      return { ...s.approach };
+    }
+    private guideTo(q: Point) {
+      this.guidePath = route(
+        this.guide,
+        q,
+        this.widthPx,
+        this.heightPx,
+        this.solids,
+      );
+    }
+    private roomIntro() {
+      if (!this.roomMode || tour.stage !== "room-intro") return;
+      const p = placeById(this.entry.building!);
+      const n = tour.beats;
+      this.tourAwait = "intro";
+      this.tourAwaitOpen = false;
+      say({
+        speaker: "Jalal",
+        portrait: "happy",
+        title: `Stop ${tour.index + 1} of ${tour.total} · ${p.name}`,
+        text:
+          p.summary +
+          (n
+            ? ` Let me show you ${n === 1 ? "the key piece" : `the ${n} highlights`} first — follow me.`
+            : " Have a look around."),
+        choices: [
+          { id: "close", label: n ? "Show me →" : "Let’s look" },
+          { id: "skip-room", label: "I’ll explore on my own" },
+        ],
+      });
+    }
+    private tourAck(kind: "intro" | "beat") {
+      if (!this.roomMode || this.transitioning) return;
+      if (dispatch({ type: kind === "intro" ? "intro-done" : "beat-done" }))
+        this.tourRoomStep();
+    }
+    /** Side effects after an in-room tour stage change. */
+    private tourRoomStep() {
+      if (!this.roomMode || this.transitioning || !tour.active) return;
+      if (tour.stage === "to-beat") {
+        const s = this.beatStation();
+        if (s) this.guideTo(this.besideStation(s));
+        else if (dispatch({ type: "skip-room" })) this.tourRoomStep();
+        return;
+      }
+      if (tour.stage === "room-free") {
+        const p = placeById(this.entry.building!);
+        this.guideTo({ x: p.width / 2 + 64, y: p.height - 74 });
+        const next = plan[tour.index + 1];
+        const last = !next;
+        this.time.delayedCall(prefs.reduced ? 60 : 450, () => {
+          if (tour.stage !== "room-free" || !this.roomMode) return;
+          say({
+            speaker: "Jalal",
+            portrait: "happy",
+            title: p.name,
+            text: `That’s the story of ${p.short}. The other glowing spots hold more details — take your time. When you’re ready, walk out the door and ${last ? "we’ll wrap up the tour" : `I’ll take you to ${placeById(next.id).short}`}.`,
+            choices: [
+              {
+                id: "tour-next",
+                label: last
+                  ? "Finish the tour"
+                  : `Next stop → ${placeById(next.id).short}`,
+              },
+              { id: "close", label: "Look around first" },
+            ],
+          });
+        });
+      }
     }
     private travel(scene: string, data: Entry) {
       if (this.transitioning) return;
@@ -783,14 +904,35 @@ export function createGame(
       this.path = [];
       this.targetObject = null;
       gameBus.emit("inspected", { place: this.entry.building!, station: s.id });
+      if (tour.active && tour.stage === "to-beat" && s.id === tour.beatId)
+        dispatch({ type: "reach-beat" });
+      const beat = tour.active && tour.stage === "beat" && s.id === tour.beatId;
+      if (beat) {
+        this.tourAwait = "beat";
+        this.tourAwaitOpen = false;
+      }
+      const last = tour.beat + 1 >= tour.beats;
       say({
         speaker: "Jalal",
-        title: s.title,
+        title: beat
+          ? `Highlight ${tour.beat + 1} of ${tour.beats} · ${s.title}`
+          : s.title,
         station: s.id,
         text: s.text,
         portrait: s.id === "status" ? "thinking" : "portrait",
         link: s.link,
         linkLabel: s.linkLabel,
+        choices: beat
+          ? [
+              {
+                id: "close",
+                label: last ? "Got it — I’ll look around" : "Next highlight →",
+              },
+              ...(last
+                ? []
+                : [{ id: "skip-room", label: "Skip to free exploring" }]),
+            ]
+          : undefined,
       });
     }
     private updateNear() {
@@ -960,24 +1102,32 @@ export function createGame(
         return;
       }
       if (this.roomMode) {
-        if (distance(this.player, this.guide) > 42) {
-          if (
-            this.time.now - this.followCheck > 300 ||
-            !this.guidePath.length
-          ) {
-            this.followCheck = this.time.now;
-            this.guidePath = route(
-              this.guide,
-              this.player,
-              this.widthPx,
-              this.heightPx,
-              this.solids,
-            );
+        // Jalal leads inside: he walks to each highlight and waits for the visitor.
+        if (!this.guide.visible) return;
+        const moved = this.step(
+          this.guide,
+          this.guidePath,
+          112 * prefs.speed,
+          dt,
+          true,
+        );
+        if (!moved) {
+          const dx = this.player.x - this.guide.x,
+            dy = this.player.y - this.guide.y;
+          const face =
+            Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 3 : 1) : dy > 0 ? 2 : 0;
+          this.guide.play("jalal-idle-" + face, true);
+        }
+        if (
+          tour.stage === "to-beat" &&
+          !this.guidePath.length &&
+          !this.paused
+        ) {
+          const s = this.beatStation();
+          if (s && distance(this.player, s.approach) < 70) {
+            this.path = [];
+            this.inspect(s);
           }
-          this.step(this.guide, this.guidePath, 158 * prefs.speed, dt, true);
-        } else {
-          this.guidePath = [];
-          this.guide.play("jalal-idle-2", true);
         }
         this.guide.setDepth(this.guide.y);
         this.guideLabel.setPosition(this.guide.x, this.guide.y - 66);
@@ -992,7 +1142,7 @@ export function createGame(
       const d = distance(this.player, this.guide);
       tour.distance = Math.round(d);
       if ((tour.stage === "leading" || tour.stage === "waiting") && d > leash) {
-        tour.stage = "waiting";
+        dispatch({ type: "visitor-far" });
         this.guide.play("jalal-idle-2", true);
         if (!this.waitNotified) {
           this.waitNotified = true;
@@ -1010,9 +1160,8 @@ export function createGame(
         return;
       }
       if (tour.stage === "waiting" && d < leash * 0.7) {
-        tour.stage = "leading";
+        dispatch({ type: "visitor-near" });
         this.waitNotified = false;
-        emitTour();
       }
       if (tour.stage === "leading") {
         const moved = this.step(
@@ -1026,15 +1175,12 @@ export function createGame(
         if (!this.guidePath.length) {
           const b = world.buildings.find((b) => b.id === tour.target)!;
           if (distance(this.guide, { x: b.doorX, y: b.doorY + 36 }) < 30) {
-            tour.stage = "stop";
-            emitTour();
+            dispatch({ type: "arrive-door" });
             const p = placeById(tour.target);
             say({
               speaker: "Jalal",
-              title: `Stop ${tour.index + 1} · ${p.short}`,
-              text:
-                p.summary +
-                " Enter the building and inspect the glowing spots beside the furniture. Each one tells a different part of this story.",
+              title: `Stop ${tour.index + 1} of ${tour.total} · ${p.short}`,
+              text: `Here we are — ${p.name}. Step inside with me and I’ll walk you through the highlights.`,
               choices: [
                 { id: "enter-stop", label: "Enter this building" },
                 { id: "close", label: "Let me look around" },
@@ -1141,7 +1287,7 @@ export function createGame(
             );
         }
         // Hard screen-space leash: active guidance cannot let visitor walk Jalal off screen.
-        if (tour.active && this.guide.visible) {
+        if (tour.active && this.guide.visible && !this.roomMode) {
           const cam = this.cameras.main;
           const maxX = Math.max(44, cam.worldView.width / 2 - 48),
             maxY = Math.max(44, cam.worldView.height / 2 - 84);
@@ -1163,10 +1309,7 @@ export function createGame(
             else
               this.player.setPosition(previousPosition.x, previousPosition.y);
             this.path = [];
-            if (
-              !this.waitNotified &&
-              ["stop", "exploring"].includes(tour.stage)
-            ) {
+            if (!this.waitNotified && tour.stage === "arrived") {
               this.waitNotified = true;
               say({
                 speaker: "Jalal",
