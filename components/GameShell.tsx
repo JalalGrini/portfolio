@@ -50,6 +50,41 @@ function tourLine(t: TourState) {
       return `Follow me → ${short}`;
   }
 }
+/** Stop bar (21 stops) plus highlight beads while inside the stop's room. */
+function TourProgress({ tour }: { tour: TourState }) {
+  const inRoom = ["room-intro", "to-beat", "beat", "room-free"].includes(
+    tour.stage,
+  );
+  const done = Math.min(tour.beat, tour.beats);
+  const part = inRoom && tour.beats ? done / tour.beats : 0;
+  const pct = Math.round(((tour.index + part) / Math.max(1, tour.total)) * 100);
+  const label =
+    `Stop ${tour.index + 1} of ${tour.total}` +
+    (inRoom && tour.beats ? `, ${done} of ${tour.beats} highlights seen` : "");
+  return (
+    <span className="tour-progress" role="img" aria-label={label}>
+      <span className="tour-bar">
+        <i style={{ width: `${pct}%` }} />
+      </span>
+      {inRoom && tour.beats > 0 && (
+        <span className="tour-beads">
+          {Array.from({ length: tour.beats }, (_, k) => (
+            <i
+              key={k}
+              className={
+                k < done
+                  ? "is-done"
+                  : k === tour.beat && tour.stage !== "room-intro"
+                    ? "is-now"
+                    : ""
+              }
+            />
+          ))}
+        </span>
+      )}
+    </span>
+  );
+}
 export default function GameShell({
   character,
   onCustomize,
@@ -386,7 +421,6 @@ export default function GameShell({
       className={`game-shell village-game ${loading ? "is-loading" : "is-ready"} accent-${accent} ${prefs.reduced ? "reduce-motion" : ""}`}
       data-room={room ?? "town"}
       data-x={pos.x.toFixed(1)}
-      data-y={pos.y.toFixed(1)}
       data-guide-visible={pos.guideVisible}
       data-guide-x={pos.guideX?.toFixed(1)}
       data-guide-y={pos.guideY?.toFixed(1)}
@@ -481,6 +515,7 @@ export default function GameShell({
               <strong>
                 {tour?.active ? tourLine(tour) : `Welcome, ${name}`}
               </strong>
+              {tour?.active && <TourProgress tour={tour} />}
             </div>
             {tour?.active ? (
               <div className="tour-actions">
