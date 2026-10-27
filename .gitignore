@@ -17,3 +17,4 @@ test-results/
 /public/assets/rooms/*.png
 
 /public/assets/tour/*.png
+/public/assets/tour/town-style.json

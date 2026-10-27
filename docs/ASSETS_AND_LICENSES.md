@@ -35,3 +35,11 @@ Pixelify Sans is locally hosted under SIL OFL 1.1; see `public/licenses/pixelify
 - House variants, room surfaces, plants, roads and trees derive from the already credited LPC source bundle. Existing upstream notices and attribution requirements still apply.
 - No Stardew Valley artwork, portraits, code, UI textures, music or sound effects are bundled.
 - Production art is decoded offline from `assets-src/tour/*.png.b64` during prebuild. Re-extraction requires the owner reference images and original generated atlas; decoded versioned bytes do not require them.
+
+## Daylight town palette (C02e)
+
+`tools/build_town_palette.cjs` runs after legacy decoding during `predev` / `prebuild`. It rebuilds the **game-only** terrain, 21 facade colour adaptations, tree/pine/plant sprites, three flower colourways and the atlas preview from the already retained LPC sources. Roof and wall ramps preserve source pixel shading; no screenshots/reference-image pixels are used. Exact crops and ramps are recorded in the script. Ground/path quadrant autotiling reuses the licensed source coordinates already recorded in `tools/build_assets.py`.
+
+Source files: `tools/source/{houses,base,city,terrain}.png`. The complete `public/licenses/{roofs,atlas,city}.txt` notices and applicable CC-BY-SA terms continue to cover these art adaptations. Independently written builder code remains under the repository code license. No new external pack or purchase is required.
+
+Generated PNGs and `public/assets/tour/town-style.json` are build outputs, not new source assets. The latter records dimensions, reproducible SHA-256 hashes and the unchanged navigation-data hash. Run `npm run check:palette` to verify deterministic output, all 29 textures and the 21 existing facade footprints. This is a colour/terrain-edge pass only: the inherited facade stretching and grid topology remain scheduled for C13/C14. Cinematic art, character palettes, room surfaces, project facts, collision solids and door coordinates are unchanged.
