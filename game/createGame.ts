@@ -15,7 +15,7 @@ import {
   inRoomStage,
   TourEvent,
   toSave,
-  resumeIndex,
+  resumePoint,
   TOUR_SAVE_KEY,
 } from "./tour";
 import { Point, Rect, distance, route, isFree } from "./navigation";
@@ -37,19 +37,22 @@ export function createGame(
   let tour: TourState = initialTour(plan);
   try {
     // Restore where the visitor stopped so the ribbon can offer "Resume".
-    const at = resumeIndex(
+    const at = resumePoint(
       JSON.parse(localStorage.getItem(TOUR_SAVE_KEY) || "null"),
       plan,
     );
     if (at !== null)
       tour = {
         ...tour,
-        index: at,
-        target: plan[at].id,
-        beats: plan[at].beats.length,
+        index: at.index,
+        target: plan[at.index].id,
+        beat: at.beat,
+        beats: plan[at.index].beats.length,
       };
   } catch {}
   let completedPending = false;
+  /** Set when the visitor walks out of the tour room before it is finished. */
+  let leftEarly = false;
   let guidePosition: Point = { x: world.spawn.x + 38, y: world.spawn.y - 18 };
   const emitTour = () => gameBus.emit("tour", { ...tour });
   /** Apply a tour event; returns true when the state actually changed. */
@@ -427,6 +430,12 @@ export function createGame(
             );
         } else if (tour.stage === "leading" || tour.stage === "waiting")
           this.leadToStop();
+        else if (tour.stage === "arrived" && leftEarly) {
+          leftEarly = false;
+          this.time.delayedCall(prefs.reduced ? 60 : 600, () =>
+            this.sayLeftEarly(),
+          );
+        }
       } else if (!place && completedPending) {
         completedPending = false;
         this.time.delayedCall(prefs.reduced ? 60 : 600, () =>
@@ -632,8 +641,14 @@ export function createGame(
       if (a.type === "tour-start") {
         this.stand();
         this.tourAwait = null;
-        const from = a.id ? Number(a.id) : 0;
-        dispatch({ type: "start", from: Number.isFinite(from) ? from : 0 });
+        // id = "stop" or "stop:highlight" (resume point)
+        const [from, beat] = (a.id ?? "0").split(":").map(Number);
+        leftEarly = false;
+        dispatch({
+          type: "start",
+          from: Number.isFinite(from) ? from : 0,
+          beat: Number.isFinite(beat) ? beat : 0,
+        });
         if (this.roomMode) {
           this.travel("Town", { returnPosition: this.entry.returnPosition });
         } else {
@@ -663,13 +678,16 @@ export function createGame(
       }
       if (a.type === "tour-next") {
         if (!tour.active) return;
+        // Stale buttons/choices carry the stop they were shown for.
+        if (a.id !== undefined && Number(a.id) !== tour.index) return;
+        leftEarly = false;
         this.path = [];
         this.tourAwait = null;
         if (this.roomMode) {
           this.exitRoom(true);
           return;
         }
-        dispatch({ type: "next" });
+        dispatch({ type: "next", from: tour.index });
         if (tour.stage === "complete") {
           this.guidePath = [];
           this.sayComplete();
@@ -690,8 +708,11 @@ export function createGame(
           this.action({ type: "tour-leave" });
           return;
         }
-        if (id === "tour-next") {
-          this.action({ type: "tour-next" });
+        if (id === "tour-next" || id.startsWith("tour-next-")) {
+          this.action({
+            type: "tour-next",
+            id: id === "tour-next" ? undefined : id.slice(10),
+          });
           return;
         }
         if (id === "skip-room") {
@@ -799,14 +820,47 @@ export function createGame(
         returnPosition: { x: b.doorX, y: b.doorY + 50 },
       });
     }
-    /** Leaving the tour's room moves the tour on to the next stop. */
+    /**
+     * Leaving the tour's room after its highlights moves the tour on; leaving
+     * early pauses the stop at the door so the visitor can go back in.
+     */
     private exitRoom(viaNext = false) {
       if (this.transitioning) return;
       if (tour.active && inRoomStage(tour.stage)) {
-        dispatch({ type: viaNext ? "next" : "exit-room" });
+        dispatch(
+          viaNext
+            ? { type: "next", from: tour.index }
+            : { type: "exit-room", id: this.entry.building },
+        );
+        leftEarly = tour.active && tour.stage === "arrived";
         if (tour.stage === "complete") completedPending = true;
       }
       this.travel("Town", { returnPosition: this.entry.returnPosition });
+    }
+    /** The visitor walked out mid-room: offer to go back in or move on. */
+    private sayLeftEarly() {
+      if (this.roomMode || !tour.active || tour.stage !== "arrived") return;
+      const p = placeById(tour.target);
+      const left = Math.max(0, tour.beats - tour.beat);
+      say({
+        speaker: "Jalal",
+        portrait: "thinking",
+        title: `Stop ${tour.index + 1} of ${tour.total} · ${p.short}`,
+        text: left
+          ? `We still have ${left === 1 ? "one highlight" : `${left} highlights`} left in ${p.name}. Step back inside and I’ll pick up right where we stopped — or we can move on.`
+          : `Ready to go back into ${p.name}, or shall we move on?`,
+        choices: [
+          { id: "enter-stop", label: "Go back inside" },
+          {
+            id: `tour-next-${tour.index}`,
+            label:
+              tour.index + 1 >= tour.total
+                ? "Finish the tour"
+                : `Next stop → ${placeById(plan[tour.index + 1].id).short}`,
+          },
+          { id: "close", label: "Look around first" },
+        ],
+      });
     }
     private sayComplete() {
       say({
@@ -854,12 +908,21 @@ export function createGame(
         portrait: "happy",
         title: `Stop ${tour.index + 1} of ${tour.total} · ${p.name}`,
         text:
-          p.summary +
-          (n
-            ? ` Let me show you ${n === 1 ? "the key piece" : `the ${n} highlights`} first — follow me.`
-            : " Have a look around."),
+          tour.beat > 0 && tour.beat < n
+            ? `Welcome back to ${p.short}. We stopped at highlight ${tour.beat + 1} of ${n} — follow me and I’ll pick up from there.`
+            : p.summary +
+              (n
+                ? ` Let me show you ${n === 1 ? "the key piece" : `the ${n} highlights`} first — follow me.`
+                : " Have a look around."),
         choices: [
-          { id: "close", label: n ? "Show me →" : "Let’s look" },
+          {
+            id: "close",
+            label: n
+              ? tour.beat > 0
+                ? "Continue →"
+                : "Show me →"
+              : "Let’s look",
+          },
           { id: "skip-room", label: "I’ll explore on my own" },
         ],
       });
@@ -892,7 +955,7 @@ export function createGame(
             text: `That’s the story of ${p.short}. The other glowing spots hold more details — take your time. When you’re ready, walk out the door and ${last ? "we’ll wrap up the tour" : `I’ll take you to ${placeById(next.id).short}`}.`,
             choices: [
               {
-                id: "tour-next",
+                id: `tour-next-${tour.index}`,
                 label: last
                   ? "Finish the tour"
                   : `Next stop → ${placeById(next.id).short}`,
