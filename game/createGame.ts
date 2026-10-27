@@ -186,7 +186,7 @@ export function createGame(
     private guidePath: Point[] = [];
     private path: Point[] = [];
     private stations: Station[] = [];
-    private seats: Point[] = [];
+    private seats: (Point & { facing?: number })[] = [];
     private seated = false;
     private seatOrigin: Point | null = null;
     private villagers: {
@@ -418,7 +418,8 @@ export function createGame(
           this.moveTo(st.approach);
           return;
         }
-        const seat = this.seats.find((s) => distance(q, s) < 30);
+        // Keep floor clicks beside a chair walkable in furnished rooms.
+        const seat = this.seats.find((s) => distance(q, s) < 18);
         if (seat) {
           this.targetObject = "seat";
           this.moveTo({ x: seat.x, y: seat.y + 28 });
@@ -1301,10 +1302,10 @@ export function createGame(
       this.seatOrigin = { x: this.player.x, y: this.player.y };
       if (seat) this.player.setPosition(seat.x, seat.y);
       this.seated = true;
-      this.dir = 2;
+      this.dir = seat?.facing ?? 2;
       this.path = [];
       this.velocity = { x: 0, y: 0 };
-      this.player.play("visitor-sit-2");
+      this.player.play(`visitor-sit-${this.dir}`);
     }
     private step(
       sprite: Phaser.GameObjects.Sprite,
@@ -1566,9 +1567,10 @@ export function createGame(
                 : "idle";
           this.player.play(`visitor-${kind}-${this.dir}`, true);
         } else {
-          if (this.player.anims.currentAnim?.key !== "visitor-sit-2")
-            this.player.play("visitor-sit-2");
-          if (!this.player.anims.isPlaying) this.player.setFrame(14 * 9 + 2);
+          if (this.player.anims.currentAnim?.key !== `visitor-sit-${this.dir}`)
+            this.player.play(`visitor-sit-${this.dir}`);
+          if (!this.player.anims.isPlaying)
+            this.player.setFrame((12 + this.dir) * 9 + 2);
         }
         if (this.targetObject && !this.path.length) {
           const s = this.stations.find((s) => s.id === this.targetObject);
@@ -1617,6 +1619,7 @@ export function createGame(
           guideY: this.guide.y,
           guideVisible: visible,
           sitting: this.seated,
+          facing: this.dir,
           cameraX: v.x,
           cameraY: v.y,
           zoom: this.cameras.main.zoom,
