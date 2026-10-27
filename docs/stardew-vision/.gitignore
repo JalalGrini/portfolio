@@ -1,0 +1,5 @@
+references/originals/
+assets/candidates/
+references/frames/
+*.pyc
+__pycache__/
