@@ -1,3 +1,6 @@
+import { renderRiverMotion } from "./riverMotion";
+import townDetails from "./town-details.json";
+import scenery from "./town-scenery.json";
 import { roomProps } from "./authoredRooms";
 import { renderAuthoredRoom } from "./renderRoom";
 import * as Phaser from "phaser";
@@ -130,6 +133,8 @@ export function createGame(
         "piano",
       ])
         this.load.image("interior-" + name, `/assets/rooms/${name}.png`);
+      for (const name of [...Object.keys(scenery), "blossom"])
+        this.load.image("outdoor-" + name, `/assets/tour/outdoor-${name}.png`);
       for (const name of Object.keys(roomProps))
         this.load.image(
           "authored-" + name,
@@ -250,7 +255,8 @@ export function createGame(
       if (place) this.makeRoom();
       else {
         this.solids = world.solids.map((s) => ({ ...s }));
-        for (const o of world.objects) {
+        renderRiverMotion(this, townMap.ripples, prefs.reduced);
+        for (const o of [...world.objects, ...townDetails]) {
           const texture =
             o.key === "flowers"
               ? "outdoor-flowers-" + (Math.floor(Math.abs(o.x + o.y) / 32) % 3)
@@ -261,7 +267,10 @@ export function createGame(
             .image(o.x, o.y, texture)
             .setOrigin(0)
             .setDepth(o.depth);
-          if (!prefs.reduced && ["tree", "pine"].includes(o.key)) {
+          if (
+            !prefs.reduced &&
+            ["tree", "pine", "outdoor-blossom"].includes(o.key)
+          ) {
             im.setOrigin(0.5, 1).setPosition(
               o.x + im.width / 2,
               o.y + im.height,
@@ -276,6 +285,11 @@ export function createGame(
             });
           }
           if (o.key === "bench") this.seats.push({ x: o.x + 16, y: o.y + 34 });
+          if (o.key === "outdoor-park-bench")
+            this.seats.push(
+              { x: o.x + 16, y: o.y + 32 },
+              { x: o.x + 48, y: o.y + 32 },
+            );
         }
         for (const b of world.buildings) {
           this.add
