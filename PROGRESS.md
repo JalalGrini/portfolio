@@ -42,14 +42,14 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 | C02b | Non-blocking Jalal hint bubbles + accessible live text; arrival Enter action; desktop/390 px movement and overflow checks | V03/V04 | ✅ |
 | C02e | Owner-priority outdoor palette: source LPC roof/wall ramps, warmer autotiled path shoulders, sunlit grass/foliage, flower colourways, matching atlas, deterministic offline build | V01/V06 | ✅ |
 | C02c | Atlas journal tab: all 21 stops, visited / highlights seen / objects inspected, saved/current checkpoint, exact resume without teleport, map locator, keyboard tabs | V03/V04 | ✅ |
-| C02d | Measured room control dock + safe-area camera viewport; compact desktop ribbon; indoor Follow Jalal action; portrait/landscape dock layouts | V03/V04 | 🟡 local QA passed; deploying |
-| C02 | Tour UI: redesigned ribbon with stop/beat progress, non-blocking speech bubbles for Jalal hints (no pause spam), resume prompt, tour journal (21 stops, visited/inspected) | V03/V04 | ⬜ |
-| C03 | Full-journey E2E (`tools/qa-tour-journey.cjs`): 21 stops, every room entered, beats completed, exit + resume, no stalls; screenshots per room | V08 | ⬜ |
+| C02d | Measured room control dock + safe-area camera viewport; compact desktop ribbon; indoor Follow Jalal action; portrait/landscape dock layouts | V03/V04 | ✅ |
+| C02 | Tour UI: ribbon/beat progress, non-blocking hints, precise resume, journal and room-control safe area | V03/V04 | ✅ |
+| C03 | Full-journey E2E (`tools/qa-tour-journey.cjs`): 21 stops, every room entered, beats completed, exit + resume, no stalls; screenshots per room | V08 | ✅ baseline `b904ea4`; rerun after new map |
 
 ### Phase B — Dialogue, popups & UI art
 | # | Chunk | Plan ref | Status |
 |---|---|---|---|
-| C04 | Dialogue box per R01: low wood/parchment panel over the scene, text left, portrait + name plate right, typewriter + skip, choice list with keyboard focus, 390 px layout | V04 | ⬜ |
+| C04 | Dialogue box per R01: low wood/parchment panel over the scene, text left, portrait + name plate right, typewriter + skip, choice list with keyboard focus, 390 px layout | V04 | 🟡 local QA passed; deploying |
 | C05 | Evidence/exhibit cards, map, settings & help restyled in the same original wood/paper kit (9-slice CSS, no copied textures) | V04/V09 | ⬜ |
 
 ### Phase C — Interiors & furniture (unique, well-spaced, like R06)
@@ -80,15 +80,21 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 | C20 | Human visual review, production deploy, live verification | V12 | ⬜ |
 
 ## Next up (start here)
-1. **C02d release** — Complete production verification of the control dock and indoor Follow action.
-2. **C03** — Full 21-stop journey E2E run + screenshots of every room.
-3. **C04** — R01 portrait dialogue and popups, all buildings (not just the first).
+1. **C04 release** — Shared R01-style dialogue local QA PASS; push and verify production.
+2. **C13a — NEW OWNER PRIORITY**: replace the five-column grid with an authored irregular river town (three crossings, neighbourhood loops, plazas, logical door approaches). Match R03’s grass/orange-path palette/density using the retained licensed terrain atlas; not another global tint. Move outdoor residents to separate neighbourhoods. Validate all 21 doors and paths; deploy this slice.
+3. **C07/C08 — NEXT OWNER PRIORITY**: use the actual `tools/source/{interior,furniture}.png` / restored cleared furniture assets to build connected furnished rooms, not isolated exhibit props. Preserve all 100 exhibit facts.
+4. **Town-life follow-up**: residents inside buildings with context-specific prepared questions/answers grounded in that room’s exhibits; Jalal changes only his outfit for the building (face/identity unchanged).
+5. Resume C05–C20 after the structural map/furnished-room slices.
 
 ## Deploying (every chunk)
 Push → Vercel builds a preview automatically → once checks pass, create a production deployment of the pushed SHA with the Vercel connector (`create_deployment`, project `prj_N0lCH399sXu6OdzkjzRFANb85mlU`, team `team_AidgC20ca6cfN9tCrVyHymcM`, `target: production`, `gitSource {org JalalGrini, repo portfolio, ref game/stardew-vision, sha}`) → verify <https://portfolio-chi-nine-fwh6p2oz7b.vercel.app/play/> serves the new chunk and run `QA_BASE_URL=<live> QA_STOPS=1 node tools/qa-tour-journey.cjs`. (`request_promote` of a preview returns 422.) Rollback point before the rebuild went live: `dpl_BrENg9LQqzQyG8SAwAuX5yGkNZUw` (`game/jalal-guided-village@43150ca`).
 
 ## Log
 <!-- newest first -->
+- **Owner correction / direction lock** — A recoloured grid is NOT the requested town. Owner reiterated R03 (river-town image, uploaded again): irregular building placement, genuinely connected paths, reference-like grass/orange-path look, residents distributed across town and inside buildings, questions relevant to each building, and building-specific Jalal outfits without changing his face. Existing isolated room props are unacceptable; use the retained PNG furniture atlases. Bring C13a and furnished-room slices forward immediately after the pending C04 release.
+- **C04 local QA** — Common `GameDialogue` now frames every building/exhibit/NPC/welcome/tour message with an original low wood/paper panel and right-hand Jalal portrait/nameplate. Lossless, sentence-aware pages; elapsed-time typewriter, reveal, arrow/Tab choice focus and held-key guard; separate saved Instant dialogue text setting. Only explicit index/beat-guarded choices acknowledge intro/highlight; Escape does not advance, and Read message reopens it. Tests: all 100 texts preserved; 18 unit tests; 1440/390 px journeys + early exit/resume + close/reopen PASS; normal-motion keyboard/typewriter/preference tests PASS. Screenshots inspected.
+- **C03 baseline complete** — Full 21-stop journey on `b904ea4` PASS: all 21 actual rooms, 63 guided highlights, per-room viewport + beat screenshots, early exit/re-entry, camera/control-dock alignment, explicit final completion, no page errors. Evidence `/tmp/c03-full/` in the agent workspace. This is behavioral QA, NOT approval of sparse interiors or grid art. Rerun after structural map changes.
+- **Deploy** — C02d production `dpl_7iQYubNHL7d4CHnRhytfSBmybJCe` READY (`b904ea4`); live first-stop journey + dock checks + early exit/re-entry + reload/resume PASS.
 - **C02d local QA** — Room camera now reserves the measured lower control dock including safe-area inset; controls no longer paint over the floor/actors. Compact landscape dock; desktop room ribbon moved into the top row. Testing exposed two usability issues: some highlight approaches were behind HUD, and mobile had no indoor follow action. `to-beat` now offers Follow Jalal (not a premature Next stop). Journey test checks dock/camera alignment in each room and uses the visible Follow action when a click target is offscreen or blocked by UI. Desktop 2-stop and 390 px 1-stop tests include early exit/re-entry and reload/resume; screenshots checked. TypeScript/build PASS.
 - **Deploy** — C02c production `dpl_DVVCvnAXB2HzafH7MoQuoxt5fex6` READY (`8b380df`); live 1440/390 px journal checks PASS (all 21 rows, exact counts, keyboard tabs, paused movement, exact resume and map locate).
 - **C02c local QA** — Atlas now has Town map / Tour journal tabs with arrow/Home/End keyboard navigation. Journal lists 21 stops and separates entering/reading highlights/optional objects; Resume returns to the saved stop and highlight with normal walking (not teleporting), Return to Jalal preserves an active tour, Locate selects the right atlas building. `tools/qa-tour-journal.cjs`: 1440/390 px seeded progress, 21 rows, exact 2/21–2/63–3/100 totals, paused movement, precise resume and map locator PASS. Screenshots visually checked; TypeScript/build PASS.
@@ -108,9 +114,9 @@ Push → Vercel builds a preview automatically → once checks pass, create a pr
 ## Known issues / hypotheses to check
 - ~~Early room exit advanced the tour; saves lost the highlight~~ → fixed in C01e/C01f.
 - ~~Tour ribbon stage line was hidden inside rooms~~ → fixed in C02a.
-- ~~Bottom controls covered room floors/actors~~ → measured camera/control dock in C02d (release pending).
+- ~~Bottom controls covered room floors/actors~~ → fixed and live in C02d.
 - When the visitor stands next to Jalal at a highlight they can overlap (same depth band). Polish in C15.
-- Dialogue panel covers the lower half of the room; R01 wants a low panel with the scene visible (C04).
+- ~~Generic high dialogue panel~~ → shared low R01-inspired panel in C04 (release pending).
 - `qa-tour-loop.cjs` only checks outdoor door stops, not the guided interior journey (C03).
 - ~~Jalal reminders paused the game~~ → fixed and live in C02b.
 - Interiors use a shared five-position layout (`stationsFor`) and stretched/tinted facades (C07–C14).
