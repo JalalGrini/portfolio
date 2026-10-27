@@ -51,6 +51,7 @@ export function createGame(
       };
   } catch {}
   let completedPending = false;
+  let controlsArea = 0;
   /** Set when the visitor walks out of the tour room before it is finished. */
   let leftEarly = false;
   let guidePosition: Point = { x: world.spawn.x + 38, y: world.spawn.y - 18 };
@@ -432,6 +433,10 @@ export function createGame(
         gameBus.on("reduced", (v) => {
           prefs.reduced = v;
         }),
+        gameBus.on("controls-area", (height) => {
+          controlsArea = height;
+          this.resize(this.scale.gameSize);
+        }),
         gameBus.on("action", (a) => this.action(a)),
       );
       this.off.forEach((f) => allOff.add(f));
@@ -473,10 +478,14 @@ export function createGame(
     private resize(size: Phaser.Structs.Size) {
       const cam = this.cameras?.main;
       if (!cam) return;
-      cam.setSize(size.width, size.height);
+      const dock = this.roomMode
+        ? controlsArea || (size.width <= 700 ? 168 : 76)
+        : 0;
+      const viewHeight = Math.max(1, size.height - dock);
+      cam.setSize(size.width, viewHeight);
       cam.setZoom((size.width < 600 ? 1.35 : 1.8) * prefs.zoom);
       const padX = Math.max(0, (size.width / cam.zoom - this.widthPx) / 2),
-        padY = Math.max(0, (size.height / cam.zoom - this.heightPx) / 2);
+        padY = Math.max(0, (viewHeight / cam.zoom - this.heightPx) / 2);
       cam.setBounds(
         -padX,
         -padY,
@@ -1579,6 +1588,7 @@ export function createGame(
           cameraX: v.x,
           cameraY: v.y,
           zoom: this.cameras.main.zoom,
+          viewportHeight: this.cameras.main.height,
         });
         if (tour.active) emitTour();
       }
