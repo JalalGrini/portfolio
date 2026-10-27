@@ -31,10 +31,31 @@ fs.mkdirSync(out, { recursive: true });
           .catch(() => "")
       : null;
   const choose = async (re) => {
-    const btn = p.locator(".village-choices button").filter({ hasText: re });
-    await btn.first().waitFor({ timeout: 8000 });
-    await btn.first().click();
-    await pause(250);
+    const until = Date.now() + 15000;
+    while (Date.now() < until) {
+      const btn = p
+        .locator(".village-choices button")
+        .filter({ hasText: re })
+        .filter({ hasNotText: /^Continue reading/ });
+      if (await btn.count()) {
+        await btn.first().click();
+        await pause(250);
+        return;
+      }
+      const reveal = p.getByRole("button", {
+        name: "Show full message ↓",
+        exact: true,
+      });
+      const reading = p.getByRole("button", {
+        name: "Continue reading →",
+        exact: true,
+      });
+      if (await reveal.count())
+        await reveal.click({ timeout: 700 }).catch(() => {});
+      else if (await reading.count()) await reading.click();
+      else await pause(100);
+    }
+    throw Error("Missing dialogue choice " + re);
   };
   const waitStage = (stages, ms = 20000) =>
     p.waitForFunction(
@@ -147,6 +168,24 @@ fs.mkdirSync(out, { recursive: true });
           !/highlight/i.test(await p.locator(".village-dialogue").innerText())
         )
           throw Error("Beat dialogue missing highlight title");
+        if (i === 0 && k === 0 && process.env.QA_CLOSE_CHECK !== "0") {
+          const before = await attr("tour-beat-index");
+          await p.keyboard.press("Escape");
+          await p.locator(".village-dialogue").waitFor({ state: "hidden" });
+          await pause(300);
+          if (
+            (await attr("tour-stage")) !== "beat" ||
+            (await attr("tour-beat-index")) !== before
+          )
+            throw Error("Closing a message skipped the highlight");
+          await p
+            .getByRole("button", { name: "Read message", exact: true })
+            .click();
+          await p.locator(".village-dialogue").waitFor();
+          console.log(
+            "PASS Escape keeps the highlight; Read message reopens it",
+          );
+        }
         await p.screenshot({
           path: `${out}/stop${i + 1}-${room}-beat${k + 1}.png`,
         });
