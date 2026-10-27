@@ -1,19 +1,23 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion } from "motion/react";
 import {
   Character,
   composeCharacter,
-  jalalCharacter,
   defaultCharacter,
 } from "@/game/character";
-import { gameBus } from "@/game/bus";
-import { rooms } from "@/game/rooms";
-import { buildings, BuildingId, Project } from "@/content/portfolio";
+import { gameBus, Dialogue, TourState, Preferences } from "@/game/bus";
+import { places, placeById } from "@/game/catalog";
+import world from "@/game/tour-world.json";
 import Modal from "./Modal";
 import AvatarPreview from "./AvatarPreview";
-import { BuildingContent, ProjectDetail } from "./PortfolioContent";
+const defaults: Preferences = {
+  speed: 1,
+  zoom: 1,
+  time: "day",
+  footsteps: true,
+  reduced: false,
+};
 export default function GameShell({
   character,
   onCustomize,
@@ -21,98 +25,199 @@ export default function GameShell({
   character: Character;
   onCustomize: () => void;
 }) {
-  const host = useRef<HTMLDivElement>(null);
-  const typingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [travel, setTravel] = useState<{
-    label: string;
-    building?: BuildingId;
-  } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [near, setNear] = useState<{ label: string; kind: string } | null>(
-    null,
-  );
-  const [location, setLocation] = useState("Founders’ Square");
-  const [room, setRoom] = useState<BuildingId | null>(null);
-  const [panel, setPanel] = useState<BuildingId | null>(null);
-  const [project, setProject] = useState<Project | null>(null);
-  const [dialogue, setDialogue] = useState<{
-    speaker: string;
-    text: string;
-  } | null>(null);
-  const [text, setText] = useState("");
-  const [discovery, setDiscovery] = useState<BuildingId | null>(null);
-  const known = useRef<Set<BuildingId>>(new Set());
-  const [map, setMap] = useState(false);
-  const [help, setHelp] = useState(false);
-  const [settings, setSettings] = useState(false);
-  const [reduced, setReduced] = useState(false);
-  const [visited, setVisited] = useState<BuildingId[]>([]);
-  const [pos, setPos] = useState({ x: 50, y: 75 });
-  const [notice, setNotice] = useState(
-    "Welcome. Walk north to meet Jalal by the fountain.",
-  );
-  const busy = !!(panel || project || dialogue || map || help || settings);
+  const typing = useRef<ReturnType<typeof setInterval> | null>(null);
+  const host = useRef<HTMLDivElement>(null),
+    offered = useRef(false),
+    ready = useRef(false),
+    prefsRef = useRef(defaults),
+    dialogueRef = useRef<Dialogue | null>(null);
+  const [loading, setLoading] = useState(true),
+    [error, setError] = useState(""),
+    [room, setRoom] = useState<string | null>(null),
+    [near, setNear] = useState<{
+      label: string;
+      kind: string;
+      id?: string;
+    } | null>(null);
+  const [dialogue, setDialogue] = useState<Dialogue | null>(null),
+    [text, setText] = useState(""),
+    [map, setMap] = useState(false),
+    [selected, setSelected] = useState(places[0].id),
+    [settings, setSettings] = useState(false),
+    [help, setHelp] = useState(false);
+  const [visited, setVisited] = useState<string[]>([]),
+    [inspected, setInspected] = useState<Record<string, string[]>>({}),
+    [travel, setTravel] = useState<{ label: string; building?: string } | null>(
+      null,
+    );
+  const [pos, setPos] = useState({
+      x: 320,
+      y: 464,
+      width: world.width,
+      height: world.height,
+      guideVisible: true,
+      sitting: false,
+      cameraX: 0,
+      cameraY: 0,
+      zoom: 1.8,
+    }),
+    [tour, setTour] = useState<TourState | null>(null),
+    [prefs, setPrefs] = useState<Preferences>(defaults),
+    [name, setName] = useState("Visitor"),
+    [accent, setAccent] = useState("sage");
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      if (
+        (e.target as HTMLElement)?.matches("input,select,textarea") ||
+        dialogueRef.current
+      )
+        return;
+      if (e.key.toLowerCase() === "m") {
+        e.preventDefault();
+        setMap((m) => !m);
+      }
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, []);
+  const busy = !!(dialogue || map || settings || help);
+  const totalObjects = places.reduce((n, p) => n + p.exhibits.length, 0),
+    seenObjects = Object.values(inspected).reduce((n, x) => n + x.length, 0);
+  dialogueRef.current = dialogue;
   useEffect(() => {
     gameBus.emit("pause", busy);
   }, [busy]);
   useEffect(() => {
-    try {
-      const saved = JSON.parse(
-        localStorage.getItem("career-town-discoveries") || "[]",
-      );
-      if (Array.isArray(saved)) {
-        const valid = saved.filter((v) => buildings.some((b) => b.id === v));
-        setVisited(valid);
-        known.current = new Set(valid);
-      }
-    } catch {}
-    const r = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setReduced(r);
+    prefsRef.current = prefs;
+    if (ready.current) {
+      gameBus.emit("preferences", prefs);
+      try {
+        localStorage.setItem("jalal-town-settings", JSON.stringify(prefs));
+      } catch {}
+    }
+  }, [prefs]);
+  useEffect(() => {
     let disposed = false;
-    let game: { destroy: (removeCanvas: boolean) => void } | undefined;
+    let game: { destroy: (remove: boolean) => void } | undefined;
+    let welcomeTimer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem("jalal-town-settings") || "null",
+      );
+      if (stored) {
+        const p = {
+          ...defaults,
+          ...stored,
+          speed: [0.8, 1, 1.2].includes(stored.speed) ? stored.speed : 1,
+          zoom: [0.85, 1, 1.15].includes(stored.zoom) ? stored.zoom : 1,
+        };
+        prefsRef.current = p;
+        setPrefs(p);
+      } else {
+        const p = {
+          ...defaults,
+          reduced: matchMedia("(prefers-reduced-motion: reduce)").matches,
+        };
+        prefsRef.current = p;
+        setPrefs(p);
+      }
+      setVisited(
+        JSON.parse(
+          localStorage.getItem("jalal-town-visited-v3") || "[]",
+        ).filter((s: string) => places.some((p) => p.id === s)),
+      );
+      setInspected(
+        JSON.parse(localStorage.getItem("jalal-town-objects-v3") || "{}"),
+      );
+      setName(localStorage.getItem("jalal-town-name") || "Visitor");
+      setAccent(localStorage.getItem("jalal-town-accent") || "sage");
+    } catch {}
     const off = [
-      gameBus.on("ready", () => setLoading(false)),
-      gameBus.on("transition", setTravel),
+      gameBus.on("ready", () => {
+        ready.current = true;
+        setLoading(false);
+        gameBus.emit("preferences", prefsRef.current);
+        if (!offered.current) {
+          offered.current = true;
+          let seen = false;
+          try {
+            seen = localStorage.getItem("jalal-town-welcome-v3") === "yes";
+          } catch {}
+          if (!seen)
+            welcomeTimer = setTimeout(() => {
+              if (disposed) return;
+              setDialogue({
+                speaker: "Jalal",
+                portrait: "happy",
+                title: "Welcome to my town",
+                text: "Hey, I’m Jalal! I’d love to show you around: my background first, then the research, data and software projects, and finally the post office. I’ll walk with you and wait if you fall behind. You can leave the tour or restart it anytime.",
+                choices: [
+                  { id: "tour-start", label: "Take Jalal’s guided tour" },
+                  { id: "tour-leave", label: "Explore freely" },
+                ],
+              });
+              try {
+                localStorage.setItem("jalal-town-welcome-v3", "yes");
+              } catch {}
+            }, 600);
+        }
+      }),
       gameBus.on("error", (v) => {
         setError(v);
         setLoading(false);
       }),
       gameBus.on("near", setNear),
-      gameBus.on("open", setPanel),
       gameBus.on("dialogue", setDialogue),
+      gameBus.on("transition", setTravel),
+      gameBus.on("tour", (t) => {
+        setTour(t);
+        if (t.stage === "complete")
+          try {
+            localStorage.setItem("jalal-town-tour-complete", "yes");
+          } catch {}
+      }),
       gameBus.on("position", (p) =>
-        setPos({ x: (p.x / p.width) * 100, y: (p.y / p.height) * 100 }),
+        setPos({
+          ...p,
+          guideVisible: p.guideVisible ?? true,
+          sitting: p.sitting ?? false,
+          cameraX: p.cameraX ?? 0,
+          cameraY: p.cameraY ?? 0,
+          zoom: p.zoom ?? 1.8,
+        }),
       ),
       gameBus.on("location", (p) => {
-        setLocation(p.name);
         setRoom(p.room);
         setNear(null);
-        setNotice(
-          p.room
-            ? `Discovered ${p.name}. Find the field notes inside.`
-            : "Founders’ Square · Every path leads somewhere.",
-        );
-        if (p.room && !known.current.has(p.room)) {
-          known.current.add(p.room);
-          setDiscovery(p.room);
-        }
-        if (p.room)
+        if (p.room) {
+          setSelected(p.room);
           setVisited((v) => {
             const next = v.includes(p.room!) ? v : [...v, p.room!];
             try {
               localStorage.setItem(
-                "career-town-discoveries",
+                "jalal-town-visited-v3",
                 JSON.stringify(next),
               );
             } catch {}
             return next;
           });
+        }
       }),
+      gameBus.on("inspected", (p) =>
+        setInspected((v) => {
+          const next = {
+            ...v,
+            [p.place]: Array.from(new Set([...(v[p.place] ?? []), p.station])),
+          };
+          try {
+            localStorage.setItem("jalal-town-objects-v3", JSON.stringify(next));
+          } catch {}
+          return next;
+        }),
+      ),
     ];
     Promise.all([
       composeCharacter(character),
-      composeCharacter(jalalCharacter),
       composeCharacter({
         ...defaultCharacter,
         body: "female",
@@ -139,11 +244,11 @@ export default function GameShell({
           host.current!,
           Object.fromEntries(
             sheets.map((s, i) => [
-              ["visitor", "jalal", "npc0", "npc1"][i],
+              ["visitor", "npc0", "npc1"][i],
               s.toDataURL(),
             ]),
           ),
-          r,
+          prefsRef.current.reduced,
         );
       })
       .catch((e) => {
@@ -154,535 +259,619 @@ export default function GameShell({
       });
     return () => {
       disposed = true;
+      ready.current = false;
+      clearTimeout(welcomeTimer);
       off.forEach((f) => f());
       game?.destroy(true);
     };
   }, [character]);
   useEffect(() => {
-    if (!dialogue) return;
-    setText("");
-    if (reduced) {
+    if (!dialogue) {
+      setText("");
+      return;
+    }
+    if (prefs.reduced) {
       setText(dialogue.text);
       return;
     }
-    let i = 0;
+    setText("");
+    const started = performance.now();
+    let n = 0;
     const id = setInterval(() => {
-      i += 2;
-      setText(dialogue.text.slice(0, i));
-      if (i >= dialogue.text.length) clearInterval(id);
-    }, 17);
-    typingTimer.current = id;
+      n = Math.floor((performance.now() - started) / 10);
+      setText(dialogue.text.slice(0, n));
+      if (n >= dialogue.text.length) clearInterval(id);
+    }, 16);
+    typing.current = id;
     return () => clearInterval(id);
-  }, [dialogue, reduced]);
-  useEffect(() => {
-    const t = setTimeout(() => setNotice(""), 6500);
-    return () => clearTimeout(t);
-  }, [notice]);
-  useEffect(() => {
-    if (!discovery) return;
-    const timer = setTimeout(() => setDiscovery(null), 3600);
-    return () => clearTimeout(timer);
-  }, [discovery]);
-  useEffect(() => {
-    const d = document.querySelector<HTMLDialogElement>(".town-notes-modal");
-    if (d) d.scrollTop = 0;
-  }, [panel, project]);
-  const act = (type: "interact" | "wave" | "sit" | "exit") =>
-    gameBus.emit("action", { type });
+  }, [dialogue, prefs.reduced]);
+  const send = (
+    type:
+      | "interact"
+      | "wave"
+      | "sit"
+      | "exit"
+      | "tour-start"
+      | "tour-next"
+      | "tour-leave"
+      | "tour-rejoin",
+    id?: string,
+  ) => gameBus.emit("action", { type, id });
+  const choose = (id: string) => {
+    setDialogue(null);
+    if (id !== "close") gameBus.emit("action", { type: "choice", id });
+  };
+  const walk = () => {
+    setMap(false);
+    setTimeout(
+      () => gameBus.emit("action", { type: "navigate", id: selected }),
+      80,
+    );
+  };
+  const update = <K extends keyof Preferences>(key: K, value: Preferences[K]) =>
+    setPrefs((p) => ({ ...p, [key]: value }));
+  const current = room ? placeById(room) : null,
+    chosen = placeById(selected);
+  const leftTour = () => {
+    setDialogue(null);
+    send("tour-leave");
+  };
   return (
     <main
-      className={`game-shell ${loading ? "is-loading" : "is-ready"}`}
-      data-room={room || "town"}
-      data-x={pos.x.toFixed(2)}
-      data-y={pos.y.toFixed(2)}
+      className={`game-shell village-game ${loading ? "is-loading" : "is-ready"} accent-${accent} ${prefs.reduced ? "reduce-motion" : ""}`}
+      data-room={room ?? "town"}
+      data-x={pos.x.toFixed(1)}
+      data-y={pos.y.toFixed(1)}
+      data-guide-visible={pos.guideVisible}
+      data-camera-x={pos.cameraX}
+      data-camera-y={pos.cameraY}
+      data-zoom={pos.zoom}
+      data-sitting={pos.sitting}
+      data-tour-stage={tour?.stage ?? "free"}
     >
-      <div ref={host} className="game-canvas" />
-      <AnimatePresence>
-        {travel && (
-          <motion.div
-            className="town-travel"
-            key="travel"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            role="status"
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <img
-                src={`/assets/game/${travel.building ? `house-${travel.building}` : "fountain"}.png`}
-                alt=""
-              />
-              <span>NEXT STOP</span>
-              <h2>{travel.label}</h2>
-              <i />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {discovery && !busy && !travel && (
-          <motion.div
-            className="discovery-toast"
-            role="status"
-            key={discovery}
-            initial={{ opacity: 0, y: reduced ? 0 : -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: reduced ? 0 : -8 }}
-            transition={{ duration: reduced ? 0 : 0.28 }}
-          >
-            <img src={`/assets/game/house-${discovery}.png`} alt="" />
-            <div>
-              <small>A new page in your journal</small>
-              <strong>{buildings.find((b) => b.id === discovery)?.name}</strong>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div
+        ref={host}
+        className="game-canvas"
+        aria-label="Career Town. Use WASD or arrow keys to walk; E to interact."
+      />
       {loading && (
-        <div className="game-loading" role="status">
-          <img src="/assets/game/house-lab.png" alt="" />
-          <span className="eyebrow">OPENING THE TOWN GATES</span>
-          <h2>A world worth a little curiosity.</h2>
-          <p>Preparing your character and the paths ahead…</p>
-          <div className="loading-track">
-            <span />
-          </div>
+        <div className="village-loading" role="status">
+          <img src="/assets/tour/jalal-portrait.png" alt="Jalal" />
+          <small>PREPARING THE VILLAGE</small>
+          <h2>Every door has a story.</h2>
+          <p>Loading your character, project houses and walking paths…</p>
         </div>
       )}
       {error && (
-        <div className="game-loading" role="alert">
-          <h2>The town needs a moment.</h2>
+        <div className="village-loading" role="alert">
+          <h2>The gates need a moment.</h2>
           <p>{error}</p>
-          <Link className="button primary" href="/portfolio/">
-            Open the full portfolio →
+          <Link href="/portfolio/" className="v-button">
+            Open the classic portfolio
           </Link>
-          <button className="button" onClick={onCustomize}>
-            Try another character
+          <button className="v-button" onClick={onCustomize}>
+            Try again
           </button>
         </div>
       )}
       {!loading && !error && (
         <>
-          <div className="game-hud-top">
-            <div className="location-card">
-              <img
-                className="location-icon"
-                src={`/assets/game/${room ? `house-${room}` : "fountain"}.png`}
-                alt=""
-              />
-              <span className="eyebrow">
-                {room ? "INSIDE THE TOWN" : "JALAL GRINI’S CAREER TOWN"}
+          <div className="village-hud">
+            <button
+              className="location-card v-panel"
+              onClick={() => {
+                setSelected(room ?? tour?.target ?? places[0].id);
+                setMap(true);
+              }}
+              aria-label={`Open map and building details for ${current?.name ?? "Career Town"}`}
+            >
+              <small>{current?.district ?? "JALAL’S CAREER TOWN"}</small>
+              <strong>{current?.short ?? "A little world of work"}</strong>
+              <span>
+                {visited.length}/{places.length} places ·{" "}
+                {current
+                  ? `${inspected[current.id]?.length ?? 0}/${current.exhibits.length} objects`
+                  : seenObjects + "/" + totalObjects + " discoveries"}
               </span>
-              <h1>{location}</h1>
-              <span className="discovery-count">
-                {visited.length} / 7 places discovered
-              </span>
-              <div className="discovery-meter" aria-hidden="true">
-                {buildings.map((b) => (
-                  <span
-                    key={b.id}
-                    className={visited.includes(b.id) ? "found" : ""}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="hud-actions">
+            </button>
+            <div className="village-tools">
               <button
-                className="hud-button"
+                className="v-button"
                 onClick={() => setMap(true)}
-                aria-label="Open town map and discovery journal"
+                aria-label="Open town map"
               >
-                Map <span>+</span>
+                Map <span> M</span>
               </button>
               <button
-                className="hud-button"
+                className="v-button"
                 onClick={() => setHelp(true)}
-                aria-label="Open controls and help"
+                aria-label="Help and controls"
               >
                 ?
               </button>
               <button
-                className="hud-button"
+                className="v-button"
                 onClick={() => setSettings(true)}
-                aria-label="Open town settings"
+                aria-label="Town settings"
               >
                 ⚙
               </button>
             </div>
           </div>
-          {notice && !discovery && (
-            <p className="game-notice" role="status">
-              {notice}
-            </p>
-          )}
-          <div className="game-hud-bottom">
-            <div className="game-controls-hint">
-              <span>
-                <kbd>W A S D</kbd> Walk
-              </span>
-              <span>
-                <kbd>⇧</kbd> Run
-              </span>
-              <span>
-                <kbd>E</kbd> Interact
-              </span>
-              <span>Click a path to walk</span>
+          <div className="tour-ribbon v-panel" aria-live="polite">
+            <img src="/assets/tour/jalal-happy.png" alt="" />
+            <div>
+              <small>
+                {tour?.active
+                  ? `JALAL’S TOUR · ${tour.index + 1}/${tour.total}`
+                  : tour?.stage === "complete"
+                    ? "TOUR COMPLETE"
+                    : "YOUR OWN PACE"}
+              </small>
+              <strong>
+                {tour?.active
+                  ? tour.stage === "waiting"
+                    ? "Follow Jalal, please"
+                    : tour.stage === "exploring"
+                      ? "Explore the objects inside"
+                      : tour.stage === "stop"
+                        ? "Explore this stop"
+                        : `Follow me → ${placeById(tour.target).short}`
+                  : `Welcome, ${name}`}
+              </strong>
             </div>
-            <div className="emote-actions">
-              <button className="hud-button" onClick={() => act("wave")}>
-                Wave <kbd>F</kbd>
-              </button>
-              <button className="hud-button" onClick={() => act("sit")}>
-                Sit <kbd>Q</kbd>
-              </button>
-              {room && (
-                <button className="hud-button" onClick={() => act("exit")}>
-                  Back outside ↵
+            {tour?.active ? (
+              <div className="tour-actions">
+                {["stop", "exploring"].includes(tour.stage) ? (
+                  <button
+                    className="v-button"
+                    onClick={() => send("tour-next")}
+                  >
+                    {tour.index === tour.total - 1
+                      ? "Finish tour"
+                      : "Next stop →"}
+                  </button>
+                ) : (
+                  <button
+                    className="v-button"
+                    onClick={() => send("tour-rejoin")}
+                  >
+                    Follow Jalal
+                  </button>
+                )}
+                <button className="v-quiet" onClick={leftTour}>
+                  Leave tour
                 </button>
+              </div>
+            ) : (
+              <button className="v-button" onClick={() => send("tour-start")}>
+                {tour?.stage === "complete" ? "Tour again" : "Take a tour"}
+              </button>
+            )}
+          </div>
+          {!busy && !travel && (
+            <>
+              {near && (
+                <div className="village-prompt">
+                  <button
+                    className="v-button"
+                    onClick={() =>
+                      gameBus.emit("action", {
+                        type: "interact",
+                        id: near.id,
+                        kind: near.kind,
+                      })
+                    }
+                  >
+                    <kbd>E</kbd>
+                    {near.label}
+                    <span>→</span>
+                  </button>
+                </div>
               )}
-            </div>
-          </div>
-          <div className="interaction-slot">
-            {near && (
-              <button
-                className="interact-button"
-                key={near.label}
-                onClick={() => act("interact")}
-              >
-                <kbd>E</kbd> {near.label} <span>→</span>
-              </button>
-            )}
-            {room && !near && (
-              <button
-                className="interact-button"
-                onClick={() => setPanel(room)}
-              >
-                Open field notes ↗
-              </button>
-            )}
-          </div>
-          {!room && (
-            <button
-              className="minimap"
-              aria-label="Open town map"
-              onClick={() => setMap(true)}
-            >
-              <img src="/assets/game/town-preview.png" alt="" />
-              <span style={{ left: `${pos.x}%`, top: `${pos.y}%` }} />
-              <span className="minimap-caption">THE TOWN +</span>
-            </button>
+              <div className="village-footer">
+                <span className="desktop-walk v-panel">
+                  <kbd>WASD</kbd> Walk · <kbd>Shift</kbd> Run · <kbd>E</kbd>{" "}
+                  Inspect · Right-click a neighbor
+                </span>
+                <div className="village-emotes">
+                  <button className="v-button" onClick={() => send("wave")}>
+                    Wave <kbd>F</kbd>
+                  </button>
+                  <button
+                    className="v-button"
+                    aria-pressed={pos.sitting}
+                    onClick={() => send("sit")}
+                  >
+                    {pos.sitting ? "Stand" : "Sit"} <kbd>Q</kbd>
+                  </button>
+                  {room && (
+                    <button className="v-button" onClick={() => send("exit")}>
+                      Outside ↵
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="village-dpad" aria-label="Touch movement">
+                {[
+                  { label: "Walk up", x: 0, y: -1, icon: "↑" },
+                  { label: "Walk left", x: -1, y: 0, icon: "←" },
+                  { label: "Walk down", x: 0, y: 1, icon: "↓" },
+                  { label: "Walk right", x: 1, y: 0, icon: "→" },
+                ].map((d) => (
+                  <button
+                    className="v-button"
+                    key={d.label}
+                    aria-label={d.label}
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.setPointerCapture(e.pointerId);
+                      gameBus.emit("action", {
+                        type: "direction",
+                        x: d.x,
+                        y: d.y,
+                      });
+                    }}
+                    onPointerUp={() =>
+                      gameBus.emit("action", { type: "direction", x: 0, y: 0 })
+                    }
+                    onPointerCancel={() =>
+                      gameBus.emit("action", { type: "direction", x: 0, y: 0 })
+                    }
+                    onLostPointerCapture={() =>
+                      gameBus.emit("action", { type: "direction", x: 0, y: 0 })
+                    }
+                  >
+                    {d.icon}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
-          <div className="touch-pad" aria-label="Touch movement controls">
-            {[
-              { dir: "up", x: 0, y: -1, label: "↑" },
-              { dir: "left", x: -1, y: 0, label: "←" },
-              { dir: "down", x: 0, y: 1, label: "↓" },
-              { dir: "right", x: 1, y: 0, label: "→" },
-            ].map((d) => (
-              <button
-                key={d.dir}
-                className={`touch-${d.dir}`}
-                aria-label={`Walk ${d.dir}`}
-                onPointerDown={(e) => {
-                  e.currentTarget.setPointerCapture(e.pointerId);
-                  gameBus.emit("action", { type: "direction", x: d.x, y: d.y });
-                }}
-                onPointerUp={() =>
-                  gameBus.emit("action", { type: "direction", x: 0, y: 0 })
-                }
-                onPointerCancel={() =>
-                  gameBus.emit("action", { type: "direction", x: 0, y: 0 })
-                }
-              >
-                {d.label}
-              </button>
-            ))}
-          </div>
         </>
       )}
-      {panel && (
-        <Modal
-          title="CAREER TOWN / FIELD NOTES"
-          className={`town-notes-modal room-notes-${panel}`}
-          onClose={() => {
-            setPanel(null);
-            setProject(null);
-          }}
-        >
-          <motion.div
-            className="town-note-page"
-            key={project?.id || panel}
-            initial={{ opacity: reduced ? 1 : 0, y: reduced ? 0 : 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: reduced ? 0 : 0.3 }}
-          >
-            {project ? (
-              <>
-                <button
-                  className="text-button"
-                  onClick={() => setProject(null)}
-                >
-                  ← Back to {buildings.find((b) => b.id === panel)!.topic}
-                </button>
-                <ProjectDetail project={project} />
-              </>
-            ) : (
-              <>
-                <div className="room-note-stamp">
-                  <img src={`/assets/game/house-${panel}.png`} alt="" />
-                  <div>
-                    <span>
-                      FIELD GUIDE ·{" "}
-                      {buildings.find((b) => b.id === panel)!.number} / 07
-                    </span>
-                    <p>{rooms[panel].subtitle}</p>
-                  </div>
-                </div>
-                <BuildingContent id={panel} onProject={setProject} />
-                <nav className="room-note-pager" aria-label="Field guide pages">
-                  <button
-                    onClick={() =>
-                      setPanel(
-                        buildings[
-                          (buildings.findIndex((b) => b.id === panel) + 6) % 7
-                        ].id,
-                      )
-                    }
-                    aria-label="Previous field note"
-                  >
-                    ← Previous
-                  </button>
-                  <span>
-                    {buildings.find((b) => b.id === panel)!.number} / 07
-                  </span>
-                  <button
-                    onClick={() =>
-                      setPanel(
-                        buildings[
-                          (buildings.findIndex((b) => b.id === panel) + 1) % 7
-                        ].id,
-                      )
-                    }
-                    aria-label="Next field note"
-                  >
-                    Next →
-                  </button>
-                </nav>
-              </>
-            )}
-          </motion.div>
-        </Modal>
+      {travel && (
+        <div className="village-travel" role="status">
+          <img
+            src={
+              travel.building
+                ? `/assets/tour/house-${travel.building}.png`
+                : "/assets/tour/jalal-happy.png"
+            }
+            alt=""
+          />
+          <small>THE NEXT CHAPTER</small>
+          <h2>{travel.label}</h2>
+        </div>
       )}
       {dialogue && (
         <Modal
-          title={`CONVERSATION / ${dialogue.speaker.toUpperCase()}`}
-          className="dialogue-modal"
+          title={dialogue.title ?? `A conversation with ${dialogue.speaker}`}
+          className="village-dialogue"
           onClose={() => setDialogue(null)}
         >
-          {(requestClose) => (
-            <div className="dialogue-layout">
-              <div className="dialogue-portrait">
+          <div className="village-dialogue-layout">
+            <figure>
+              {dialogue.speaker === "Jalal" ? (
+                <img
+                  src={`/assets/tour/jalal-${dialogue.portrait ?? "portrait"}.png`}
+                  alt="Jalal’s pixel-art portrait"
+                />
+              ) : (
                 <AvatarPreview
-                  character={
-                    dialogue.speaker === "Jalal"
-                      ? jalalCharacter
+                  character={{
+                    ...defaultCharacter,
+                    ...(["Sami", "Lina", "Rayan"].includes(dialogue.speaker)
+                      ? {
+                          skin: "brown",
+                          hair: "flat_top_fade",
+                          topColor: "tan",
+                          glasses: "round",
+                        }
                       : {
-                          ...defaultCharacter,
-                          body: "female",
+                          body: "female" as const,
                           skin: "bronze",
                           hair: "bob",
                           hairColor: "chestnut",
-                        }
-                  }
-                  animated={false}
-                />
-              </div>
-              <div>
-                <h2>{dialogue.speaker}</h2>
-                <p aria-live="off">{text}</p>
-                <button
-                  className="button primary"
-                  onClick={() => {
-                    if (text !== dialogue.text) {
-                      if (typingTimer.current)
-                        clearInterval(typingTimer.current);
-                      setText(dialogue.text);
-                    } else requestClose();
+                          top: "cardigan",
+                          topColor: "maroon",
+                          legs: "formal",
+                          legsColor: "navy",
+                        }),
                   }}
-                >
-                  {text === dialogue.text
-                    ? "Keep exploring →"
-                    : "Show full message"}
-                </button>
+                  animated={false}
+                  focus="head"
+                />
+              )}
+              <figcaption>{dialogue.speaker}</figcaption>
+            </figure>
+            <div className="village-dialogue-body">
+              <div
+                className="village-spoken"
+                tabIndex={0}
+                aria-label={dialogue.text}
+              >
+                <p aria-hidden="true">{text}</p>
+              </div>
+              <div className="village-choices">
+                {text !== dialogue.text ? (
+                  <button
+                    className="v-button"
+                    onClick={() => {
+                      if (typing.current) clearInterval(typing.current);
+                      setText(dialogue.text);
+                    }}
+                  >
+                    Show full message ↓
+                  </button>
+                ) : (
+                  <>
+                    {dialogue.choices?.map((c) => (
+                      <button
+                        key={c.id}
+                        className="v-button"
+                        onClick={() => choose(c.id)}
+                      >
+                        {c.label}
+                      </button>
+                    ))}
+                    {dialogue.link && (
+                      <a
+                        className="v-button"
+                        href={dialogue.link}
+                        target={
+                          dialogue.link.startsWith("http")
+                            ? "_blank"
+                            : undefined
+                        }
+                        rel="noreferrer"
+                      >
+                        {dialogue.linkLabel ?? "Open source"} ↗
+                      </a>
+                    )}
+                    {!dialogue.choices && (
+                      <button
+                        className="v-button"
+                        onClick={() => setDialogue(null)}
+                      >
+                        Continue →
+                      </button>
+                    )}
+                  </>
+                )}
               </div>
             </div>
-          )}
+          </div>
         </Modal>
       )}
       {map && (
         <Modal
-          title="TOWN MAP / DISCOVERY JOURNAL"
+          title="THE TOWN ATLAS / EVERY DOOR, ITS OWN STORY"
+          className="village-map-modal"
           onClose={() => setMap(false)}
-          className="map-modal"
         >
-          <h2>Follow your curiosity.</h2>
-          <p>
-            Seven places. One journey. Walk to a door to discover a place, or
-            read any field notes directly.
-          </p>
-          <div className="map-layout">
-            <div className="large-map">
+          <div className="village-atlas">
+            <div className="village-map-art">
               <img
-                src="/assets/game/town-preview.png"
-                alt="Town overview: academy and observatory to the north, office to the northeast, home and workshop around the central plaza, post office and library to the south"
+                src="/assets/tour/map.png"
+                alt="Map of the village, showing 21 project and background buildings connected by paths"
               />
+              {world.buildings.map((b, i) => (
+                <button
+                  key={b.id}
+                  className={`map-pin ${selected === b.id ? "selected" : ""} ${visited.includes(b.id) ? "visited" : ""}`}
+                  style={{
+                    left: `${(b.doorX / world.width) * 100}%`,
+                    top: `${(b.doorY / world.height) * 100}%`,
+                  }}
+                  onClick={() => setSelected(b.id)}
+                  aria-label={`Select ${placeById(b.id).name}`}
+                  aria-pressed={selected === b.id}
+                >
+                  {i + 1}
+                </button>
+              ))}
               {!room && (
                 <span
-                  className="map-you"
-                  style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+                  className="atlas-you"
+                  style={{
+                    left: `${(pos.x / world.width) * 100}%`,
+                    top: `${(pos.y / world.height) * 100}%`,
+                  }}
                   title="You are here"
-                />
+                >
+                  ●
+                </span>
               )}
             </div>
-            <div className="journal-list">
-              {buildings.map((b) => (
-                <div key={b.id}>
-                  <span
-                    className={`journal-number ${visited.includes(b.id) ? "found" : ""}`}
-                  >
-                    <img src={`/assets/game/house-${b.id}.png`} alt="" />
-                    <b>{visited.includes(b.id) ? "✓" : b.number}</b>
-                  </span>
-                  <div>
-                    <h3>{b.topic}</h3>
-                    <p>{b.name}</p>
-                    <div>
-                      <button
-                        className="text-button"
-                        onClick={() => {
-                          setMap(false);
-                          gameBus.emit("pause", false);
-                          gameBus.emit("action", {
-                            type: "navigate",
-                            id: b.id,
-                          });
-                        }}
-                      >
-                        Walk here →
-                      </button>
-                      <button
-                        className="text-button"
-                        onClick={() => {
-                          setMap(false);
-                          setPanel(b.id);
-                        }}
-                      >
-                        Read ↗
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="village-map-detail">
+              <label>
+                Choose a building
+                <select
+                  aria-label="Choose a building"
+                  value={selected}
+                  onChange={(e) => setSelected(e.target.value)}
+                >
+                  {places.map((p, i) => (
+                    <option value={p.id} key={p.id}>
+                      {i + 1}. {p.short}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <img src={`/assets/tour/house-${selected}.png`} alt="" />
+              <small>{chosen.district}</small>
+              <h2>{chosen.name}</h2>
+              <p>{chosen.summary}</p>
+              <span>
+                {chosen.width} × {chosen.height} interior ·{" "}
+                {chosen.exhibits.length} inspectable objects
+              </span>
+              <ul>
+                {chosen.exhibits.map((e) => (
+                  <li key={e.id}>
+                    {inspected[chosen.id]?.includes(e.id) ? "✓" : "◇"} {e.title}
+                  </li>
+                ))}
+              </ul>
+              <button className="v-button" onClick={walk}>
+                {tour?.active ? "Leave tour & walk here" : "Walk here →"}
+              </button>
+              <small>
+                {visited.includes(selected) ? "Visited" : "Not visited yet"} ·
+                Walking only, no teleporting.
+              </small>
             </div>
+          </div>
+        </Modal>
+      )}
+      {settings && (
+        <Modal
+          title="MAKE YOURSELF AT HOME"
+          className="village-settings"
+          onClose={() => setSettings(false)}
+        >
+          <div className="v-settings-grid">
+            <h2>Your town, your pace.</h2>
+            <label>
+              Visitor name
+              <input
+                maxLength={24}
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  try {
+                    localStorage.setItem("jalal-town-name", e.target.value);
+                  } catch {}
+                }}
+              />
+            </label>
+            <label>
+              Walking pace
+              <select
+                value={prefs.speed}
+                onChange={(e) => update("speed", Number(e.target.value))}
+              >
+                <option value={0.8}>Leisurely</option>
+                <option value={1}>Balanced</option>
+                <option value={1.2}>Brisk</option>
+              </select>
+            </label>
+            <label>
+              Camera distance
+              <select
+                value={prefs.zoom}
+                onChange={(e) => update("zoom", Number(e.target.value))}
+              >
+                <option value={0.85}>Wide view</option>
+                <option value={1}>Balanced</option>
+                <option value={1.15}>Close-up</option>
+              </select>
+            </label>
+            <label>
+              Village light
+              <select
+                value={prefs.time}
+                onChange={(e) =>
+                  update("time", e.target.value as Preferences["time"])
+                }
+              >
+                <option value="day">Warm daylight</option>
+                <option value="evening">Evening blue</option>
+              </select>
+            </label>
+            <label>
+              Interface palette
+              <select
+                value={accent}
+                onChange={(e) => {
+                  setAccent(e.target.value);
+                  try {
+                    localStorage.setItem("jalal-town-accent", e.target.value);
+                  } catch {}
+                }}
+              >
+                <option value="sage">Sage & parchment</option>
+                <option value="clay">Terracotta</option>
+                <option value="blue">Midnight blue</option>
+              </select>
+            </label>
+            <label className="v-check">
+              <input
+                type="checkbox"
+                checked={prefs.reduced}
+                onChange={(e) => update("reduced", e.target.checked)}
+              />{" "}
+              Reduced decorative motion
+            </label>
+            <label className="v-check">
+              <input
+                type="checkbox"
+                checked={prefs.footsteps}
+                onChange={(e) => update("footsteps", e.target.checked)}
+              />{" "}
+              Footstep dust
+            </label>
+            <button className="v-button" onClick={onCustomize}>
+              Change visitor appearance →
+            </button>
+            <p>
+              Appearance changes restart the current walk. Your discoveries and
+              settings stay saved in this browser.
+            </p>
           </div>
         </Modal>
       )}
       {help && (
         <Modal
-          title="A FEW THINGS BEFORE YOU WANDER"
+          title="A LITTLE FIELD GUIDE"
+          className="village-settings"
           onClose={() => setHelp(false)}
         >
-          <h2>Make yourself at home.</h2>
-          <div className="help-grid">
-            <article>
-              <h3>Move</h3>
-              <p>
-                WASD or arrow keys. Hold Shift to run. Click a path for
-                automatic walking. On touch screens, use the direction pad.
-              </p>
-            </article>
-            <article>
-              <h3>Discover</h3>
-              <p>
-                Approach a door and press E—or tap the prompt—to enter. Read the
-                field notes at the central desk. Talk to Jalal by the fountain.
-              </p>
-            </article>
-            <article>
-              <h3>Take a moment</h3>
-              <p>
-                F to wave. Q to sit or stand. Open the map to choose your next
-                stop. Escape closes dialogs; inside a room, Escape goes outside.
-              </p>
-            </article>
-            <article>
-              <h3>Your visit</h3>
-              <p>
-                Appearance and discoveries stay only in this browser. There’s no
-                sound, no timer and no wrong order. Every project is also in the
-                classic portfolio.
-              </p>
-            </article>
-          </div>
-          <Link className="button" href="/portfolio/">
-            Classic portfolio →
-          </Link>
-        </Modal>
-      )}
-      {settings && (
-        <Modal title="YOUR VISIT / SETTINGS" onClose={() => setSettings(false)}>
-          <h2>A comfortable pace.</h2>
-          <label className="setting-row">
-            <span>
-              <b>Reduced motion</b>
-              <small>
-                Disable atmospheric effects, villager movement and smooth camera
-                follow.
-              </small>
-            </span>
-            <input
-              type="checkbox"
-              checked={reduced}
-              onChange={(e) => {
-                setReduced(e.target.checked);
-                gameBus.emit("reduced", e.target.checked);
-              }}
-            />
-          </label>
-          <p className="muted">
-            The town is always silent. Appearance and discoveries are stored
-            only on this device.
-          </p>
-          <div className="button-row">
-            <button
-              className="button"
-              onClick={() => {
-                setSettings(false);
-                onCustomize();
-              }}
-            >
-              Customize character
-            </button>
-            <button
-              className="button"
-              onClick={() => {
-                setVisited([]);
-                localStorage.removeItem("career-town-discoveries");
-              }}
-            >
-              Reset discoveries
-            </button>
-            <Link className="button primary" href="/portfolio/">
-              Classic portfolio ↗
-            </Link>
-            <Link className="button" href="/credits/">
-              Art credits ↗
-            </Link>
-          </div>
+          <h2>No rush. Every corner counts.</h2>
+          <ul className="v-help-list">
+            <li>
+              <b>Walk:</b> WASD / arrows, click a path, or hold the touch
+              arrows. Shift runs.
+            </li>
+            <li>
+              <b>Inspect:</b> approach a glowing furniture marker and press E,
+              or click the object to walk over and read.
+            </li>
+            <li>
+              <b>Meet people:</b> E near a neighbor, or right-click them when
+              nearby. Choose a greeting or a prepared question.
+            </li>
+            <li>
+              <b>Take the tour:</b> Jalal leads in order and waits when you fall
+              behind. Stay near him, explore each stop, then choose Next stop.
+            </li>
+            <li>
+              <b>Your own route:</b> Leave tour at any time. Start again from
+              the tour ribbon. Selecting Walk here on the map leaves the tour.
+            </li>
+            <li>
+              <b>Rest:</b> Q or Sit holds a stable sitting pose. Near a chair,
+              it seats you there. Move or choose Stand to get up.
+            </li>
+            <li>
+              <b>Panels:</b> Escape or the visible × closes dialogue, map and
+              settings. Outside exits an interior.
+            </li>
+            <li>
+              <b>Customize:</b> change appearance in the studio, or pace, light,
+              camera and palette in settings.
+            </li>
+          </ul>
+          <button
+            className="v-button"
+            onClick={() => {
+              setHelp(false);
+              setTimeout(() => send("tour-start"), 80);
+            }}
+          >
+            Start Jalal’s tour
+          </button>
         </Modal>
       )}
     </main>

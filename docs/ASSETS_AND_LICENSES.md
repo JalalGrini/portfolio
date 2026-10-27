@@ -28,3 +28,10 @@ Pixelify Sans is locally hosted under SIL OFL 1.1; see `public/licenses/pixelify
 ## Seven-house interior pass
 
 `assets-src/rooms/*.png.b64` contains reproducible PNG adaptations of the retained LPC `interior.png` and `furniture.png` atlases. `tools/build_room_assets.py` records all crop coordinates, palette transformations, floor tiling and rug scaling. These are licensed source-art adaptations, **not original AI imagery**. The same complete contributor credits and CC-BY-SA terms in `public/licenses/interior.txt` and `public/licenses/furniture.txt` apply. `tools/prepare-studio-assets.cjs` decodes them offline before dev/build. Interior-specific texture names prevent these palette/crop changes from replacing outdoor props.
+
+## Guided-town rebuild
+- Jalal portraits and directional character sprites are extracted from the two owner-supplied reference images. Owner-supplied material is not relicensed as LPC artwork.
+- New server, telescope, microscope, phone, security console, workstation, kitchen, filing cabinet, planning board, notebook, printer and chair sprites are original generated artwork, with source-color-key extraction retained in `tools/build_tour_assets.py`.
+- House variants, room surfaces, plants, roads and trees derive from the already credited LPC source bundle. Existing upstream notices and attribution requirements still apply.
+- No Stardew Valley artwork, portraits, code, UI textures, music or sound effects are bundled.
+- Production art is decoded offline from `assets-src/tour/*.png.b64` during prebuild. Re-extraction requires the owner reference images and original generated atlas; decoded versioned bytes do not require them.

@@ -50,3 +50,16 @@ Vercel marked application checkpoint `a113318` READY. Response-content checks ca
 - Refined native reading dialogs with sticky close controls, house stamps, room-specific accents, previous/next field-guide pages and smoother discovery notices.
 - Fixed a walking-planner defect: free cell centers could hide a small obstruction between them. Neighbor edges now validate the swept walking segment; off-center starts are normalized before following waypoints.
 - Added reproducible room-asset extraction, offline text-backed PNG preparation, furniture/spawn/route audits and a real seven-house browser walking tour. No copied Stardew art, audio or credentials were added.
+
+## Guided village — owner-reference Jalal and individual project houses
+
+- Kept the cinematic portfolio unchanged and rebuilt `/play/` around a separate 21-place catalog derived from the verified portfolio facts.
+- Added 16 isolated project houses, five background/contact places, eight interior sizes, distributed furniture reading stations and truthful per-project source/status content.
+- Extracted Jalal’s portrait, expressions and directional poses from the owner’s supplied reference. Added original generated domain props and expanded the connected LPC-derived village and gardens. Updated provenance and public credits.
+- Implemented first-visit tour choice, collision-checked leading/waiting, screen-space guide protection, manual or automatic following, room exploration, next stop, free-mode exit, completion and restart.
+- Added bottom native portrait dialogue, six fictional residents, right-click/E/touch conversation choices, persistent sitting and chair alignment, detailed atlas and local discovery progress.
+- Made game and studio viewport-contained, retained detailed visitor customization and added presets, name, pace, camera, daylight, palette and motion preferences.
+- Fixed quick keyboard taps being lost between frames by queuing key-down edges; prevented held-key carryover during scene entry; added synchronous scene-listener cleanup when replacing the game.
+- Fixed portrait crop boundaries, tall-furniture marker spacing, chair layering, small-room centering, long location labels and guide-card overlap. Core text contrast is checked separately from broader accessibility coverage.
+- Validated all 100 object dialogues through actual browser walking, every town door, all 21 guide stops, wait/rejoin/leave, completion/restart, NPC choices and keyboard sitting. Final UI/viewport checks and source reports are under `docs/qa/guided-town` and documented in `GUIDED_TOWN.md`.
+- No physical-device, Safari/Firefox or complete assistive-technology audit is claimed. No Stardew Valley assets, audio, branding or source code were imported.
