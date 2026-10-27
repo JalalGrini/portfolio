@@ -1,5 +1,11 @@
 import * as Phaser from "phaser";
 import world from "./tour-world.json";
+import townMap from "./town-map.json";
+const streetCells = new Set(townMap.roads);
+const streetCost = (p: { x: number; y: number }) =>
+  streetCells.has(Math.floor(p.y / 32) * townMap.width + Math.floor(p.x / 32))
+    ? 1
+    : 8;
 import { gameBus, Dialogue, TourState, Preferences } from "./bus";
 import {
   places,
@@ -592,20 +598,9 @@ export function createGame(
         .setDepth(p.height);
     }
     private makeNPCs() {
-      const first = world.buildings[0];
-      for (const [i, name] of [
-        "Mina",
-        "Sami",
-        "Noor",
-        "Lina",
-        "Adam",
-        "Rayan",
-      ].entries()) {
-        const base = world.buildings[i < 3 ? 0 : [5, 10, 16][i - 3]];
-        const home = {
-          x: base.doorX + 110 + (i % 3) * 42,
-          y: base.doorY + 45 + (i % 2) * 24,
-        };
+      for (const resident of world.residents) {
+        const { name, index: i } = resident;
+        const home = { x: resident.x, y: resident.y };
         const sprite = this.add
           .sprite(home.x, home.y, "npc" + (i % 2))
           .setOrigin(0.5, 0.875)
@@ -831,6 +826,7 @@ export function createGame(
         this.widthPx,
         this.heightPx,
         this.solids,
+        this.roomMode ? undefined : streetCost,
       );
       if (!this.path.length && distance(this.player, q) > 28)
         gameBus.emit("near", {
@@ -849,6 +845,7 @@ export function createGame(
         this.widthPx,
         this.heightPx,
         this.solids,
+        this.roomMode ? undefined : streetCost,
       );
       this.waitNotified = false;
     }
@@ -1033,6 +1030,7 @@ export function createGame(
         this.widthPx,
         this.heightPx,
         this.solids,
+        this.roomMode ? undefined : streetCost,
       );
     }
     private roomIntro() {
@@ -1437,6 +1435,7 @@ export function createGame(
             this.widthPx,
             this.heightPx,
             this.solids,
+            this.roomMode ? undefined : streetCost,
           );
         }
         if (direct) {
