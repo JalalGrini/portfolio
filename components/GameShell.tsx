@@ -8,6 +8,18 @@ import {
 } from "@/game/character";
 import { gameBus, Dialogue, TourState, Preferences } from "@/game/bus";
 import { places, placeById } from "@/game/catalog";
+import { makePlan, resumeIndex, TOUR_SAVE_KEY } from "@/game/tour";
+const tourPlan = makePlan(places);
+const savedStop = () => {
+  try {
+    return resumeIndex(
+      JSON.parse(localStorage.getItem(TOUR_SAVE_KEY) || "null"),
+      tourPlan,
+    );
+  } catch {
+    return null;
+  }
+};
 import world from "@/game/tour-world.json";
 import Modal from "./Modal";
 import AvatarPreview from "./AvatarPreview";
@@ -175,7 +187,27 @@ export default function GameShell({
           try {
             seen = localStorage.getItem("jalal-town-welcome-v3") === "yes";
           } catch {}
-          if (!seen)
+          const resume = seen ? savedStop() : null;
+          if (resume !== null)
+            welcomeTimer = setTimeout(() => {
+              if (disposed) return;
+              const p = placeById(tourPlan[resume].id);
+              setDialogue({
+                speaker: "Jalal",
+                portrait: "happy",
+                title: "Welcome back",
+                text: `Good to see you again! Last time we got as far as stop ${resume + 1} of ${tourPlan.length}: ${p.name}. Shall we pick up where we left off?`,
+                choices: [
+                  {
+                    id: `tour-resume-${resume}`,
+                    label: `Resume at ${p.short} →`,
+                  },
+                  { id: "tour-start", label: "Start from the beginning" },
+                  { id: "close", label: "Explore freely" },
+                ],
+              });
+            }, 600);
+          else if (!seen)
             welcomeTimer = setTimeout(() => {
               if (disposed) return;
               setDialogue({
@@ -477,6 +509,18 @@ export default function GameShell({
                 )}
                 <button className="v-quiet" onClick={leftTour}>
                   Leave tour
+                </button>
+              </div>
+            ) : tour?.stage === "free" && tour.index > 0 ? (
+              <div className="tour-actions">
+                <button
+                  className="v-button"
+                  onClick={() => send("tour-start", String(tour.index))}
+                >
+                  Resume tour · {tour.index + 1}/{tour.total}
+                </button>
+                <button className="v-quiet" onClick={() => send("tour-start")}>
+                  Start over
                 </button>
               </div>
             ) : (
