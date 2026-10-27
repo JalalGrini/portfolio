@@ -1,0 +1,464 @@
+{
+  "version": "C13a-river-town-1",
+  "tileSize": 32,
+  "width": 84,
+  "height": 74,
+  "seed": 137,
+  "river": [
+    [
+      0,
+      50
+    ],
+    [
+      8,
+      48
+    ],
+    [
+      16,
+      46
+    ],
+    [
+      24,
+      50
+    ],
+    [
+      33,
+      48
+    ],
+    [
+      42,
+      43
+    ],
+    [
+      50,
+      44
+    ],
+    [
+      60,
+      46
+    ],
+    [
+      73,
+      42
+    ]
+  ],
+  "bridges": [
+    15,
+    35,
+    62
+  ],
+  "buildings": [
+    {
+      "id": "about",
+      "name": "Jalal\u2019s Green House",
+      "w": 160,
+      "h": 192,
+      "door": [
+        18,
+        17
+      ]
+    },
+    {
+      "id": "academy",
+      "name": "ENSAH Academy",
+      "w": 192,
+      "h": 256,
+      "door": [
+        31,
+        12
+      ]
+    },
+    {
+      "id": "office",
+      "name": "The Experience Office",
+      "w": 256,
+      "h": 224,
+      "door": [
+        14,
+        30
+      ]
+    },
+    {
+      "id": "library",
+      "name": "The Skills Library",
+      "w": 144,
+      "h": 176,
+      "door": [
+        30,
+        28
+      ]
+    },
+    {
+      "id": "project-sentinel",
+      "name": "Sentinel",
+      "w": 224,
+      "h": 240,
+      "door": [
+        61,
+        12
+      ]
+    },
+    {
+      "id": "project-orion",
+      "name": "ORION",
+      "w": 128,
+      "h": 192,
+      "door": [
+        72,
+        25
+      ]
+    },
+    {
+      "id": "project-dl-report",
+      "name": "Deep Learning Research",
+      "w": 288,
+      "h": 256,
+      "door": [
+        58,
+        31
+      ]
+    },
+    {
+      "id": "project-matchwork",
+      "name": "MatchWork",
+      "w": 160,
+      "h": 224,
+      "door": [
+        20,
+        40
+      ]
+    },
+    {
+      "id": "project-ocr",
+      "name": "Arabic & Darija OCR",
+      "w": 192,
+      "h": 176,
+      "door": [
+        10,
+        48
+      ]
+    },
+    {
+      "id": "project-spam",
+      "name": "Phishing & Spam Detection",
+      "w": 256,
+      "h": 240,
+      "door": [
+        32,
+        45
+      ]
+    },
+    {
+      "id": "project-odoo",
+      "name": "ENSAH HR Intelligence",
+      "w": 144,
+      "h": 192,
+      "door": [
+        22,
+        55
+      ]
+    },
+    {
+      "id": "project-rag",
+      "name": "RAG Document Assistant",
+      "w": 224,
+      "h": 256,
+      "door": [
+        35,
+        60
+      ]
+    },
+    {
+      "id": "project-finance",
+      "name": "Financial Operations Platform",
+      "w": 128,
+      "h": 224,
+      "door": [
+        59,
+        44
+      ]
+    },
+    {
+      "id": "project-comptapilot",
+      "name": "ComptaPilot",
+      "w": 288,
+      "h": 176,
+      "door": [
+        72,
+        48
+      ]
+    },
+    {
+      "id": "project-pfe",
+      "name": "PFE Planning Platform",
+      "w": 160,
+      "h": 240,
+      "door": [
+        62,
+        58
+      ]
+    },
+    {
+      "id": "project-employees",
+      "name": "Employees Manager",
+      "w": 192,
+      "h": 192,
+      "door": [
+        72,
+        66
+      ]
+    },
+    {
+      "id": "project-todo",
+      "name": "MERN Task Manager",
+      "w": 256,
+      "h": 256,
+      "door": [
+        12,
+        62
+      ]
+    },
+    {
+      "id": "project-recipe",
+      "name": "RecipeGenix",
+      "w": 144,
+      "h": 224,
+      "door": [
+        54,
+        68
+      ]
+    },
+    {
+      "id": "project-salle",
+      "name": "Room Reservation Manager",
+      "w": 224,
+      "h": 176,
+      "door": [
+        71,
+        37
+      ]
+    },
+    {
+      "id": "project-tva",
+      "name": "TVA Calculator",
+      "w": 128,
+      "h": 240,
+      "door": [
+        19,
+        70
+      ]
+    },
+    {
+      "id": "contact",
+      "name": "The Post Office",
+      "w": 288,
+      "h": 192,
+      "door": [
+        28,
+        67
+      ]
+    }
+  ],
+  "nodes": {
+    "welcome": [
+      20,
+      21
+    ],
+    "academy": [
+      32,
+      17
+    ],
+    "civic": [
+      23,
+      33
+    ],
+    "data": [
+      22,
+      47
+    ],
+    "makerWest": [
+      20,
+      59
+    ],
+    "post": [
+      30,
+      70
+    ],
+    "westGarden": [
+      7,
+      35
+    ],
+    "orchard": [
+      7,
+      56
+    ],
+    "research": [
+      64,
+      18
+    ],
+    "eastLane": [
+      78,
+      31
+    ],
+    "eastData": [
+      66,
+      45
+    ],
+    "makerEast": [
+      65,
+      60
+    ],
+    "southEast": [
+      73,
+      70
+    ],
+    "forestGate": [
+      78,
+      42
+    ],
+    "forestWalk": [
+      78,
+      60
+    ]
+  },
+  "links": [
+    [
+      "welcome",
+      "academy"
+    ],
+    [
+      "welcome",
+      "civic"
+    ],
+    [
+      "academy",
+      "civic"
+    ],
+    [
+      "civic",
+      "data"
+    ],
+    [
+      "data",
+      "makerWest"
+    ],
+    [
+      "makerWest",
+      "post"
+    ],
+    [
+      "civic",
+      "westGarden"
+    ],
+    [
+      "westGarden",
+      "orchard"
+    ],
+    [
+      "orchard",
+      "makerWest"
+    ],
+    [
+      "research",
+      "eastLane"
+    ],
+    [
+      "eastLane",
+      "eastData"
+    ],
+    [
+      "eastData",
+      "makerEast"
+    ],
+    [
+      "makerEast",
+      "southEast"
+    ],
+    [
+      "eastData",
+      "forestGate"
+    ],
+    [
+      "forestGate",
+      "forestWalk"
+    ],
+    [
+      "forestWalk",
+      "makerEast"
+    ],
+    [
+      "academy",
+      "bridge0West"
+    ],
+    [
+      "bridge0East",
+      "research"
+    ],
+    [
+      "civic",
+      "bridge1West"
+    ],
+    [
+      "bridge1East",
+      "eastData"
+    ],
+    [
+      "makerWest",
+      "bridge2West"
+    ],
+    [
+      "bridge2East",
+      "makerEast"
+    ]
+  ],
+  "residents": [
+    {
+      "name": "Mina",
+      "node": "welcome",
+      "offset": [
+        -96,
+        48
+      ]
+    },
+    {
+      "name": "Sami",
+      "node": "academy",
+      "offset": [
+        -80,
+        48
+      ]
+    },
+    {
+      "name": "Noor",
+      "node": "civic",
+      "offset": [
+        96,
+        32
+      ]
+    },
+    {
+      "name": "Lina",
+      "node": "research",
+      "offset": [
+        64,
+        64
+      ]
+    },
+    {
+      "name": "Adam",
+      "node": "data",
+      "offset": [
+        -80,
+        64
+      ]
+    },
+    {
+      "name": "Rayan",
+      "node": "makerEast",
+      "offset": [
+        64,
+        48
+      ]
+    }
+  ]
+}
