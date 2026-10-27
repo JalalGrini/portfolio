@@ -8,14 +8,18 @@
     "start": "next start",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "node tools/qa.cjs",
+    "test:e2e": "node tools/qa-tour.cjs",
     "check:assets": "python3 tools/verify_assets.py",
     "test:extra": "node tools/qa-extra.cjs",
     "test:design": "node tools/qa-design.cjs",
     "predev": "node tools/prepare-studio-assets.cjs",
     "prebuild": "node tools/prepare-studio-assets.cjs",
-    "check:rooms": "node tools/prepare-studio-assets.cjs && node tools/verify_rooms.cjs",
-    "test:rooms": "node tools/qa-rooms.cjs"
+    "check:rooms": "node tools/prepare-studio-assets.cjs && node tools/audit-tour.cjs",
+    "test:rooms": "node tools/export-catalog.cjs && node tools/qa-town-tour.cjs",
+    "check:tour": "node tools/export-catalog.cjs && node tools/audit-tour.cjs",
+    "test:tour": "node tools/qa-tour.cjs",
+    "test:town": "node tools/export-catalog.cjs && node tools/qa-town-tour.cjs",
+    "test:tour-loop": "node tools/qa-tour-loop.cjs"
   },
   "dependencies": {
     "motion": "^12.43.0",

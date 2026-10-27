@@ -39,3 +39,22 @@ for (const file of fs
   fs.writeFileSync(path.join(roomOutput, file.slice(0, -4)), bytes);
 }
 console.log("Prepared licensed LPC interior artwork locally.");
+const tourSource = path.join(root, "assets-src/tour"),
+  tourOutput = path.join(root, "public/assets/tour");
+if (fs.existsSync(tourSource)) {
+  fs.mkdirSync(tourOutput, { recursive: true });
+  for (const f of fs
+    .readdirSync(tourSource)
+    .filter((f) => f.endsWith(".png.b64"))) {
+    const b = Buffer.from(
+      fs.readFileSync(path.join(tourSource, f), "utf8").trim(),
+      "base64",
+    );
+    if (
+      !b.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+    )
+      throw Error("Invalid tour art: " + f);
+    fs.writeFileSync(path.join(tourOutput, f.slice(0, -4)), b);
+  }
+  console.log("Prepared guided-town artwork locally.");
+}
