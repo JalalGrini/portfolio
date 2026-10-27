@@ -24,12 +24,22 @@ export function route(
   width: number,
   height: number,
   solids: Rect[],
+  travelCost?: (point: Point) => number,
 ): Point[] {
   const cell = 16,
     cols = Math.floor(width / cell),
     rows = Math.floor(height / cell),
-    free = (x: number, y: number) =>
-      isFree({ x: x * cell + 8, y: y * cell + 8 }, width, height, solids);
+    cellFree = new Map<number, boolean>();
+  const free = (x: number, y: number) => {
+    if (x < 0 || y < 0 || x >= cols || y >= rows) return false;
+    const k = y * cols + x;
+    if (!cellFree.has(k))
+      cellFree.set(
+        k,
+        isFree({ x: x * cell + 8, y: y * cell + 8 }, width, height, solids),
+      );
+    return cellFree.get(k)!;
+  };
   let start = { x: Math.floor(from.x / cell), y: Math.floor(from.y / cell) },
     goal = { x: Math.floor(to.x / cell), y: Math.floor(to.y / cell) };
   function nearest(p: Point) {
@@ -106,7 +116,12 @@ export function route(
         )
       )
         continue;
-      const cost = costs.get(pk)! + 1;
+      // All terrain costs are >= 1, so the Manhattan heuristic stays admissible.
+      const stepCost = Math.max(
+        1,
+        travelCost?.({ x: n.x * cell + 8, y: n.y * cell + 8 }) ?? 1,
+      );
+      const cost = costs.get(pk)! + stepCost;
       if (cost < (costs.get(key(n)) ?? Infinity)) {
         costs.set(key(n), cost);
         came.set(key(n), p);

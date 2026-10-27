@@ -10,6 +10,7 @@ const sharp = require("sharp");
 const root = path.resolve(__dirname, "..");
 const out = path.join(root, "public/assets/tour");
 const world = require("../game/tour-world.json");
+const townMap = require("../game/town-map.json");
 const outputs = {};
 const rgb = (hex) => hex.match(/[a-f\d]{2}/gi).map((v) => parseInt(v, 16));
 const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
@@ -216,9 +217,9 @@ const propKey = (o) =>
     recolour(crop(terrain, (21 + i) * 32, 5 * 32, 32, 32), ([r, g, b]) => {
       const key = [r, g, b].join(",");
       return {
-        "47,129,54": [101, 153, 63],
-        "100,164,44": [165, 187, 78],
-        "73,146,49": [128, 170, 64],
+        "47,129,54": [77, 153, 57],
+        "100,164,44": [137, 183, 65],
+        "73,146,49": [108, 170, 54],
       }[key];
     }),
   );
@@ -231,28 +232,43 @@ const propKey = (o) =>
         3;
       paste(ground, grass[i], x, y);
     }
-  const mask = new Set(),
-    id = (x, y) => `${x},${y}`;
-  function road(x0, y0, x1, y1) {
-    for (let y = y0; y < y1; y++)
-      for (let x = x0; x < x1; x++) mask.add(id(x, y));
-  }
-  for (let row = 0; row < 5; row++) {
-    const y = (384 + row * 416) / 32;
-    road(4, y - 1, world.width / 32 - 4, y + 2);
-  }
-  for (let col = 0; col < 5; col++) {
-    const x = (320 + col * 448) / 32;
-    road(x - 1, 8, x + 2, world.height / 32 - 3);
+  const mask = new Set(
+    townMap.roads.map(
+      (k) => `${k % townMap.width},${Math.floor(k / townMap.width)}`,
+    ),
+  );
+  const id = (x, y) => `${x},${y}`;
+  const water = new Set(townMap.water);
+  const waterAtlas = recolour(terrain, ([r, g, b]) => {
+    if (b > r * 1.25 && g > r * 1.25 && b > 80)
+      return ramp(["#28749d", "#519fc0", "#9ccbd5"], (r + g + b) / 3, 55, 210);
+    return {
+      "47,129,54": [77, 153, 57],
+      "100,164,44": [137, 183, 65],
+      "73,146,49": [108, 170, 54],
+    }[[r, g, b].join(",")];
+  });
+  for (const k of water) {
+    const x = k % townMap.width,
+      y = Math.floor(k / townMap.width);
+    const has = (xx, yy) => water.has(yy * townMap.width + xx);
+    const cx = !has(x - 1, y) ? 0 : !has(x + 1, y) ? 2 : 1;
+    const cy = !has(x, y - 1) ? 0 : !has(x, y + 1) ? 2 : 1;
+    paste(
+      ground,
+      crop(waterAtlas, (9 + cx) * 32, (11 + cy) * 32, 32, 32),
+      x * 32,
+      y * 32,
+    );
   }
   const roadAtlas = recolour(
     terrain,
     ([r, g, b]) =>
       ({
-        "153,107,74": [167, 112, 73],
-        "184,135,81": [203, 147, 87],
-        "195,151,83": [224, 176, 106],
-        "174,118,75": [188, 129, 78],
+        "153,107,74": [170, 89, 40],
+        "184,135,81": [211, 124, 48],
+        "195,151,83": [235, 153, 66],
+        "174,118,75": [193, 104, 42],
       })[[r, g, b].join(",")],
   );
   // Reuse the retained builder's quadrant-autotile logic: irregular gravel
@@ -280,6 +296,28 @@ const propKey = (o) =>
         );
       }
   }
+  // Real licensed timber pieces retained in the source atlas, not a brown
+  // rectangle: plank deck (14,16) and upper/lower rope-rail strips (20,19/20).
+  for (const b of townMap.bridges) {
+    const deck = crop(terrain, 14 * 32, 16 * 32, 32, 32);
+    for (let y = 0; y < b.h; y++)
+      for (let x = 0; x < b.w; x++)
+        paste(ground, deck, (b.x + x) * 32, (b.y + y) * 32);
+    for (let x = 0; x < b.w; x++) {
+      paste(
+        ground,
+        crop(terrain, 20 * 32, 19 * 32, 32, 32),
+        (b.x + x) * 32,
+        b.y * 32,
+      );
+      paste(
+        ground,
+        crop(terrain, 20 * 32, 20 * 32, 32, 32),
+        (b.x + x) * 32,
+        (b.y + b.h - 1) * 32,
+      );
+    }
+  }
   await save("ground", ground);
   const map = { ...ground, data: Buffer.from(ground.data) };
   for (const o of [...world.objects].sort((a, b) => a.depth - b.depth)) {
@@ -304,7 +342,7 @@ const propKey = (o) =>
   fs.writeFileSync(
     path.join(out, "town-style.json"),
     JSON.stringify(
-      { version: "C02e-daylight-1", geometryHash, palettes, assets: outputs },
+      { version: "C13a-river-town-1", geometryHash, palettes, assets: outputs },
       null,
       2,
     ) + "\n",

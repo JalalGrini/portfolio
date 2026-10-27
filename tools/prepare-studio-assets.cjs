@@ -58,6 +58,12 @@ if (fs.existsSync(tourSource)) {
   }
   console.log("Prepared guided-town artwork locally.");
 }
+// Geometry and painted streets share one authored river-town mask.
+require("child_process").execFileSync(
+  process.execPath,
+  [path.join(__dirname, "build_town_layout.cjs")],
+  { stdio: "inherit" },
+);
 // Apply the reproducible daylight recipe AFTER decoding the legacy bundle.
 // Kept separate from the cinematic/room assets and requires no Python/network.
 require("child_process").execFileSync(
