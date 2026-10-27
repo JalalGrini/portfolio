@@ -66,7 +66,7 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 ### Phase D — Town, facades, life
 | # | Chunk | Plan ref | Status |
 |---|---|---|---|
-| C13a | Structural river-town slice: irregular 21-door layout, 3 crossings, connected street loops, street-aware guide routing, distributed outdoor residents | V06 | 🟡 local QA passed; deploying |
+| C13a | Structural river-town slice: irregular 21-door layout, 3 crossings, connected street loops, street-aware guide routing, distributed outdoor residents | V06 | ✅ pushed + production verified |
 | C13 | Remaining town detail: district courtyards, richer gardens/activity areas, water animation and art polish | V06 | ⬜ |
 | C14 | 21 unique facades per R02 (roof forms, stone/timber, porches, ivy, lanterns, gardens) | V06 | ⬜ |
 | C15 | Sitting everywhere: seat anchors with facing per chair/bench/sofa/stool in every room and outdoors, correct depth, sit/stand animations, NPCs can sit | V09 | ⬜ |
@@ -81,8 +81,8 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 | C20 | Human visual review, production deploy, live verification | V12 | ⬜ |
 
 ## Next up (start here)
-1. **C13a release** — Structural river town implemented; finish full 21-stop QA, push and verify production.
-2. Confirm the deployed river-town textures match all 29 local hashes and the live tour still enters/exits correctly.
+1. **C07/C08 furnished home** — Build an authored connected home slice from actual retained LPC furniture PNGs; include a collision/anchor registry and validate every interaction.
+2. C13a is live and verified; keep the structural town while iterating room art.
 3. **C07/C08 — NEXT OWNER PRIORITY**: use the actual `tools/source/{interior,furniture}.png` / restored cleared furniture assets to build connected furnished rooms, not isolated exhibit props. Preserve all 100 exhibit facts.
 4. **Town-life follow-up**: residents inside buildings with context-specific prepared questions/answers grounded in that room’s exhibits; Jalal changes only his outfit for the building (face/identity unchanged).
 5. Resume C05–C20 after the structural map/furnished-room slices.
@@ -92,6 +92,7 @@ Push → Vercel builds a preview automatically → once checks pass, create a pr
 
 ## Log
 <!-- newest first -->
+- **Deploy** — C13a production `dpl_67TQfyycGThrkZRBfhN6TVYEzjAT` READY (`47fe5cf`); all 29 actual live PNGs match local hashes. Live first-stop journey + early exit/re-entry + exact reload/resume PASS; 1440/390 px non-blocking hint/movement/ribbon QA PASS. Full local 21 stops/63 highlights completed.
 - **C13a implementation** — Replaced the row grid with a deterministic authored 84×74-tile river town: 21 irregularly positioned buildings, 3 timber crossings, connected neighbourhood street loops and true threshold aprons. Road mask drives painting and navigation; full building envelopes + river banks collide; guided walking prefers streets, not lawn shortcuts. Six residents have separated neighbourhood homes. Grass/orange road ramps use retained LPC pixels; R03 remains reference-only. Geometry validator checks all doors, crossings, street connectivity, facade overlap and resident spacing; 20 unit tests PASS. Full 21-stop/63-highlight browser regression PASS; first-stop 390 px + early exit/re-entry/resume PASS; 1440/390 px non-blocking hint QA PASS; deterministic 29-texture audit, TypeScript and production build PASS. Map and in-world desktop/mobile screenshots inspected. Facade silhouettes and interior furniture are not claimed complete.
 - **Deploy** — C04 production `dpl_2kbHamwKna4hxEdVq7CirBJnkW2e` READY (`f09ecc0`); live first-stop journey, early exit/re-entry, Escape/reopen, reload/resume and 1440/390 px normal-motion dialogue keyboard/typewriter/preference checks PASS.
 - **Owner correction / direction lock** — A recoloured grid is NOT the requested town. Owner reiterated R03 (river-town image, uploaded again): irregular building placement, genuinely connected paths, reference-like grass/orange-path look, residents distributed across town and inside buildings, questions relevant to each building, and building-specific Jalal outfits without changing his face. Existing isolated room props are unacceptable; use the retained PNG furniture atlases. Bring C13a and furnished-room slices forward immediately after the pending C04 release.
