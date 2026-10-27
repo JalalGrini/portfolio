@@ -81,7 +81,12 @@ fs.mkdirSync(out, { recursive: true });
       }
       if ((await attr("tour-stage")) !== "arrived")
         throw Error("Never arrived at stop " + (i + 1));
-      await choose(/Enter this building/);
+      // Arrival is a non-blocking bubble: no dialogue should pause the game.
+      await pause(400);
+      if (await p.locator(".village-dialogue").count())
+        throw Error("Arrival opened a blocking dialogue at stop " + (i + 1));
+      if (i === 0) await p.screenshot({ path: `${out}/stop1-arrival-bubble.png` });
+      await p.getByRole("button", { name: "Enter →", exact: true }).click();
       await p.waitForFunction(
         () => document.querySelector(".game-shell")?.dataset.room !== "town",
         {},
