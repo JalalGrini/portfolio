@@ -18,3 +18,5 @@ test-results/
 
 /public/assets/tour/*.png
 /public/assets/tour/town-style.json
+
+/public/assets/rooms/authored-rooms.json

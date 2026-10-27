@@ -1,0 +1,84 @@
+{
+  "bed": {
+    "source": "interior",
+    "crop": [0, 176, 64, 80],
+    "footprint": [4, 32, 56, 46]
+  },
+  "wardrobe": {
+    "source": "furniture",
+    "crop": [416, 112, 64, 80],
+    "footprint": [4, 40, 56, 38]
+  },
+  "dresser": {
+    "source": "furniture",
+    "crop": [256, 416, 64, 32],
+    "footprint": [2, 14, 60, 16]
+  },
+  "shelf": {
+    "source": "furniture",
+    "crop": [288, 32, 64, 64],
+    "footprint": [2, 42, 60, 20]
+  },
+  "counter": {
+    "source": "furniture",
+    "crop": [192, 204, 128, 44],
+    "footprint": [2, 22, 124, 20]
+  },
+  "kitchen": {
+    "source": "furniture",
+    "crop": [16, 204, 128, 44],
+    "footprint": [2, 22, 124, 20]
+  },
+  "table": {
+    "source": "interior",
+    "crop": [128, 176, 64, 80],
+    "footprint": [4, 24, 56, 50]
+  },
+  "chair": {
+    "source": "interior",
+    "crop": [224, 108, 32, 40],
+    "footprint": [4, 23, 24, 15],
+    "seat": [16, 27]
+  },
+  "stool": {
+    "source": "interior",
+    "crop": [192, 152, 32, 24],
+    "footprint": [5, 9, 22, 13],
+    "seat": [16, 11]
+  },
+  "vase": {
+    "source": "interior",
+    "crop": [224, 224, 32, 48],
+    "footprint": null
+  },
+  "lamp": {
+    "source": "interior",
+    "crop": [352, 192, 32, 32],
+    "footprint": null
+  },
+  "window": {
+    "source": "base",
+    "crop": [256, 288, 32, 64],
+    "footprint": null
+  },
+  "rug": {
+    "source": "interior",
+    "crop": [192, 32, 32, 32],
+    "footprint": null
+  },
+  "column": {
+    "source": "furniture",
+    "crop": [328, 96, 16, 96],
+    "footprint": [2, 72, 12, 22]
+  },
+  "journal": {
+    "source": "notebook",
+    "crop": [0, 0, 112, 66],
+    "footprint": null
+  },
+  "monitor": {
+    "source": "workstation",
+    "crop": [0, 0, 112, 48],
+    "footprint": null
+  }
+}

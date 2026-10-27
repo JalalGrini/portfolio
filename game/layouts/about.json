@@ -1,0 +1,300 @@
+{
+  "id": "about",
+  "width": 704,
+  "height": 576,
+  "zones": [
+    {
+      "name": "Bedroom",
+      "x": 24,
+      "y": 106,
+      "w": 232,
+      "h": 214
+    },
+    {
+      "name": "Study",
+      "x": 300,
+      "y": 106,
+      "w": 380,
+      "h": 248
+    },
+    {
+      "name": "Reading corner",
+      "x": 24,
+      "y": 338,
+      "w": 240,
+      "h": 204
+    },
+    {
+      "name": "Kitchen",
+      "x": 444,
+      "y": 370,
+      "w": 236,
+      "h": 174
+    }
+  ],
+  "walls": [
+    {
+      "x": 250,
+      "y": 102,
+      "w": 16,
+      "h": 126
+    },
+    {
+      "x": 18,
+      "y": 322,
+      "w": 202,
+      "h": 12
+    }
+  ],
+  "decor": [
+    {
+      "prop": "window",
+      "x": 70,
+      "y": 22,
+      "w": 64,
+      "h": 64
+    },
+    {
+      "prop": "window",
+      "x": 514,
+      "y": 22,
+      "w": 64,
+      "h": 64
+    },
+    {
+      "prop": "rug",
+      "x": 40,
+      "y": 368,
+      "w": 192,
+      "h": 144
+    },
+    {
+      "prop": "rug",
+      "x": 296,
+      "y": 476,
+      "w": 112,
+      "h": 64
+    }
+  ],
+  "furniture": [
+    {
+      "id": "bed",
+      "prop": "bed",
+      "x": 38,
+      "y": 124,
+      "w": 64,
+      "h": 80
+    },
+    {
+      "id": "bedside",
+      "prop": "stool",
+      "x": 112,
+      "y": 170,
+      "w": 32,
+      "h": 24,
+      "seatable": false
+    },
+    {
+      "id": "bedside-lamp",
+      "prop": "lamp",
+      "x": 112,
+      "y": 146,
+      "w": 24,
+      "h": 24,
+      "depth": 195
+    },
+    {
+      "id": "wardrobe",
+      "prop": "wardrobe",
+      "x": 176,
+      "y": 110,
+      "w": 64,
+      "h": 80
+    },
+    {
+      "id": "dresser",
+      "prop": "dresser",
+      "x": 152,
+      "y": 236,
+      "w": 80,
+      "h": 40
+    },
+    {
+      "id": "home",
+      "prop": "vase",
+      "x": 184,
+      "y": 212,
+      "w": 32,
+      "h": 48,
+      "depth": 277
+    },
+    {
+      "id": "bookcase",
+      "prop": "shelf",
+      "x": 432,
+      "y": 108,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "id": "bookcase2",
+      "prop": "shelf",
+      "x": 528,
+      "y": 108,
+      "w": 96,
+      "h": 96
+    },
+    {
+      "id": "study-desk",
+      "prop": "counter",
+      "x": 422,
+      "y": 256,
+      "w": 160,
+      "h": 55
+    },
+    {
+      "id": "study-lamp",
+      "prop": "lamp",
+      "x": 426,
+      "y": 235,
+      "w": 32,
+      "h": 32,
+      "depth": 312
+    },
+    {
+      "id": "direction",
+      "x": 476,
+      "y": 250,
+      "w": 42,
+      "h": 25,
+      "depth": 312,
+      "prop": "journal"
+    },
+    {
+      "id": "github",
+      "x": 584,
+      "y": 250,
+      "w": 68,
+      "h": 29,
+      "depth": 313,
+      "prop": "monitor"
+    },
+    {
+      "id": "computer-desk",
+      "prop": "counter",
+      "x": 578,
+      "y": 278,
+      "w": 80,
+      "h": 28,
+      "depth": 306
+    },
+    {
+      "id": "reading-chair",
+      "prop": "chair",
+      "x": 48,
+      "y": 374,
+      "w": 40,
+      "h": 50
+    },
+    {
+      "id": "reading-chair2",
+      "prop": "chair",
+      "x": 190,
+      "y": 374,
+      "w": 40,
+      "h": 50
+    },
+    {
+      "id": "welcome",
+      "prop": "table",
+      "x": 108,
+      "y": 380,
+      "w": 64,
+      "h": 80
+    },
+    {
+      "id": "reading-lamp",
+      "prop": "lamp",
+      "x": 120,
+      "y": 364,
+      "w": 24,
+      "h": 24,
+      "depth": 461
+    },
+    {
+      "id": "kitchen",
+      "prop": "kitchen",
+      "x": 492,
+      "y": 394,
+      "w": 160,
+      "h": 55
+    },
+    {
+      "id": "kitchen-table",
+      "prop": "table",
+      "x": 488,
+      "y": 470,
+      "w": 48,
+      "h": 60
+    },
+    {
+      "id": "kitchen-stool",
+      "prop": "stool",
+      "x": 562,
+      "y": 486,
+      "w": 32,
+      "h": 24
+    },
+    {
+      "id": "reading-journal",
+      "prop": "journal",
+      "x": 122,
+      "y": 412,
+      "w": 34,
+      "h": 20,
+      "depth": 462
+    },
+    {
+      "id": "study-chair",
+      "prop": "chair",
+      "x": 370,
+      "y": 286,
+      "w": 40,
+      "h": 50
+    }
+  ],
+  "exhibits": [
+    {
+      "id": "welcome",
+      "furniture": "welcome",
+      "approach": {
+        "x": 136,
+        "y": 496
+      }
+    },
+    {
+      "id": "home",
+      "furniture": "home",
+      "approach": {
+        "x": 200,
+        "y": 300
+      }
+    },
+    {
+      "id": "direction",
+      "furniture": "direction",
+      "approach": {
+        "x": 488,
+        "y": 352
+      }
+    },
+    {
+      "id": "github",
+      "furniture": "github",
+      "approach": {
+        "x": 616,
+        "y": 352
+      }
+    }
+  ]
+}

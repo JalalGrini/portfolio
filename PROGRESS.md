@@ -55,9 +55,9 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 ### Phase C — Interiors & furniture (unique, well-spaced, like R06)
 | # | Chunk | Plan ref | Status |
 |---|---|---|---|
-| C06 | Asset pipeline: restore Kenney/LPC candidates, slice into a furniture atlas (`assets-src/furniture/*.b64`), credits file, registry of every prop with footprint + seat/interaction anchors | V01 | ⬜ |
-| C07 | Room authoring schema (`game/layouts/*.ts`): walls, multiple connected zones, rugs, wall decor, furniture groups, anchors; validator for collisions/depth/reachability. Removes `stationsFor()` five-spot fallback | V02 | ⬜ |
-| C08 | Vertical slice 1 — **Home (about)**: connected bedroom/study/kitchen nook like R06 | V05 | ⬜ |
+| C06 | Asset pipeline: restore Kenney/LPC candidates, slice into a furniture atlas (`assets-src/furniture/*.b64`), credits file, registry of every prop with footprint + seat/interaction anchors | V01 | 🟡 retained LPC home pipeline + 16 crop registry implemented; broader candidate atlas pending |
+| C07 | Room authoring schema (`game/layouts/*.ts`): walls, multiple connected zones, rugs, wall decor, furniture groups, anchors; validator for collisions/depth/reachability. Removes `stationsFor()` five-spot fallback | V02 | 🟡 authored home schema/validator implemented; remaining shared fallbacks pending |
+| C08 | Vertical slice 1 — **Home (about)**: connected bedroom/study/reading/kitchen areas with actual retained source-atlas furniture | V05 | 🟡 local QA passed; deploying |
 | C09 | Vertical slice 2 — **Research lab** | V05 | ⬜ |
 | C10 | Interiors batch A (civic: academy, library/workshop…) | V07 | ⬜ |
 | C11 | Interiors batch B (projects 1–8) | V07 | ⬜ |
@@ -81,9 +81,9 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 | C20 | Human visual review, production deploy, live verification | V12 | ⬜ |
 
 ## Next up (start here)
-1. **C07/C08 furnished home** — Build an authored connected home slice from actual retained LPC furniture PNGs; include a collision/anchor registry and validate every interaction.
-2. C13a is live and verified; keep the structural town while iterating room art.
-3. **C07/C08 — NEXT OWNER PRIORITY**: use the actual `tools/source/{interior,furniture}.png` / restored cleared furniture assets to build connected furnished rooms, not isolated exhibit props. Preserve all 100 exhibit facts.
+1. **C08 release** — Furnished home local checks passed; push/deploy and verify actual production assets + desktop/mobile tour + optional exhibits/chairs.
+2. **C09 lab slice** — Extend the authored registry/layout to a genuinely furnished research interior. Keep the structural river town.
+3. Convert remaining civic/project interiors using actual source-atlas furniture groups and distinct room borders. `about` is authored now; the others still use legacy `stationsFor` positions. Preserve all 100 exhibit facts.
 4. **Town-life follow-up**: residents inside buildings with context-specific prepared questions/answers grounded in that room’s exhibits; Jalal changes only his outfit for the building (face/identity unchanged).
 5. Resume C05–C20 after the structural map/furnished-room slices.
 
@@ -92,6 +92,7 @@ Push → Vercel builds a preview automatically → once checks pass, create a pr
 
 ## Log
 <!-- newest first -->
+- **C07/C08 home implementation** — Authored 704×576 connected home replaces the shared five-spot fallback for `about` only. Actual retained LPC PNG furniture: bed/wardrobe/dresser, grouped bookshelves/study counters, reading chairs/table/rug, kitchen sink/counter/table/stools, windows/lamps/plants. Four exact exhibit IDs and all facts retained; no huge permanent floating exhibit labels. Registry stores crop coordinates, scaled collision footprints and seat anchors; layout stores dividers, furniture/depth, decor and exhibit approaches. Book/monitor details are cropped from existing generated props so their old stands/tables do not stack on LPC desks. Five new unit tests validate every prop, approach, adjacent guide route, chair and seated depth; 25 unit tests total PASS. Desktop two-stop and 390 px one-stop tours with early exit/re-entry/resume PASS. Real pointer/keyboard QA inspected all four exhibits and sat/stood at all four available seats, no page errors. Visual QA caught chair backs masking the visitor and a lamp-occupied stool incorrectly offering a seat: both fixed, regression guarded and screenshots rechecked. Final native overview, desktop/mobile dialogue and chair screenshots inspected. Deterministic 17-asset output, TypeScript/build and 21-door/100-exhibit audits PASS. Remaining rooms are NOT claimed converted.
 - **Deploy** — C13a production `dpl_67TQfyycGThrkZRBfhN6TVYEzjAT` READY (`47fe5cf`); all 29 actual live PNGs match local hashes. Live first-stop journey + early exit/re-entry + exact reload/resume PASS; 1440/390 px non-blocking hint/movement/ribbon QA PASS. Full local 21 stops/63 highlights completed.
 - **C13a implementation** — Replaced the row grid with a deterministic authored 84×74-tile river town: 21 irregularly positioned buildings, 3 timber crossings, connected neighbourhood street loops and true threshold aprons. Road mask drives painting and navigation; full building envelopes + river banks collide; guided walking prefers streets, not lawn shortcuts. Six residents have separated neighbourhood homes. Grass/orange road ramps use retained LPC pixels; R03 remains reference-only. Geometry validator checks all doors, crossings, street connectivity, facade overlap and resident spacing; 20 unit tests PASS. Full 21-stop/63-highlight browser regression PASS; first-stop 390 px + early exit/re-entry/resume PASS; 1440/390 px non-blocking hint QA PASS; deterministic 29-texture audit, TypeScript and production build PASS. Map and in-world desktop/mobile screenshots inspected. Facade silhouettes and interior furniture are not claimed complete.
 - **Deploy** — C04 production `dpl_2kbHamwKna4hxEdVq7CirBJnkW2e` READY (`f09ecc0`); live first-stop journey, early exit/re-entry, Escape/reopen, reload/resume and 1440/390 px normal-motion dialogue keyboard/typewriter/preference checks PASS.
