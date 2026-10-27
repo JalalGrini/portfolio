@@ -1,0 +1,457 @@
+[
+  {
+    "placeId": "about",
+    "name": "Jalal’s Green House",
+    "layoutBrief": "L-shaped warm home; three connected zones",
+    "facadeBrief": "sage timber cottage, porch and window boxes",
+    "zoneSequence": [
+      "entry/journal nook",
+      "study desk",
+      "seated reading corner"
+    ],
+    "furnishingBrief": "desk, fitted bookshelf, armchair/rug, window plant, lamp and pinned notes",
+    "storyGuardrails": "background, location, engineering direction and public work",
+    "exhibitIds": [
+      "welcome",
+      "home",
+      "direction",
+      "github"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "academy",
+    "name": "ENSAH Academy",
+    "layoutBrief": "Classroom + library alcove + small lab",
+    "facadeBrief": "stone academy with bell/clock gable and shared courtyard",
+    "zoneSequence": [
+      "entry noticeboard",
+      "teaching table",
+      "study/library alcove",
+      "practice bench"
+    ],
+    "furnishingBrief": "paired tables/chairs, book walls, lamp, chalkboard, cabinets and learning tools",
+    "storyGuardrails": "education, foundations, learning by building and research boundaries",
+    "exhibitIds": [
+      "study",
+      "foundation",
+      "practice",
+      "research"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "office",
+    "name": "The Experience Office",
+    "layoutBrief": "Reception flowing into a working office",
+    "facadeBrief": "timber/stone office with covered entry",
+    "zoneSequence": [
+      "reception",
+      "work desk",
+      "project/evidence wall",
+      "quiet debrief seat"
+    ],
+    "furnishingBrief": "counter, paper trays, filing wall, meeting table, chairs and desk clutter",
+    "storyGuardrails": "verified experience and approach to practical engineering",
+    "exhibitIds": [
+      "experience-0",
+      "experience-1",
+      "role",
+      "honesty"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "library",
+    "name": "The Skills Library",
+    "layoutBrief": "Connected reading hall and tool alcoves",
+    "facadeBrief": "tall library gable, inset windows and reading garden",
+    "zoneSequence": [
+      "entry catalog",
+      "reading cluster",
+      "computing/tool alcove",
+      "shared table"
+    ],
+    "furnishingBrief": "floor-to-ceiling shelves, book piles on tables, ladders, lamps and seating",
+    "storyGuardrails": "actual skill groups and how tools connect to the work",
+    "exhibitIds": [
+      "skills-0",
+      "skills-1",
+      "skills-2",
+      "skills-3"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-sentinel",
+    "name": "Sentinel",
+    "layoutBrief": "Control study + infrastructure bay + policy alcove",
+    "facadeBrief": "research lodge with service wing and antenna",
+    "zoneSequence": [
+      "entry status board",
+      "lifecycle planning wall",
+      "infrastructure bay",
+      "verification desk"
+    ],
+    "furnishingBrief": "rack group, workbench, cable trough, diagrams and a seated review desk",
+    "storyGuardrails": "planned lifecycle, Jalal’s MLOps/LLMOps role, policies/verification/rollback; design-stage labels",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-orion",
+    "name": "ORION",
+    "layoutBrief": "Observatory-style graph studio + evidence nook",
+    "facadeBrief": "distinct tower/observatory silhouette",
+    "zoneSequence": [
+      "entry brief",
+      "multimodal table",
+      "graph wall",
+      "retrieval study"
+    ],
+    "furnishingBrief": "instrument table, connected graph diagrams, bookcase, terminals and lamp",
+    "storyGuardrails": "planned multimodal/knowledge-graph reasoning and Jalal’s graph/retrieval work; no experimental results",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-dl-report",
+    "name": "Deep Learning Research",
+    "layoutBrief": "Research reading room + experiment-notebook bench",
+    "facadeBrief": "quiet scholar cottage with chimney",
+    "zoneSequence": [
+      "reading table",
+      "model/experiment notebook",
+      "evidence bookshelf"
+    ],
+    "furnishingBrief": "paper stacks, paired lamps, board, shelves and covered instrument bench",
+    "storyGuardrails": "exact report scope and reviewed methodology; do not invent findings",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-matchwork",
+    "name": "MatchWork",
+    "layoutBrief": "Data workshop arranged as an activity sequence",
+    "facadeBrief": "riverside workshop with loading porch",
+    "zoneSequence": [
+      "ingestion desk",
+      "processing bench",
+      "skill/recommendation board",
+      "source station"
+    ],
+    "furnishingBrief": "inbox trays, three linked worktables, cabinets, terminal and wall diagram",
+    "storyGuardrails": "Bronze/Silver/Gold pipeline, NLP skills, recommendation and repository evidence",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-ocr",
+    "name": "Arabic & Darija OCR",
+    "layoutBrief": "Document atelier with connected preparation zone",
+    "facadeBrief": "print-shop cottage with broad window",
+    "zoneSequence": [
+      "document intake",
+      "synthetic-image workbench",
+      "loading/augmentation desk",
+      "dataset shelf"
+    ],
+    "furnishingBrief": "paper drawers, light table, scanner-like original prop, booklets and task lamp",
+    "storyGuardrails": "Arabic/Darija data preparation, 10,000-image dataset and augmentation; no production OCR accuracy claim",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-spam",
+    "name": "Phishing & Spam Detection",
+    "layoutBrief": "Security study with review alcove",
+    "facadeBrief": "compact watch-house with dark roof and warm windows",
+    "zoneSequence": [
+      "message inbox",
+      "classification workbench",
+      "review board",
+      "source desk"
+    ],
+    "furnishingBrief": "letter trays, terminal, desk divider, reference shelves and warning board",
+    "storyGuardrails": "exact phishing/spam project facts and limitations, not invented protection metrics",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-odoo",
+    "name": "ENSAH HR Intelligence",
+    "layoutBrief": "HR reception and records study",
+    "facadeBrief": "administration house with small courtyard",
+    "zoneSequence": [
+      "reception",
+      "records wall",
+      "analytics desk",
+      "source corner"
+    ],
+    "furnishingBrief": "counter, paper records, workstations, cabinet and meeting chairs",
+    "storyGuardrails": "ENSAH HR Intelligence facts only; no made-up adoption or employment outcomes",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-rag",
+    "name": "RAG Document Assistant",
+    "layoutBrief": "Document library joined to a retrieval workshop",
+    "facadeBrief": "archive house with glazed reading extension",
+    "zoneSequence": [
+      "collection shelves",
+      "indexing bench",
+      "retrieval/evidence table",
+      "source terminal"
+    ],
+    "furnishingBrief": "books, labeled shapes without fake text, terminals, evidence trays and desk lamps",
+    "storyGuardrails": "retrieval/grounding workflow supported by repository content; do not imply infallible answers",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-finance",
+    "name": "Financial Operations Platform",
+    "layoutBrief": "Counter + ledger office + review nook",
+    "facadeBrief": "market-lane counting house",
+    "zoneSequence": [
+      "service counter",
+      "operations workbench",
+      "ledger/report area",
+      "source desk"
+    ],
+    "furnishingBrief": "ledger stacks, drawers, counting desk, terminal and chairs",
+    "storyGuardrails": "verified financial-operations project scope; no invented business use",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-comptapilot",
+    "name": "ComptaPilot",
+    "layoutBrief": "Bookkeeper workshop with connected records alcove",
+    "facadeBrief": "smaller bookkeeper cottage, distinctive porch",
+    "zoneSequence": [
+      "ledger desk",
+      "automation bench",
+      "filing alcove",
+      "source desk"
+    ],
+    "furnishingBrief": "bound ledgers, drawers, desk lamp, terminal and stamp-like original prop",
+    "storyGuardrails": "ComptaPilot’s actual features and status from source; no synthetic financial outcomes",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-pfe",
+    "name": "PFE Planning Platform",
+    "layoutBrief": "Prototype studio and review corner",
+    "facadeBrief": "unfinished/prototype maker studio, not a business storefront",
+    "zoneSequence": [
+      "brief wall",
+      "implementation bench",
+      "review seat",
+      "repository station"
+    ],
+    "furnishingBrief": "prototype parts, board, workbench, shelves and source terminal",
+    "storyGuardrails": "3RB Extreme/PFE repository project; retain undeployed status and no business website link",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-employees",
+    "name": "Employees Manager",
+    "layoutBrief": "Reception linked to roster/records office",
+    "facadeBrief": "small administrative storefront",
+    "zoneSequence": [
+      "welcome counter",
+      "roster desk",
+      "workflow alcove",
+      "source terminal"
+    ],
+    "furnishingBrief": "records cabinets, task board, desk cluster and visitor chairs",
+    "storyGuardrails": "employees application scope as recorded; no invented customers",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-todo",
+    "name": "MERN Task Manager",
+    "layoutBrief": "Small task-planning atelier",
+    "facadeBrief": "narrow maker cottage with strong entrance identity",
+    "zoneSequence": [
+      "inbox nook",
+      "planning desk",
+      "completion shelf",
+      "source station"
+    ],
+    "furnishingBrief": "task cards as shapes, calendar, desk, plant, lamp and shelf",
+    "storyGuardrails": "actual todo app behavior, implementation and repository",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-recipe",
+    "name": "RecipeGenix",
+    "layoutBrief": "Kitchen studio + pantry + tasting table",
+    "facadeBrief": "cottage kitchen with chimney and herb boxes",
+    "zoneSequence": [
+      "recipe book",
+      "preparation counter",
+      "pantry",
+      "small table/source nook"
+    ],
+    "furnishingBrief": "continuous counters, cookware, shelves, herbs and dining chairs",
+    "storyGuardrails": "recipe application features; no new food/crafting simulation",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-salle",
+    "name": "Room Reservation Manager",
+    "layoutBrief": "Reception + activity/booking room + storage",
+    "facadeBrief": "sports pavilion with covered side entry",
+    "zoneSequence": [
+      "booking counter",
+      "timetable wall",
+      "activity zone",
+      "equipment/source corner"
+    ],
+    "furnishingBrief": "bench, lockers, equipment rack, noticeboard and terminal",
+    "storyGuardrails": "sports-hall project’s actual reservation/management features, not new game athletics",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "project-tva",
+    "name": "TVA Calculator",
+    "layoutBrief": "Document counter and calculation study",
+    "facadeBrief": "document office with shuttered windows",
+    "zoneSequence": [
+      "intake tray",
+      "calculation desk",
+      "review/filing zone",
+      "source station"
+    ],
+    "furnishingBrief": "ledger, calculator-like prop, cabinet, papers and desk lamp",
+    "storyGuardrails": "TVA application facts only; not financial/legal advice",
+    "exhibitIds": [
+      "overview",
+      "stack",
+      "details",
+      "status",
+      "source"
+    ],
+    "status": "proposed-not-implemented"
+  },
+  {
+    "placeId": "contact",
+    "name": "The Post Office",
+    "layoutBrief": "Welcoming post office + portfolio dispatch alcove",
+    "facadeBrief": "distinct post-office roof, mailbox and courtyard shortcut",
+    "zoneSequence": [
+      "greeting counter",
+      "letter/email desk",
+      "public work board",
+      "CV dispatch"
+    ],
+    "furnishingBrief": "mail slots, telephone, printer, letters, bench and desk lamp",
+    "storyGuardrails": "reviewed email/GitHub/LinkedIn/CV actions; preserve public CV phone redaction",
+    "exhibitIds": [
+      "email",
+      "cv",
+      "linkedin",
+      "github"
+    ],
+    "status": "proposed-not-implemented"
+  }
+]
