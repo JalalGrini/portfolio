@@ -1,0 +1,43 @@
+{
+  "shrub": {
+    "crop": [0, 656, 32, 48],
+    "size": [32, 48],
+    "footprint": [4, 30, 24, 14]
+  },
+  "hedge": {
+    "crop": [160, 800, 32, 32],
+    "size": [32, 32],
+    "footprint": [4, 18, 24, 12]
+  },
+  "reeds": {
+    "crop": [272, 480, 64, 32],
+    "size": [64, 32],
+    "footprint": null
+  },
+  "garden-bed": {
+    "crop": [160, 544, 64, 96],
+    "size": [64, 96],
+    "footprint": [6, 8, 52, 80]
+  },
+  "tomato": {
+    "crop": [416, 864, 32, 32],
+    "size": [32, 32],
+    "footprint": null
+  },
+  "corn": {
+    "crop": [480, 864, 32, 32],
+    "size": [32, 32],
+    "footprint": null
+  },
+  "park-bench": {
+    "source": "furniture",
+    "crop": [352, 320, 64, 32],
+    "size": [64, 32],
+    "footprint": [2, 16, 60, 14]
+  },
+  "ripple": {
+    "crop": [672, 544, 64, 32],
+    "size": [64, 32],
+    "footprint": null
+  }
+}
