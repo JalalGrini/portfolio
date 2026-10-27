@@ -19,6 +19,7 @@ import {
   TOUR_SAVE_KEY,
 } from "./tour";
 import { Point, Rect, distance, route, isFree } from "./navigation";
+import { dialogueAck } from "./dialogue";
 type Entry = { building?: string; returnPosition?: Point; goto?: string };
 export function createGame(
   parent: HTMLElement,
@@ -32,6 +33,7 @@ export function createGame(
     time: "day",
     footsteps: true,
     reduced: initialReduced,
+    instantText: false,
   };
   const plan = makePlan(places);
   let tour: TourState = initialTour(plan);
@@ -199,8 +201,6 @@ export function createGame(
     private pendingKeys = new Set<string>();
     private shadow!: Phaser.GameObjects.Ellipse;
     /** Dialogue whose closing should advance the tour ("intro" or "beat"). */
-    private tourAwait: "intro" | "beat" | null = null;
-    private tourAwaitOpen = false;
     constructor(key: string, roomMode = false) {
       super(key);
       this.roomMode = roomMode;
@@ -223,8 +223,7 @@ export function createGame(
       this.targetObject = null;
       this.waitNotified = false;
       this.autoFollow = false;
-      this.tourAwait = null;
-      this.tourAwaitOpen = false;
+
       this.pendingKeys.clear();
     }
     create() {
@@ -409,13 +408,6 @@ export function createGame(
           Object.values(this.keys).forEach((k) => k.reset());
           this.touch = { x: 0, y: 0 };
           this.velocity = { x: 0, y: 0 };
-          if (v && this.tourAwait) this.tourAwaitOpen = true;
-          if (!v && this.tourAwait && this.tourAwaitOpen) {
-            const kind = this.tourAwait;
-            this.tourAwait = null;
-            this.tourAwaitOpen = false;
-            this.time.delayedCall(140, () => this.tourAck(kind));
-          }
           if (v) {
             this.player.anims.pause();
             this.guide.anims.pause();
@@ -675,7 +667,7 @@ export function createGame(
       }
       if (a.type === "tour-start") {
         this.stand();
-        this.tourAwait = null;
+
         // id = "stop" or "stop:highlight" (resume point)
         const [from, beat] = (a.id ?? "0").split(":").map(Number);
         leftEarly = false;
@@ -694,7 +686,7 @@ export function createGame(
       }
       if (a.type === "tour-leave") {
         dispatch({ type: "leave" });
-        this.tourAwait = null;
+
         this.autoFollow = false;
         this.guidePath = [];
         return;
@@ -717,7 +709,7 @@ export function createGame(
         if (a.id !== undefined && Number(a.id) !== tour.index) return;
         leftEarly = false;
         this.path = [];
-        this.tourAwait = null;
+
         if (this.roomMode) {
           this.exitRoom(true);
           return;
@@ -731,6 +723,21 @@ export function createGame(
       }
       if (a.type === "choice") {
         const id = a.id ?? "";
+        if (id.startsWith("tour-ack-")) {
+          const kind = dialogueAck(id, tour);
+          if (kind) this.tourAck(kind);
+          return;
+        }
+        if (id === "tour-read") {
+          if (this.roomMode && tour.active) {
+            if (tour.stage === "room-intro") this.roomIntro();
+            else if (tour.stage === "beat") {
+              const station = this.beatStation();
+              if (station) this.inspect(station);
+            }
+          }
+          return;
+        }
         if (id.startsWith("tour-resume-")) {
           this.action({ type: "tour-start", id: id.slice(12) });
           return;
@@ -751,7 +758,6 @@ export function createGame(
           return;
         }
         if (id === "skip-room") {
-          this.tourAwait = null;
           if (dispatch({ type: "skip-room" })) this.tourRoomStep();
           return;
         }
@@ -1033,8 +1039,7 @@ export function createGame(
       if (!this.roomMode || tour.stage !== "room-intro") return;
       const p = placeById(this.entry.building!);
       const n = tour.beats;
-      this.tourAwait = "intro";
-      this.tourAwaitOpen = false;
+
       say({
         speaker: "Jalal",
         portrait: "happy",
@@ -1048,7 +1053,7 @@ export function createGame(
                 : " Have a look around."),
         choices: [
           {
-            id: "close",
+            id: `tour-ack-intro-${tour.index}:${tour.beat}`,
             label: n
               ? tour.beat > 0
                 ? "Continue →"
@@ -1126,10 +1131,6 @@ export function createGame(
       if (tour.active && tour.stage === "to-beat" && s.id === tour.beatId)
         dispatch({ type: "reach-beat" });
       const beat = tour.active && tour.stage === "beat" && s.id === tour.beatId;
-      if (beat) {
-        this.tourAwait = "beat";
-        this.tourAwaitOpen = false;
-      }
       const last = tour.beat + 1 >= tour.beats;
       say({
         speaker: "Jalal",
@@ -1144,7 +1145,7 @@ export function createGame(
         choices: beat
           ? [
               {
-                id: "close",
+                id: `tour-ack-beat-${tour.index}:${tour.beat}`,
                 label: last ? "Got it — I’ll look around" : "Next highlight →",
               },
               ...(last
