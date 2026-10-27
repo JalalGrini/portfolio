@@ -60,3 +60,12 @@ The daylight recipe now renders the river from retained `terrain.png` bank/water
 Two additional tabletop details are cropped from the existing original generated `prop-notebook.png` and `prop-workstation.png` (book only / monitors only, without their old stands and tables). They are not LPC art and retain the original generated-art provenance above. The `authored-` runtime prefix deliberately distinguishes this mixed, explicitly credited registry from LPC-only assets.
 
 Generated `public/assets/rooms/authored-*.png`, `authored-rooms.json`, `home-overview.png` and the overridden `public/assets/tour/room-about.png` remain build outputs. `authored-rooms.json` records reproducible hashes. The registry is currently the home slice only: other buildings retain their legacy layouts pending separate authored conversions. No cinematic routes or project facts were changed.
+
+
+## Layered garden town (C13b)
+
+`game/town-scenery.json` records exact retained-source crops and physical footprints for shrubs, hedges, reeds, produce beds/plants and proper wood park benches. `tools/town_landscape.cjs` authors yard groups, produce gardens, riverbank planting and meadow islands while keeping the shared street mask and door approaches clear. Trees are denser; the blossom variant recolours only foliage, preserving the original trunk. No reference screenshot pixels are used.
+
+All planting comes from the already credited LPC `tools/source/terrain.png`; the park bench comes from `tools/source/furniture.png` with its exact atlas-floor palette removed. Existing complete `public/licenses/{atlas,furniture}.txt` contributor notices and applicable share-alike terms remain in force. The reed adaptation removes source cyan water-edge pixels before placing it on grass. Soil is a floor layer below crops, not a tall prop that hides them. `town-style.json` now covers 38 deterministic art outputs.
+
+Source-art ripples (terrain crop 672,544,64,32) remove their flat source-water background and use a gentle light-blue adaptation. They are baked into the terrain; normal-motion mode adds a very subtle 2-pixel drift/fade overlay. Reduced-motion mode keeps the static art only. Scenery details are generated separately in `game/town-details.json` for release-sized text payloads; collision solids remain in the canonical world file.
