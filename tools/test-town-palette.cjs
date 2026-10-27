@@ -18,7 +18,7 @@ const hash = (f) =>
   const manifest = fs.readFileSync(path.join(dir, "town-style.json"), "utf8");
   const m = JSON.parse(manifest),
     world = require("../game/tour-world.json");
-  if (Object.keys(m.assets).length !== 29 || m.geometryHash !== geometry)
+  if (Object.keys(m.assets).length !== 38 || m.geometryHash !== geometry)
     throw Error("Incomplete art or changed geometry");
   for (const b of world.buildings) {
     const a = m.assets["house-" + b.id];
@@ -45,7 +45,7 @@ const hash = (f) =>
   if (hash(path.join(root, "game/tour-world.json")) !== geometry)
     throw Error("Navigation changed");
   console.log(
-    "PASS 29 palette textures, 21 facade footprints, deterministic hashes, unchanged navigation",
+    "PASS 38 palette textures, 21 facade footprints, deterministic hashes, unchanged navigation",
   );
 })().catch((e) => {
   console.error(e);

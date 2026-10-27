@@ -10,6 +10,7 @@ const sharp = require("sharp");
 const root = path.resolve(__dirname, "..");
 const out = path.join(root, "public/assets/tour");
 const world = require("../game/tour-world.json");
+const townDetails = require("../game/town-details.json");
 const townMap = require("../game/town-map.json");
 const outputs = {};
 const rgb = (hex) => hex.match(/[a-f\d]{2}/gi).map((v) => parseInt(v, 16));
@@ -152,6 +153,7 @@ const propKey = (o) =>
   fs.mkdirSync(out, { recursive: true });
   const terrain = await load("tools/source/terrain.png");
   const houses = await load("tools/source/houses.png");
+  const furniture = await load("tools/source/furniture.png");
   const base = await load("tools/source/base.png");
   const city = await load("tools/source/city.png");
   const textures = {};
@@ -191,6 +193,59 @@ const propKey = (o) =>
     paste(tree, crop(terrain, 24 * 32, row * 32, 96, 96), 0, 0);
     textures["outdoor-" + name] = tree;
     await save("outdoor-" + name, tree);
+  }
+  const blossom = recolour(textures["outdoor-tree"], ([r, g, b]) =>
+    g > r * 1.03 && g > b * 1.05
+      ? ramp(["#80506f", "#db8eaf", "#ffcee1"], (r + g + b) / 3, 25, 130)
+      : null,
+  );
+  textures["outdoor-blossom"] = blossom;
+  await save("outdoor-blossom", blossom);
+  for (const [name, spec] of Object.entries(
+    require("../game/town-scenery.json"),
+  )) {
+    let im = crop(
+      spec.source === "furniture" ? furniture : terrain,
+      ...spec.crop,
+    );
+
+    if (name === "ripple") {
+      const bg = [...im.data.subarray(0, 3)];
+      for (let n = 0; n < im.data.length; n += 4) {
+        if (
+          im.data[n] === bg[0] &&
+          im.data[n + 1] === bg[1] &&
+          im.data[n + 2] === bg[2]
+        )
+          im.data[n + 3] = 0;
+        else {
+          im.data[n] = 146;
+          im.data[n + 1] = 212;
+          im.data[n + 2] = 224;
+          im.data[n + 3] = 170;
+        }
+      }
+    }
+    if (name === "reeds")
+      for (let n = 0; n < im.data.length; n += 4) {
+        const [r, g, b] = im.data.subarray(n, n + 3);
+        if (b > g * 0.9 && b > r * 1.6) im.data[n + 3] = 0;
+      }
+    if (name === "garden-bed")
+      for (let n = 0; n < im.data.length; n += 4) {
+        const [r, g, b] = im.data.subarray(n, n + 3);
+        if (g > r * 1.05 && g > b * 1.1) im.data[n + 3] = 0;
+      }
+    if (spec.source === "furniture") {
+      const floor = crop(furniture, 0, 96, 32, 32),
+        bg = new Set();
+      for (let n = 0; n < floor.data.length; n += 4)
+        bg.add(floor.data.readUInt32BE(n));
+      for (let n = 0; n < im.data.length; n += 4)
+        if (bg.has(im.data.readUInt32BE(n))) im.data[n + 3] = 0;
+    }
+    textures["outdoor-" + name] = im;
+    await save("outdoor-" + name, im);
   }
   textures["outdoor-plant"] = crop(city, 14 * 32, 12 * 32, 32, 32);
   await save("outdoor-plant", textures["outdoor-plant"]);
@@ -261,6 +316,13 @@ const propKey = (o) =>
       y * 32,
     );
   }
+  const ripple = {
+    ...textures["outdoor-ripple"],
+    data: Buffer.from(textures["outdoor-ripple"].data),
+  };
+  for (let n = 3; n < ripple.data.length; n += 4)
+    ripple.data[n] = Math.round(ripple.data[n] * 0.32);
+  for (const r of townMap.ripples) paste(ground, ripple, r.x - 32, r.y - 16);
   const roadAtlas = recolour(
     terrain,
     ([r, g, b]) =>
@@ -320,7 +382,9 @@ const propKey = (o) =>
   }
   await save("ground", ground);
   const map = { ...ground, data: Buffer.from(ground.data) };
-  for (const o of [...world.objects].sort((a, b) => a.depth - b.depth)) {
+  for (const o of [...world.objects, ...townDetails].sort(
+    (a, b) => a.depth - b.depth,
+  )) {
     const key = propKey(o);
     if (!textures[key])
       textures[key] = await load("public/assets/game/" + key + ".png");
@@ -342,7 +406,12 @@ const propKey = (o) =>
   fs.writeFileSync(
     path.join(out, "town-style.json"),
     JSON.stringify(
-      { version: "C13a-river-town-1", geometryHash, palettes, assets: outputs },
+      {
+        version: "C13b-garden-town-1",
+        geometryHash,
+        palettes,
+        assets: outputs,
+      },
       null,
       2,
     ) + "\n",

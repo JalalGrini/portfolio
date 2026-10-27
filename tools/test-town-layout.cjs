@@ -14,7 +14,11 @@ execFileSync(
   [path.join(__dirname, "build_town_layout.cjs")],
   { stdio: "pipe" },
 );
-const before = [hash("game/tour-world.json"), hash("game/town-map.json")];
+const before = [
+  hash("game/tour-world.json"),
+  hash("game/town-map.json"),
+  hash("game/town-details.json"),
+];
 const w = JSON.parse(fs.readFileSync(path.join(root, "game/tour-world.json"))),
   m = JSON.parse(fs.readFileSync(path.join(root, "game/town-map.json"))),
   T = m.tileSize,
@@ -105,7 +109,11 @@ execFileSync(
   { stdio: "pipe" },
 );
 assert.deepEqual(
-  [hash("game/tour-world.json"), hash("game/town-map.json")],
+  [
+    hash("game/tour-world.json"),
+    hash("game/town-map.json"),
+    hash("game/town-details.json"),
+  ],
   before,
   "Non-deterministic geometry",
 );

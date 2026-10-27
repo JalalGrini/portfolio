@@ -306,15 +306,16 @@ for (const name of [
     const r = {
       x: p[0] * T + dx,
       y: p[1] * T + dy,
-      w: k === "well" ? 64 : 32,
-      h: 64,
+      w: 64,
+      h: k === "well" ? 64 : 32,
     };
     if (
       !hitsMask(r, roads) &&
       !hitsMask(r, water) &&
       !buildings.some((b) => intersects(r, { ...b, w: b.w, h: b.h }))
     ) {
-      obj(k, r.x, r.y, 64);
+      obj(k === "bench" ? "outdoor-park-bench" : k, r.x, r.y, r.h);
+      if (k === "bench") solids.push({ x: r.x + 2, y: r.y + 16, w: 60, h: 14 });
       if (k === "well") solids.push({ x: r.x + 10, y: r.y + 36, w: 44, h: 24 });
     }
   }
@@ -324,7 +325,7 @@ for (let y = -12; y < H * T - 144; y += 96)
   for (let x = -12; x < W * T - 96; x += 96) {
     const edge = x < 140 || y < 140 || x > W * T - 230 || y > H * T - 230;
     const east = x > W * T * 0.72;
-    const chance = edge ? 0.78 : east ? 0.36 : 0.2;
+    const chance = edge ? 0.93 : east ? 0.67 : 0.48;
     if (random() > chance) continue;
     const px = Math.max(
         0,
@@ -336,7 +337,7 @@ for (let y = -12; y < H * T - 144; y += 96)
       );
     const r = { x: px - 12, y: py - 10, w: 120, h: 164 };
     if (
-      hitsMask(r, roads) ||
+      hitsMask({ x: px + 20, y: py + 108, w: 52, h: 48 }, roads) ||
       hitsMask(r, water) ||
       buildings.some((b) =>
         intersects(r, { x: b.x - 32, y: b.y - 24, w: b.w + 64, h: b.h + 100 }),
@@ -346,12 +347,41 @@ for (let y = -12; y < H * T - 144; y += 96)
       )
     )
       continue;
-    obj(random() < 0.68 ? "tree" : "pine", px, py, 144);
+    const kind = random();
+    obj(
+      kind < 0.2 ? "outdoor-blossom" : kind < 0.78 ? "tree" : "pine",
+      px,
+      py,
+      144,
+    );
     solids.push({ x: px + 34, y: py + 123, w: 28, h: 18 });
   }
+const detailStart = objects.length;
+const landscape = require("./town_landscape.cjs")({
+  buildings,
+  objects,
+  solids,
+  roads,
+  water,
+  residents,
+  W,
+  H,
+  T,
+  hitsMask,
+  intersects,
+  obj,
+  riverAt,
+  random,
+});
+const details = objects.splice(detailStart);
+fs.writeFileSync(
+  path.join(root, "game/town-details.json"),
+  JSON.stringify(details) + "\n",
+);
 const spawnPoint = nodes.welcome;
 const world = {
   layoutVersion: L.version,
+  landscape,
   width: W * T,
   height: H * T,
   spawn: { x: spawnPoint[0] * T + 16, y: spawnPoint[1] * T + 16 },
@@ -360,7 +390,26 @@ const world = {
   solids,
   residents,
 };
+const ripples = [...water]
+  .filter((k) => {
+    const x = k % W,
+      y = Math.floor(k / W);
+    return (
+      (x * 3 + y) % 11 === 0 &&
+      water.has(k - 1) &&
+      water.has(k + 1) &&
+      water.has(k - W) &&
+      water.has(k + W) &&
+      !bridges.some((b) => Math.abs(b.row - y) < 3)
+    );
+  })
+  .map((k) => ({
+    x: ((k % W) + 0.5) * T,
+    y: (Math.floor(k / W) + 0.5) * T,
+    phase: (k % 7) * 170,
+  }));
 const map = {
+  ripples,
   version: L.version,
   width: W,
   height: H,
@@ -383,5 +432,5 @@ fs.writeFileSync(
   JSON.stringify(map) + "\n",
 );
 console.log(
-  `Authored river town: ${buildings.length} doors, ${bridges.length} bridges, ${L.links.length} neighbourhood links, ${objects.length} props, ${residents.length} distributed residents.`,
+  `Authored river town: ${buildings.length} doors, ${bridges.length} bridges, ${L.links.length} neighbourhood links, ${objects.length + details.length} props, ${residents.length} distributed residents.`,
 );

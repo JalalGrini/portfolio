@@ -20,7 +20,7 @@
     "test:tour": "node tools/qa-tour.cjs",
     "test:town": "node tools/export-catalog.cjs && node tools/qa-town-tour.cjs",
     "test:tour-loop": "node tools/qa-tour-journey.cjs",
-    "test:unit": "node --test tools/test-tour.mjs tools/test-dialogue.mjs tools/test-navigation.mjs tools/test-authored-rooms.cjs",
+    "test:unit": "node --test tools/test-tour.mjs tools/test-dialogue.mjs tools/test-navigation.mjs tools/test-authored-rooms.cjs tools/test-landscape.cjs",
     "test:journey": "node tools/qa-tour-journey.cjs",
     "check:palette": "node tools/test-town-palette.cjs",
     "check:town-layout": "node tools/test-town-layout.cjs",
