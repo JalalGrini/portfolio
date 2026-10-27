@@ -12,6 +12,7 @@ export type Furniture = {
   h: number;
   depth?: number;
   seatable?: boolean;
+  facing?: number;
 };
 export type RoomLayout = typeof home;
 export const roomLayouts: Record<string, RoomLayout> = { about: home };
@@ -20,6 +21,7 @@ type Prop = {
   crop: number[];
   footprint: number[] | null;
   seat?: number[];
+  facing?: number;
 };
 export const roomProps: Record<string, Prop> = registry;
 export function roomSolids(layout: RoomLayout): Rect[] {
@@ -63,7 +65,8 @@ export function authoredStations(place: Place): Station[] | null {
     };
   });
 }
-export function roomSeats(l: RoomLayout): Point[] {
+export type Seat = Point & { facing: number };
+export function roomSeats(l: RoomLayout): Seat[] {
   return l.furniture.flatMap((f) => {
     if ("seatable" in f && f.seatable === false) return [];
     const r = f.prop ? roomProps[f.prop] : null;
@@ -72,6 +75,7 @@ export function roomSeats(l: RoomLayout): Point[] {
       {
         x: f.x + (r.seat[0] * f.w) / r.crop[2],
         y: f.y + (r.seat[1] * f.h) / r.crop[3],
+        facing: (f as Furniture).facing ?? r.facing ?? 2,
       },
     ];
   });

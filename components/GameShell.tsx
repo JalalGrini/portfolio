@@ -129,6 +129,7 @@ export default function GameShell({
       guideY?: number;
       guideVisible: boolean;
       sitting: boolean;
+      facing: number;
       cameraX: number;
       cameraY: number;
       zoom: number;
@@ -140,6 +141,7 @@ export default function GameShell({
       height: world.height,
       guideVisible: true,
       sitting: false,
+      facing: 2,
       cameraX: 0,
       cameraY: 0,
       zoom: 1.8,
@@ -299,6 +301,7 @@ export default function GameShell({
           ...p,
           guideVisible: p.guideVisible ?? true,
           sitting: p.sitting ?? false,
+          facing: p.facing ?? 2,
           cameraX: p.cameraX ?? 0,
           cameraY: p.cameraY ?? 0,
           zoom: p.zoom ?? 1.8,
@@ -432,6 +435,7 @@ export default function GameShell({
       data-camera-height={pos.viewportHeight}
       data-zoom={pos.zoom}
       data-sitting={pos.sitting}
+      data-facing={pos.facing}
       data-tour-stage={tour?.stage ?? "free"}
     >
       <div

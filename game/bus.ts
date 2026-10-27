@@ -34,6 +34,7 @@ export type GameEvents = {
     guideY?: number;
     guideVisible?: boolean;
     sitting?: boolean;
+    facing?: number;
     cameraX?: number;
     cameraY?: number;
     zoom?: number;
