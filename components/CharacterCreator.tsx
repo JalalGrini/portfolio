@@ -4,6 +4,7 @@ import {
   Character,
   clothColors,
   defaultCharacter,
+  jalalCharacter,
   feetStyles,
   hairColors,
   hairStyles,
@@ -135,14 +136,53 @@ export default function CharacterCreator({
       <div className="creator-heading">
         <span className="eyebrow">CAREER TOWN / THE CHARACTER STUDIO</span>
         <h1>
-          Every journey starts
-          <br />
-          <em>with a little character.</em>
+          Every journey starts <em>with a little character.</em>
         </h1>
         <p>
           A small world, built around a real journey. Choose your look and come
           on in.
         </p>
+        <label className="studio-presets">
+          Start with a look
+          <select
+            aria-label="Visitor appearance preset"
+            defaultValue=""
+            onChange={(e) => {
+              const looks: Record<string, Character> = {
+                visitor: defaultCharacter,
+                researcher: {
+                  ...defaultCharacter,
+                  top: "cardigan",
+                  topColor: "navy",
+                  glasses: "round",
+                  legsColor: "tan",
+                },
+                builder: {
+                  ...defaultCharacter,
+                  top: "longsleeve",
+                  topColor: "tan",
+                  hair: "messy1",
+                  legsColor: "navy",
+                },
+                guide: {
+                  ...jalalCharacter,
+                  hair: "curly_short2",
+                  beard: "mustache",
+                  topColor: "forest",
+                },
+              };
+              if (looks[e.target.value]) setC(looks[e.target.value]);
+            }}
+          >
+            <option value="" disabled>
+              Choose a preset
+            </option>
+            <option value="visitor">The village visitor</option>
+            <option value="researcher">The researcher</option>
+            <option value="builder">The maker</option>
+            <option value="guide">Inspired by Jalal</option>
+          </select>
+        </label>
       </div>
       <div className="creator-shell">
         <div className="character-stage">

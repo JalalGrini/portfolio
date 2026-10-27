@@ -3,6 +3,7 @@ import "./globals.css";
 import "./refinements.css";
 import "./studio.css";
 import "./town.css";
+import "./village.css";
 export const metadata: Metadata = {
   title: "Jalal Grini — AI & Software Engineer",
   description:

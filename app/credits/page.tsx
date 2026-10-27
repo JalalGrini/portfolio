@@ -94,6 +94,22 @@ export default function Credits() {
             </a>
           </article>
           <article>
+            <h2>Jalal’s guide & original project props</h2>
+            <p>
+              Jalal’s guide portraits, expressions and directional poses are
+              adapted from the reference images supplied by Jalal Grini. These
+              personal character references are not offered as reusable stock
+              artwork.
+            </p>
+            <p>
+              The server, telescope, microscope, telephone, security console,
+              workstation, kitchen, filing cabinet, planning board, notebook,
+              printer and chair props are original AI-generated pixel artwork
+              prepared for this village. They are not Stardew Valley assets and
+              are not attributed to the LPC artists above.
+            </p>
+          </article>
+          <article>
             <h2>The cinematic portfolio</h2>
             <p>
               Original AI-generated conceptual artwork is used for the

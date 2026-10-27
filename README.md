@@ -31,7 +31,7 @@ The site is statically exported to `out/`. No backend or secret environment vari
 
 ## Track the work
 
-The [two-worlds design pass](docs/DESIGN_PASS.md) documents the cinematic portfolio rebuild, independent game design, visual wardrobe, location transitions, asset provenance, and reproducible browser tests. The seven-house follow-up adds distinct interiors and `npm run test:rooms` for a complete door-to-reading-station tour.
+The [two-worlds design pass](docs/DESIGN_PASS.md) documents the cinematic portfolio rebuild, independent game design, visual wardrobe, location transitions, asset provenance, and reproducible browser tests. The guided-village rebuild replaces the seven-house game with 21 individual buildings and object-based project exploration; see [GUIDED_TOWN](docs/GUIDED_TOWN.md).
 
 Read [STATUS](docs/STATUS.md) for the current checkpoint, [DEVLOG](docs/DEVLOG.md) for changes, and [ARCHITECTURE](docs/ARCHITECTURE.md) for implementation choices. Commit-sized checkpoints distinguish planned work from verified functionality.
 
@@ -44,3 +44,7 @@ Original application code: MIT (see `LICENSE`). Third-party artwork is **not MIT
 `npm run check:assets`, `npm run typecheck`, and `npm run build` validate the source bundle. `npm run test:e2e` checks the production export in Chromium after a local static server is started. See [TESTING](docs/TESTING.md) for reproduction, screenshot coverage and explicit limits. A GitHub Actions template is prepared in `docs/ci/`; it is not activated by this design pass.
 
 Rebuild the town artwork with `pip install -r tools/requirements.txt && python tools/build_assets.py`. Curated character source PNGs and the source-credit alias map are committed alongside the terrain sources; no network access is required to regenerate the town images.
+
+## Guided village rebuild
+
+The `/play/` experience now has a moving Jalal guide, 21 individual buildings, eight room sizes and 100 inspectable objects. See [GUIDED_TOWN](docs/GUIDED_TOWN.md) for controls, tour behavior, art provenance, local validation and test limits. The cinematic portfolio is unchanged by this rebuild.

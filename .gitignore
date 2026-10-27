@@ -15,3 +15,5 @@ test-results/
 /public/assets/studio/*.webp
 
 /public/assets/rooms/*.png
+
+/public/assets/tour/*.png
