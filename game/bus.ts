@@ -9,14 +9,8 @@ export type Dialogue = {
   linkLabel?: string;
   station?: string;
 };
-export type TourState = {
-  active: boolean;
-  stage: "free" | "leading" | "waiting" | "stop" | "exploring" | "complete";
-  index: number;
-  total: number;
-  target: string;
-  distance: number;
-};
+import type { TourState } from "./tour";
+export type { TourState };
 export type Preferences = {
   speed: number;
   zoom: number;

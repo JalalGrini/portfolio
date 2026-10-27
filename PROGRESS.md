@@ -33,9 +33,9 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 | C00 | Planning package + this tracker pushed; baseline confirmed identical to live release | V00 | ✅ |
 | C01 | **Tour engine** — split into mini tasks below | V03 | 🟡 |
 | C01a | Pure tour state machine `game/tour.ts` (door → enter → room intro → up to 3 highlight beats → free look → exit → next stop → complete), idempotent events, versioned save/resume helpers; 9 unit tests `npm run test:unit` | V03 | ✅ |
-| C01b | Wire the machine into `createGame.ts`: Jalal walks to each highlight inside the room, explains it, then waits at the exit; leaving the room advances to the next stop | V03 | ⬜ |
+| C01b | Wire the machine into `createGame.ts`: Jalal walks to each highlight inside the room, explains it, then waits at the exit; leaving the room advances to the next stop | V03 | ✅ |
 | C01c | Save/resume: persist stop index, "Resume tour at stop N" on return; old `stage` strings migrated in UI | V03 | ⬜ |
-| C01d | Browser check of the first 2 stops end-to-end with screenshots | V03 | ⬜ |
+| C01d | Browser check of the first stops end-to-end with screenshots (`npm run test:journey`, `QA_STOPS=21` for all) | V03 | ✅ (3 stops) |
 | C02 | Tour UI: redesigned ribbon with stop/beat progress, non-blocking speech bubbles for Jalal hints (no pause spam), resume prompt, tour journal (21 stops, visited/inspected) | V03/V04 | ⬜ |
 | C03 | Full-journey E2E (`tools/qa-tour-journey.cjs`): 21 stops, every room entered, beats completed, exit + resume, no stalls; screenshots per room | V08 | ⬜ |
 
@@ -74,11 +74,15 @@ Each chunk is small enough to finish, test and push in one sitting. Status: ✅ 
 
 ## Log
 <!-- newest first -->
+- **C01b + C01d** — Tour machine wired into the game. Inside the target room Jalal now: introduces the room (`Stop N of 21 · name`, choices *Show me →* / *I’ll explore on my own*) → walks to each of up to 3 highlights and stands beside it (never on it) → explains it when the visitor joins him (*Highlight 1 of 3 · title*, *Next highlight →* / *Skip to free exploring*) → walks to the exit and offers *Next stop → X*. Walking out the door also advances. Leaving any other building does not. Inspecting the highlight yourself counts. Ribbon copy per stage. New `tools/qa-tour-journey.cjs` (`npm run test:journey`) passed 3 stops × (intro + 3 highlights + wrap-up) with no page errors; screenshots in `test-results/tour-journey/`. Old `qa-tour-loop.cjs` used removed stages (`stop`/`exploring`) — `test:tour-loop` now points to the journey test.
 - **C01a** — Added `game/tour.ts` (pure reducer, no Phaser) + `tools/test-tour.mjs` (9 passing tests: full journey, no-op/duplicate events, waiting, skip, leave/resume, clamping, save validation). `tsc --noEmit` clean. Not wired into the game yet (C01b).
 - **C00** — Confirmed local tree is byte-identical to `game/jalal-guided-village@43150ca` (only generated `public/assets/*` differ). Completed publishing the `docs/stardew-vision/` package (35 commits, last `d08d8ff`; fresh clone restores all 7 originals + candidates with matching hashes) (references archive, previews, candidate assets, briefs, plan). Added this tracker. Created branch `game/stardew-vision`.
 
 ## Known issues / hypotheses to check
-- Tour inside rooms: Jalal only follows the visitor; there is no narrated interior route (fixing in C01).
+- Tour ribbon's second line (`<strong>`) is not visible at 1440 px — the stage text (e.g. "Highlight 1/3") is hidden. Fix in C02.
+- Bottom HUD (key hints / Wave / Sit / Outside) covers the bottom ~50 px of rooms; Jalal can stand under it at bottom-row exhibits. Fix in C02/C04.
+- When the visitor stands next to Jalal at a highlight they can overlap (same depth band). Polish in C15.
+- Dialogue panel covers the lower half of the room; R01 wants a low panel with the scene visible (C04).
 - `qa-tour-loop.cjs` only checks outdoor door stops, not the guided interior journey (C03).
 - `GameShell` pauses the game for every dialogue; hints need a non-blocking channel (C02).
 - Interiors use a shared five-position layout (`stationsFor`) and stretched/tinted facades (C07–C14).

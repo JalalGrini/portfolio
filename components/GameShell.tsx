@@ -18,6 +18,26 @@ const defaults: Preferences = {
   footsteps: true,
   reduced: false,
 };
+/** One-line ribbon copy for each tour stage. */
+function tourLine(t: TourState) {
+  const short = placeById(t.target).short;
+  switch (t.stage) {
+    case "waiting":
+      return "Follow Jalal, please";
+    case "arrived":
+      return `Here we are · ${short} — step inside`;
+    case "room-intro":
+      return `Welcome to ${short}`;
+    case "to-beat":
+      return `Highlight ${t.beat + 1}/${t.beats} — follow Jalal`;
+    case "beat":
+      return `Highlight ${t.beat + 1}/${t.beats}`;
+    case "room-free":
+      return "Look around, then head out the door";
+    default:
+      return `Follow me → ${short}`;
+  }
+}
 export default function GameShell({
   character,
   onCustomize,
@@ -50,7 +70,19 @@ export default function GameShell({
     [travel, setTravel] = useState<{ label: string; building?: string } | null>(
       null,
     );
-  const [pos, setPos] = useState({
+  const [pos, setPos] = useState<{
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      guideX?: number;
+      guideY?: number;
+      guideVisible: boolean;
+      sitting: boolean;
+      cameraX: number;
+      cameraY: number;
+      zoom: number;
+    }>({
       x: 320,
       y: 464,
       width: world.width,
@@ -323,6 +355,10 @@ export default function GameShell({
       data-x={pos.x.toFixed(1)}
       data-y={pos.y.toFixed(1)}
       data-guide-visible={pos.guideVisible}
+      data-guide-x={pos.guideX?.toFixed(1)}
+      data-guide-y={pos.guideY?.toFixed(1)}
+      data-tour-beat={tour?.beatId ?? ""}
+      data-tour-index={tour?.index ?? 0}
       data-camera-x={pos.cameraX}
       data-camera-y={pos.cameraY}
       data-zoom={pos.zoom}
@@ -409,27 +445,27 @@ export default function GameShell({
                     : "YOUR OWN PACE"}
               </small>
               <strong>
-                {tour?.active
-                  ? tour.stage === "waiting"
-                    ? "Follow Jalal, please"
-                    : tour.stage === "exploring"
-                      ? "Explore the objects inside"
-                      : tour.stage === "stop"
-                        ? "Explore this stop"
-                        : `Follow me → ${placeById(tour.target).short}`
-                  : `Welcome, ${name}`}
+                {tour?.active ? tourLine(tour) : `Welcome, ${name}`}
               </strong>
             </div>
             {tour?.active ? (
               <div className="tour-actions">
-                {["stop", "exploring"].includes(tour.stage) ? (
+                {[
+                  "arrived",
+                  "room-intro",
+                  "to-beat",
+                  "beat",
+                  "room-free",
+                ].includes(tour.stage) ? (
                   <button
                     className="v-button"
                     onClick={() => send("tour-next")}
                   >
                     {tour.index === tour.total - 1
                       ? "Finish tour"
-                      : "Next stop →"}
+                      : tour.stage === "arrived"
+                        ? "Skip this stop →"
+                        : "Next stop →"}
                   </button>
                 ) : (
                   <button
